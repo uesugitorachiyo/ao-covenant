@@ -2004,7 +2004,7 @@ func TestSchemaValidateCommandAcceptsValidDocument(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code = %d, stderr = %q", code, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "schema=covenant.contract.v1 file="+contractPath+" valid=true") {
+	if !strings.Contains(stdout.String(), "schema=covenant.contract.v1 file="+filepath.ToSlash(contractPath)+" valid=true") {
 		t.Fatalf("stdout = %q, want valid schema line", stdout.String())
 	}
 	if stderr.Len() != 0 {
@@ -2043,7 +2043,7 @@ func TestSchemaValidateCommandRejectsInvalidDocument(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("exit code = %d, want 1", code)
 	}
-	if !strings.Contains(stdout.String(), "schema=covenant.contract.v1 file="+contractPath+" valid=false") {
+	if !strings.Contains(stdout.String(), "schema=covenant.contract.v1 file="+filepath.ToSlash(contractPath)+" valid=false") {
 		t.Fatalf("stdout = %q, want invalid schema line", stdout.String())
 	}
 	if !strings.Contains(stderr.String(), "schema validation failed for covenant.contract.v1") {
@@ -2095,7 +2095,7 @@ func TestSchemaValidateCommandPrintsJSON(t *testing.T) {
 	if err := json.Unmarshal(stdout.Bytes(), &decoded); err != nil {
 		t.Fatalf("decode validation json: %v; stdout = %q", err, stdout.String())
 	}
-	if decoded.SchemaID != "covenant.contract.v1" || decoded.File != contractPath || !decoded.Valid || decoded.Error != "" {
+	if decoded.SchemaID != "covenant.contract.v1" || decoded.File != filepath.ToSlash(contractPath) || !decoded.Valid || decoded.Error != "" {
 		t.Fatalf("decoded report = %+v, want valid contract report", decoded)
 	}
 	requireSchemaValidationReportSchema(t, stdout.Bytes())
@@ -2170,7 +2170,7 @@ func TestSchemaValidateCommandJSONWritesOutputFile(t *testing.T) {
 	if err := json.Unmarshal(bytes, &decoded); err != nil {
 		t.Fatalf("decode validation output: %v; bytes = %q", err, string(bytes))
 	}
-	if decoded.SchemaID != "covenant.contract.v1" || decoded.File != contractPath || !decoded.Valid {
+	if decoded.SchemaID != "covenant.contract.v1" || decoded.File != filepath.ToSlash(contractPath) || !decoded.Valid {
 		t.Fatalf("decoded report = %+v, want valid contract report", decoded)
 	}
 	if stderr.Len() != 0 {
@@ -2278,7 +2278,7 @@ func TestSchemaValidateCommandPrintsSARIF(t *testing.T) {
 		t.Fatalf("sarif = %+v, want one SARIF result", decoded)
 	}
 	result := decoded.Runs[0].Results[0]
-	if result.RuleID != "SCHEMA_VALIDATION_FAILED" || result.Locations[0].PhysicalLocation.ArtifactLocation.URI != contractPath {
+	if result.RuleID != "SCHEMA_VALIDATION_FAILED" || result.Locations[0].PhysicalLocation.ArtifactLocation.URI != filepath.ToSlash(contractPath) {
 		t.Fatalf("result = %+v, want schema validation failure for %s", result, contractPath)
 	}
 	if !strings.Contains(stderr.String(), "schema validation failed for covenant.contract.v1") {
@@ -2596,7 +2596,7 @@ func TestSchemaValidateCommandPrintsJUnit(t *testing.T) {
 		t.Fatalf("junit = %+v, want one failing test suite", decoded)
 	}
 	testCase := decoded.TestSuites[0].TestCases[0]
-	if testCase.ClassName != "covenant.contract.v1" || testCase.Name != contractPath || testCase.Failure == nil {
+	if testCase.ClassName != "covenant.contract.v1" || testCase.Name != filepath.ToSlash(contractPath) || testCase.Failure == nil {
 		t.Fatalf("test case = %+v, want failed contract validation test", testCase)
 	}
 	if !strings.Contains(testCase.Failure.Text, "schema validation failed for covenant.contract.v1") {
@@ -2938,7 +2938,7 @@ func TestSchemaValidateCommandInfersSchemaFromDocument(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("exit code = %d, stderr = %q", code, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "schema=covenant.contract.v1 file="+contractPath+" valid=true") {
+	if !strings.Contains(stdout.String(), "schema=covenant.contract.v1 file="+filepath.ToSlash(contractPath)+" valid=true") {
 		t.Fatalf("stdout = %q, want inferred valid schema line", stdout.String())
 	}
 	if stderr.Len() != 0 {

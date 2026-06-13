@@ -2266,7 +2266,7 @@ func TestExportWritesEmbeddedSchemas(t *testing.T) {
 		if entry.ID != requiredEntry.ID || entry.FileName != requiredEntry.FileName || entry.SchemaPath != schemaTestPath(requiredEntry.FileName) {
 			t.Fatalf("written[%d] = %+v, want catalog entry for %+v", index, entry, requiredEntry)
 		}
-		if entry.WrittenPath != wantPath {
+		if entry.WrittenPath != filepath.ToSlash(wantPath) {
 			t.Fatalf("written[%d].WrittenPath = %q, want %q", index, entry.WrittenPath, wantPath)
 		}
 		bytes, err := os.ReadFile(wantPath)
