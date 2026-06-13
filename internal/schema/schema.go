@@ -1233,7 +1233,7 @@ func Catalog() []CatalogEntry {
 		catalog = append(catalog, CatalogEntry{
 			ID:         entry.ID,
 			FileName:   entry.FileName,
-			SchemaPath: filepath.Join("schemas", entry.FileName),
+			SchemaPath: entry.SchemaPath,
 		})
 	}
 	return catalog
@@ -1261,8 +1261,8 @@ func Export(outDir string) ([]ExportedSchema, error) {
 		exported = append(exported, ExportedSchema{
 			ID:          entry.ID,
 			FileName:    entry.FileName,
-			SchemaPath:  filepath.Join("schemas", entry.FileName),
-			WrittenPath: writtenPath,
+			SchemaPath:  entry.SchemaPath,
+			WrittenPath: filepath.ToSlash(writtenPath),
 		})
 	}
 	return exported, nil

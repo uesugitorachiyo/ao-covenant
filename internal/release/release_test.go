@@ -1280,7 +1280,11 @@ func TestVerifyReportsReleaseProvenance(t *testing.T) {
 		t.Fatalf("provenance artifacts len = %d, want 1", len(report.Provenance.Artifacts))
 	}
 	artifact := report.Provenance.Artifacts[0]
-	if artifact.Name != "ao-covenant_v0.1.0_"+runtime.GOOS+"_"+runtime.GOARCH || artifact.Target.OS != runtime.GOOS || artifact.Target.Arch != runtime.GOARCH {
+	wantName := "ao-covenant_v0.1.0_" + runtime.GOOS + "_" + runtime.GOARCH
+	if runtime.GOOS == "windows" {
+		wantName += ".exe"
+	}
+	if artifact.Name != wantName || artifact.Target.OS != runtime.GOOS || artifact.Target.Arch != runtime.GOARCH {
 		t.Fatalf("artifact provenance identity = %+v", artifact)
 	}
 	if artifact.VerificationStatus != "verified" || !artifact.MetadataVerified {

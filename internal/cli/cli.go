@@ -420,9 +420,9 @@ func runContract(args []string, stdout io.Writer, stderr io.Writer) int {
 		jsonResult := runCommandResult{
 			SchemaVersion:    schema.RunResultSchemaID,
 			RunID:            result.EvidencePack.RunID,
-			RunDir:           result.RunDir,
-			LedgerPath:       result.LedgerPath,
-			EvidencePackPath: result.EvidencePackPath,
+			RunDir:           displayPath(result.RunDir),
+			LedgerPath:       displayPath(result.LedgerPath),
+			EvidencePackPath: displayPath(result.EvidencePackPath),
 		}
 		if err := writeSchemaJSON(stdout, schema.RunResultSchemaID, jsonResult); err != nil {
 			fmt.Fprintf(stderr, "write run result: %v\n", err)
@@ -430,9 +430,9 @@ func runContract(args []string, stdout io.Writer, stderr io.Writer) int {
 		}
 		return 0
 	}
-	fmt.Fprintf(stdout, "run_dir=%s\n", result.RunDir)
-	fmt.Fprintf(stdout, "ledger=%s\n", result.LedgerPath)
-	fmt.Fprintf(stdout, "evidence_pack=%s\n", result.EvidencePackPath)
+	fmt.Fprintf(stdout, "run_dir=%s\n", displayPath(result.RunDir))
+	fmt.Fprintf(stdout, "ledger=%s\n", displayPath(result.LedgerPath))
+	fmt.Fprintf(stdout, "evidence_pack=%s\n", displayPath(result.EvidencePackPath))
 	return 0
 }
 
@@ -541,13 +541,13 @@ func runSelfRun(args []string, stdout io.Writer, stderr io.Writer) int {
 	if *jsonOutput {
 		jsonResult := selfRunCommandResult{
 			SchemaVersion:      schema.SelfRunResultSchemaID,
-			ContractPath:       result.ContractPath,
+			ContractPath:       displayPath(result.ContractPath),
 			ContractDigest:     result.ContractDigest,
-			ContractDigestFile: result.ContractDigestPath,
+			ContractDigestFile: displayPath(result.ContractDigestPath),
 			RunID:              result.Verification.RunID,
-			RunDir:             result.RunDir,
-			LedgerPath:         result.LedgerPath,
-			EvidencePackPath:   result.EvidencePackPath,
+			RunDir:             displayPath(result.RunDir),
+			LedgerPath:         displayPath(result.LedgerPath),
+			EvidencePackPath:   displayPath(result.EvidencePackPath),
 			Verified:           result.Verification.Verified,
 			FailureCount:       result.Verification.FailureCount,
 		}
@@ -557,12 +557,12 @@ func runSelfRun(args []string, stdout io.Writer, stderr io.Writer) int {
 		}
 		return 0
 	}
-	fmt.Fprintf(stdout, "contract=%s\n", result.ContractPath)
+	fmt.Fprintf(stdout, "contract=%s\n", displayPath(result.ContractPath))
 	fmt.Fprintf(stdout, "contract_digest=%s\n", result.ContractDigest)
-	fmt.Fprintf(stdout, "contract_digest_file=%s\n", result.ContractDigestPath)
-	fmt.Fprintf(stdout, "run_dir=%s\n", result.RunDir)
-	fmt.Fprintf(stdout, "ledger=%s\n", result.LedgerPath)
-	fmt.Fprintf(stdout, "evidence_pack=%s\n", result.EvidencePackPath)
+	fmt.Fprintf(stdout, "contract_digest_file=%s\n", displayPath(result.ContractDigestPath))
+	fmt.Fprintf(stdout, "run_dir=%s\n", displayPath(result.RunDir))
+	fmt.Fprintf(stdout, "ledger=%s\n", displayPath(result.LedgerPath))
+	fmt.Fprintf(stdout, "evidence_pack=%s\n", displayPath(result.EvidencePackPath))
 	fmt.Fprintf(stdout, "verified=%t\n", result.Verification.Verified)
 	fmt.Fprintf(stdout, "failure_count=%d\n", result.Verification.FailureCount)
 	return 0
@@ -2397,7 +2397,7 @@ func normalizeSchemaValidationIgnorePatterns(patterns []string) ([]string, error
 	for _, pattern := range patterns {
 		value := strings.TrimSpace(pattern)
 		displayPath := filepath.ToSlash(filepath.Clean(value))
-		if value == "" || displayPath == "." || displayPath == ".." || strings.HasPrefix(displayPath, "../") || strings.Contains(value, "\\") || filepath.IsAbs(value) {
+		if value == "" || displayPath == "." || displayPath == ".." || strings.HasPrefix(displayPath, "../") || strings.HasPrefix(displayPath, "/") || strings.Contains(value, "\\") || filepath.IsAbs(value) {
 			return nil, fmt.Errorf("invalid ignore pattern %q", pattern)
 		}
 		normalized = append(normalized, displayPath)
@@ -3001,6 +3001,10 @@ func writeSchemaJSON(stdout io.Writer, schemaID string, value any) error {
 		return fmt.Errorf("write json: %w", err)
 	}
 	return nil
+}
+
+func displayPath(path string) string {
+	return filepath.ToSlash(path)
 }
 
 func marshalSchemaJSONBytes(schemaID string, value any) ([]byte, error) {

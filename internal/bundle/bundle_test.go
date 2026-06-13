@@ -1136,6 +1136,9 @@ func tamperZipEntries(t *testing.T, zipPath string, replacements map[string][]by
 	if err := tmpFile.Close(); err != nil {
 		t.Fatalf("close tampered zip: %v", err)
 	}
+	if err := reader.Close(); err != nil {
+		t.Fatalf("close original zip: %v", err)
+	}
 	for entryName := range replacements {
 		if !replaced[entryName] {
 			t.Fatalf("entry %s not found for tamper", entryName)
@@ -1194,6 +1197,9 @@ func addZipEntries(t *testing.T, zipPath string, additions map[string][]byte) {
 	}
 	if err := tmpFile.Close(); err != nil {
 		t.Fatalf("close added zip: %v", err)
+	}
+	if err := reader.Close(); err != nil {
+		t.Fatalf("close original zip: %v", err)
 	}
 	if err := os.Rename(tmpPath, zipPath); err != nil {
 		t.Fatalf("replace zip: %v", err)

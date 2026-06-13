@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -1643,6 +1644,9 @@ func TestWriteJSONFileValidatesCreatesParentAndPreservesMode(t *testing.T) {
 	info, err := os.Stat(path)
 	if err != nil {
 		t.Fatalf("stat written file: %v", err)
+	}
+	if runtime.GOOS == "windows" {
+		return
 	}
 	if got := info.Mode().Perm(); got != 0o640 {
 		t.Fatalf("file mode = %o, want 0640", got)

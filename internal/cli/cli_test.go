@@ -245,7 +245,8 @@ func extractMarkedMarkdownBlock(t *testing.T, doc string, name string) string {
 	if end < 0 {
 		t.Fatalf("markdown block %s missing end marker %q", name, endMarker)
 	}
-	return strings.TrimPrefix(doc[start:start+end], "\n")
+	block := strings.ReplaceAll(doc[start:start+end], "\r\n", "\n")
+	return strings.TrimPrefix(block, "\n")
 }
 
 func TestOutputWriterContractReferencesCommandWriterMatrixFixture(t *testing.T) {
@@ -1595,6 +1596,9 @@ func TestWriteOutputPairWithRollbackRestoresExistingOutputContentOnSidecarFailur
 	if string(bytes) != string(previous) {
 		t.Fatalf("output file = %q, want previous %q", string(bytes), string(previous))
 	}
+	if runtime.GOOS == "windows" {
+		return
+	}
 	info, statErr := os.Stat(outPath)
 	if statErr != nil {
 		t.Fatalf("stat restored output: %v", statErr)
@@ -2402,7 +2406,7 @@ func TestSchemaValidateCommandSARIFBaselineSuppressesAcceptedFailures(t *testing
   "accepted": [
     {
       "rule_id": "SCHEMA_VALIDATION_FAILED",
-      "source_uri": "`+contractPath+`",
+      "source_uri": "`+filepath.ToSlash(contractPath)+`",
       "justification": "accepted generated fixture drift"
     }
   ]
