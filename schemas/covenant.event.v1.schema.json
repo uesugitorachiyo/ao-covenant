@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.event.v1",
+  "title": "AO Covenant Event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "policy_decided" } }, "required": ["type"] },
+      "then": { "required": ["task_id", "decision_id", "decision", "effect_type", "resource"] }
+    },
+    {
+      "if": { "properties": { "type": { "not": { "const": "policy_decided" } } }, "required": ["type"] },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "required": ["decision_id"] },
+            { "required": ["decision"] },
+            { "required": ["effect_type"] },
+            { "required": ["resource"] },
+            { "required": ["approval_ticket_id"] }
+          ]
+        }
+      }
+    }
+  ],
+  "required": ["schema_version", "event_id", "sequence", "run_id", "previous_event_hash", "event_hash", "type", "status"],
+  "properties": {
+    "schema_version": { "const": "covenant.event.v1" },
+    "event_id": { "type": "string", "pattern": "^event-[0-9]{6}$" },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "run_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "previous_event_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "event_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "type": {
+      "enum": ["run_started", "task_started", "policy_decided", "artifact_recorded", "task_finished", "run_finished"]
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "status": { "enum": ["success", "failed"] },
+    "message": { "type": "string" },
+    "artifact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+      }
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^policy-[a-z0-9_-]+-[0-9]+$"
+    },
+    "decision": { "enum": ["allow", "deny"] },
+    "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+    "resource": { "type": "string", "minLength": 1 },
+    "approval_ticket_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    }
+  }
+}

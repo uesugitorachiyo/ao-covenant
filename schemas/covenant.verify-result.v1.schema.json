@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.verify-result.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "verified",
+    "run_id",
+    "event_count",
+    "artifact_count",
+    "input_snapshot_count",
+    "failure_count",
+    "failures",
+    "policy_explanations",
+    "ledger_digest",
+    "last_event_hash"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.verify-result.v1" },
+    "verified": { "type": "boolean" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "event_count": { "type": "integer", "minimum": 0 },
+    "artifact_count": { "type": "integer", "minimum": 0 },
+    "input_snapshot_count": { "type": "integer", "minimum": 0 },
+    "failure_count": { "type": "integer", "minimum": 0 },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["failure_id", "event_id", "event_line", "phase", "reason"],
+        "properties": {
+          "failure_id": { "type": "string", "minLength": 1 },
+          "event_id": { "type": "string", "minLength": 1 },
+          "event_line": { "type": "integer", "minimum": 1 },
+          "task_id": { "type": "string", "minLength": 1 },
+          "phase": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "policy_explanations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_id", "task_id", "effect_type", "resource", "decision", "reason", "summary", "detail"],
+        "properties": {
+          "decision_id": { "type": "string", "minLength": 1 },
+          "task_id": { "type": "string", "minLength": 1 },
+          "effect_type": { "type": "string", "minLength": 1 },
+          "resource": { "type": "string", "minLength": 1 },
+          "decision": { "enum": ["allow", "deny"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "approval_ticket_id": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "detail": { "type": "string", "minLength": 1 },
+          "operator_action": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "ledger_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "last_event_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "public_key_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

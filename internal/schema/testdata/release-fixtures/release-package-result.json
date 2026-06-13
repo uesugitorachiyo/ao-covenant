@@ -1,0 +1,46 @@
+{
+  "schema_version": "covenant.release-package-result.v1",
+  "manifest_path": "dist/manifest.json",
+  "checksums_path": "dist/checksums.txt",
+  "signature_path": "dist/manifest.sig.json",
+  "public_key_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "artifact_paths": [
+    "dist/covenant-linux-amd64"
+  ],
+  "manifest": {
+    "schema_version": "covenant.release-manifest.v1",
+    "version": "v0.1.0",
+    "commit": "0123456789abcdef0123456789abcdef01234567",
+    "date": "2026-06-12T12:00:00Z",
+    "artifacts": [
+      {
+        "name": "covenant-linux-amd64",
+        "target": {
+          "os": "linux",
+          "arch": "amd64"
+        },
+        "path": "covenant-linux-amd64",
+        "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "size_bytes": 1048576,
+        "attestations": [
+          {
+            "name": "attestation.intoto.json",
+            "kind": "slsa",
+            "path": "covenant-linux-amd64.attestation.intoto.json",
+            "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "size_bytes": 4096
+          }
+        ]
+      }
+    ],
+    "supplemental_artifacts": [
+      {
+        "kind": "sbom",
+        "name": "sbom.spdx.json",
+        "path": "sbom.spdx.json",
+        "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "size_bytes": 2048
+      }
+    ]
+  }
+}

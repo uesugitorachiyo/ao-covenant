@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.compile-result.v1",
+  "title": "AO Covenant Compile Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_path",
+    "contract_digest",
+    "contract_digest_file"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.compile-result.v1" },
+    "contract_path": { "type": "string", "minLength": 1 },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "contract_digest_file": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.approval-revocations-inspect-result.v1",
+  "title": "AO Covenant Approval Revocations Inspect Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "revocations_path", "revoked_ticket_count", "revocations"],
+  "properties": {
+    "schema_version": { "const": "covenant.approval-revocations-inspect-result.v1" },
+    "revocations_path": { "type": "string", "minLength": 1 },
+    "revoked_ticket_count": { "type": "integer", "minimum": 0 },
+    "revocations": { "$ref": "covenant.approval-revocations.v1" }
+  }
+}

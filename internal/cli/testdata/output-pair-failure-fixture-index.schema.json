@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ao-covenant.output-pair-failure-fixture-index.v1",
+  "title": "AO Covenant Output Pair Failure Fixture Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "fixtures"],
+  "properties": {
+    "schema_version": {
+      "const": "ao-covenant.output-pair-failure-fixture-index.v1"
+    },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["guarantee", "helper_fixture", "compile_fixture", "attach_fixture"],
+        "properties": {
+          "guarantee": {
+            "type": "string",
+            "minLength": 1
+          },
+          "helper_fixture": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^Test[A-Za-z0-9_]+$"
+          },
+          "compile_fixture": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^Test[A-Za-z0-9_]+$"
+          },
+          "attach_fixture": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^Test[A-Za-z0-9_]+$"
+          }
+        }
+      }
+    }
+  }
+}

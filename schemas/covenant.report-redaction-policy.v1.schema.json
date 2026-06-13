@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.report-redaction-policy.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profiles"],
+  "properties": {
+    "schema_version": { "const": "covenant.report-redaction-policy.v1" },
+    "profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9][a-z0-9_-]*$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["redact"],
+          "properties": {
+            "redact": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "enum": ["paths", "digests"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

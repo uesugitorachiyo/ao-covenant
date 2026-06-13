@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ao-covenant.output-failure-fixture-index.v1",
+  "title": "AO Covenant Output Failure Fixture Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "fixtures"],
+  "properties": {
+    "schema_version": {
+      "const": "ao-covenant.output-failure-fixture-index.v1"
+    },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "missing_parent", "parent_file", "directory_target"],
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "missing_parent": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^Test[A-Za-z0-9_]+$"
+          },
+          "parent_file": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^Test[A-Za-z0-9_]+$"
+          },
+          "directory_target": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^Test[A-Za-z0-9_]+$"
+          }
+        }
+      }
+    }
+  }
+}

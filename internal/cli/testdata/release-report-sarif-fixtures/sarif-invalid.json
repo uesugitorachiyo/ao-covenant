@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "AO Covenant Release Inspector",
+          "informationUri": "https://github.com/uesugitorachiyo/ao-covenant",
+          "rules": [
+            {
+              "id": "RELEASE_ARTIFACT_PROBLEM",
+              "shortDescription": {
+                "text": "Release artifact problem"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_ATTESTATION_PROBLEM",
+              "shortDescription": {
+                "text": "Release attestation problem"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_SUPPLEMENTAL_PROBLEM",
+              "shortDescription": {
+                "text": "Release supplemental artifact problem"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_PROBLEM",
+              "shortDescription": {
+                "text": "Release problem"
+              },
+              "help": {
+                "text": ""
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "RELEASE_ARTIFACT_PROBLEM",
+          "level": "error",
+          "message": {
+            "text": "artifact \"covenant-linux-amd64\" sha256 mismatch: got aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa want 1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "covenant-linux-amd64"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "location": "artifact:covenant-linux-amd64",
+            "component": "artifact",
+            "name": "covenant-linux-amd64",
+            "release_dir": "dist/release"
+          }
+        },
+        {
+          "ruleId": "RELEASE_ATTESTATION_PROBLEM",
+          "level": "error",
+          "message": {
+            "text": "attestation \"attestation.intoto.json\" sha256 mismatch: got cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc want 3333333333333333333333333333333333333333333333333333333333333333"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "covenant-linux-amd64.attestation.intoto.json"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "location": "attestation:covenant-linux-amd64/attestation.intoto.json",
+            "component": "attestation",
+            "name": "attestation.intoto.json",
+            "release_dir": "dist/release",
+            "artifact_name": "covenant-linux-amd64"
+          }
+        },
+        {
+          "ruleId": "RELEASE_SUPPLEMENTAL_PROBLEM",
+          "level": "error",
+          "message": {
+            "text": "supplemental \"sbom.spdx.json\" sha256 mismatch: got dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd want 2222222222222222222222222222222222222222222222222222222222222222"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "sbom.spdx.json"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "location": "supplemental:sbom/sbom.spdx.json",
+            "component": "supplemental_artifact",
+            "kind": "sbom",
+            "name": "sbom.spdx.json",
+            "release_dir": "dist/release"
+          }
+        },
+        {
+          "ruleId": "RELEASE_PROBLEM",
+          "level": "error",
+          "message": {
+            "text": "SHA256SUMS contains unmanifested artifact \"extra.bin\""
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "dist/release/SHA256SUMS"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "location": "release",
+            "component": "release",
+            "release_dir": "dist/release"
+          }
+        }
+      ]
+    }
+  ]
+}

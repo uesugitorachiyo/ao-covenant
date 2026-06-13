@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.policy-index-result.v1",
+  "title": "AO Covenant Policy Index Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_count", "policy_decisions", "policy_explanations"],
+  "properties": {
+    "schema_version": { "const": "covenant.policy-index-result.v1" },
+    "policy_count": { "type": "integer", "minimum": 0 },
+    "policy_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["schema_version", "decision_id", "task_id", "effect_type", "resource", "decision", "reason"],
+        "properties": {
+          "schema_version": { "const": "covenant.policy-decision.v1" },
+          "decision_id": { "type": "string", "minLength": 1 },
+          "task_id": { "type": "string", "minLength": 1 },
+          "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+          "resource": { "type": "string", "minLength": 1 },
+          "decision": { "enum": ["allow", "deny"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "approval_ticket_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "policy_explanations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_id", "task_id", "effect_type", "resource", "decision", "reason", "summary", "detail"],
+        "properties": {
+          "decision_id": { "type": "string", "minLength": 1 },
+          "task_id": { "type": "string", "minLength": 1 },
+          "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+          "resource": { "type": "string", "minLength": 1 },
+          "decision": { "enum": ["allow", "deny"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "approval_ticket_id": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "detail": { "type": "string", "minLength": 1 },
+          "operator_action": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

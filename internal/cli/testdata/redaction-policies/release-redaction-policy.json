@@ -1,0 +1,16 @@
+{
+  "schema_version": "covenant.report-redaction-policy.v1",
+  "profiles": {
+    "partner": {
+      "redact": [
+        "paths",
+        "digests"
+      ]
+    },
+    "partner-paths": {
+      "redact": [
+        "paths"
+      ]
+    }
+  }
+}

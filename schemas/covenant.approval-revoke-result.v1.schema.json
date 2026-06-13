@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.approval-revoke-result.v1",
+  "title": "AO Covenant Approval Revoke Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "revocations_path", "revoked_ticket_count", "ticket_id", "revocations"],
+  "properties": {
+    "schema_version": { "const": "covenant.approval-revoke-result.v1" },
+    "revocations_path": { "type": "string", "minLength": 1 },
+    "revoked_ticket_count": { "type": "integer", "minimum": 1 },
+    "ticket_id": { "type": "string", "minLength": 1 },
+    "revocations": { "$ref": "covenant.approval-revocations.v1" }
+  }
+}

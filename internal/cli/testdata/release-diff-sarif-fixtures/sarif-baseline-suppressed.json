@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "AO Covenant Release Diff",
+          "informationUri": "https://github.com/uesugitorachiyo/ao-covenant",
+          "rules": [
+            {
+              "id": "RELEASE_DIFF_METADATA",
+              "shortDescription": {
+                "text": "Release metadata changed"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_DIFF_ARTIFACT",
+              "shortDescription": {
+                "text": "Release artifact changed"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_DIFF_SUPPLEMENTAL_ARTIFACT",
+              "shortDescription": {
+                "text": "Release supplemental artifact changed"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_DIFF_SIGNATURE",
+              "shortDescription": {
+                "text": "Release signature changed"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_DIFF_PROBLEM",
+              "shortDescription": {
+                "text": "Release problem changed"
+              },
+              "help": {
+                "text": ""
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "RELEASE_DIFF_METADATA",
+          "level": "warning",
+          "message": {
+            "text": "v0.1.0 -\u003e v0.2.0"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "dist/v0.2.0/manifest.json"
+                }
+              }
+            }
+          ],
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "accepted fixture version drift"
+            }
+          ],
+          "properties": {
+            "location": "metadata:version",
+            "component": "metadata",
+            "kind": "changed",
+            "name": "version",
+            "release_dir": "dist/v0.2.0"
+          }
+        },
+        {
+          "ruleId": "RELEASE_DIFF_ARTIFACT",
+          "level": "warning",
+          "message": {
+            "text": "darwin/arm64"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "dist/v0.2.0/manifest.json"
+                }
+              }
+            }
+          ],
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "accepted fixture artifact drift"
+            }
+          ],
+          "properties": {
+            "location": "artifacts:covenant-darwin-arm64",
+            "component": "artifacts",
+            "kind": "added",
+            "name": "covenant-darwin-arm64",
+            "release_dir": "dist/v0.2.0"
+          }
+        },
+        {
+          "ruleId": "RELEASE_DIFF_SUPPLEMENTAL_ARTIFACT",
+          "level": "warning",
+          "message": {
+            "text": "sha256 changed"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "dist/v0.2.0/manifest.json"
+                }
+              }
+            }
+          ],
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "accepted fixture supplemental drift"
+            }
+          ],
+          "properties": {
+            "location": "supplemental_artifacts:sbom.spdx.json",
+            "component": "supplemental_artifacts",
+            "kind": "changed",
+            "name": "sbom.spdx.json",
+            "release_dir": "dist/v0.2.0"
+          }
+        },
+        {
+          "ruleId": "RELEASE_DIFF_SIGNATURE",
+          "level": "warning",
+          "message": {
+            "text": "1111111111111111111111111111111111111111111111111111111111111111 -\u003e bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "dist/v0.2.0/manifest.json"
+                }
+              }
+            }
+          ],
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "accepted fixture signature drift"
+            }
+          ],
+          "properties": {
+            "location": "signatures:public_key_sha256",
+            "component": "signatures",
+            "kind": "changed",
+            "name": "public_key_sha256",
+            "release_dir": "dist/v0.2.0"
+          }
+        },
+        {
+          "ruleId": "RELEASE_DIFF_PROBLEM",
+          "level": "warning",
+          "message": {
+            "text": "release signature verification failed"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "dist/v0.1.0/manifest.json"
+                }
+              }
+            }
+          ],
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "accepted fixture problem drift"
+            }
+          ],
+          "properties": {
+            "location": "problems:from",
+            "component": "problems",
+            "kind": "present",
+            "name": "from",
+            "release_dir": "dist/v0.2.0"
+          }
+        }
+      ]
+    }
+  ]
+}

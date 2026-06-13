@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.bundle-signature.v1",
+  "title": "AO Covenant Bundle Signature v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "algorithm", "signed_entry", "public_key_sha256", "signature"],
+  "properties": {
+    "schema_version": { "const": "covenant.bundle-signature.v1" },
+    "algorithm": { "const": "ed25519" },
+    "signed_entry": { "const": "bundle-manifest.json" },
+    "public_key_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+      "minLength": 88,
+      "maxLength": 88
+    }
+  }
+}

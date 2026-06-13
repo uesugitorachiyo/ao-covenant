@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-report-result.v1",
+  "title": "AO Covenant Release Report Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "valid",
+    "format",
+    "audience",
+    "redacted",
+    "redactions",
+    "provenance_summary",
+    "inspection"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.release-report-result.v1"
+    },
+    "valid": {
+      "type": "boolean"
+    },
+    "format": {
+      "const": "json"
+    },
+    "audience": {
+      "enum": ["internal", "external"]
+    },
+    "redacted": {
+      "type": "boolean"
+    },
+    "redactions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": ["paths", "digests"]
+      }
+    },
+    "redaction_profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signature_status",
+        "attestation_verified_count",
+        "attestation_invalid_count",
+        "sbom_verified_count",
+        "sbom_invalid_count",
+        "supplemental_provenance_verified_count",
+        "supplemental_provenance_invalid_count",
+        "invalid_evidence_count"
+      ],
+      "properties": {
+        "signature_status": {
+          "enum": ["unsigned", "present_unverified", "verified", "invalid"]
+        },
+        "attestation_verified_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attestation_invalid_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sbom_verified_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sbom_invalid_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supplemental_provenance_verified_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supplemental_provenance_invalid_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "invalid_evidence_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "inspection": {
+      "$ref": "covenant.release-inspect-result.v1"
+    }
+  }
+}

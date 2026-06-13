@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-package-result.v1",
+  "title": "AO Covenant Release Package Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "manifest_path", "checksums_path", "artifact_paths", "manifest"],
+  "properties": {
+    "schema_version": { "const": "covenant.release-package-result.v1" },
+    "manifest_path": { "type": "string", "minLength": 1 },
+    "checksums_path": { "type": "string", "minLength": 1 },
+    "signature_path": { "type": "string", "minLength": 1 },
+    "public_key_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "artifact_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "manifest": { "$ref": "covenant.release-manifest.v1" }
+  }
+}

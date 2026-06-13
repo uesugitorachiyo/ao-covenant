@@ -1,0 +1,15 @@
+.covenant/
+bin/
+demo-output/
+dist/
+coverage.out
+*.test
+.DS_Store
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+docs/superpowers/

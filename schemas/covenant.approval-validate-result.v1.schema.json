@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.approval-validate-result.v1",
+  "title": "AO Covenant Approval Validate Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "valid", "ticket_id"],
+  "properties": {
+    "schema_version": { "const": "covenant.approval-validate-result.v1" },
+    "valid": { "const": true },
+    "ticket_id": { "type": "string", "minLength": 1 },
+    "contract_path": { "type": "string", "minLength": 1 }
+  }
+}

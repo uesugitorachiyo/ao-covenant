@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.bundle-keygen-result.v1",
+  "title": "AO Covenant Bundle Keygen Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "private_key_path", "public_key_path", "public_key_sha256"],
+  "properties": {
+    "schema_version": { "const": "covenant.bundle-keygen-result.v1" },
+    "private_key_path": { "type": "string", "minLength": 1 },
+    "public_key_path": { "type": "string", "minLength": 1 },
+    "public_key_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

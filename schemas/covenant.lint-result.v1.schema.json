@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.lint-result.v1",
+  "title": "AO Covenant Lint Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "valid", "diagnostics"],
+  "properties": {
+    "schema_version": { "const": "covenant.lint-result.v1" },
+    "valid": { "type": "boolean" },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "severity", "message"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "severity": { "enum": ["error", "warning", "info"] },
+          "line": { "type": "integer", "minimum": 1 },
+          "field": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 },
+          "hint": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-diff-result.v1",
+  "title": "AO Covenant Release Diff Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "from_dir", "to_dir", "changed", "redacted", "redactions", "entries"],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.release-diff-result.v1"
+    },
+    "from_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "to_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed": {
+      "type": "boolean"
+    },
+    "redacted": {
+      "type": "boolean"
+    },
+    "redactions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": ["paths", "digests"]
+      }
+    },
+    "redaction_profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category", "action", "name", "detail"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "artifacts",
+              "metadata",
+              "problems",
+              "signatures",
+              "supplemental_artifacts"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": ["added", "changed", "present", "removed"]
+          },
+          "name": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

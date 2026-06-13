@@ -1,0 +1,78 @@
+{
+  "schema_version": "covenant.release-report-result.v1",
+  "valid": true,
+  "format": "json",
+  "audience": "external",
+  "redacted": true,
+  "redactions": [
+    "paths",
+    "digests"
+  ],
+  "redaction_profile": "partner",
+  "provenance_summary": {
+    "signature_status": "verified",
+    "attestation_verified_count": 1,
+    "attestation_invalid_count": 0,
+    "sbom_verified_count": 1,
+    "sbom_invalid_count": 0,
+    "supplemental_provenance_verified_count": 1,
+    "supplemental_provenance_invalid_count": 0,
+    "invalid_evidence_count": 0
+  },
+  "inspection": {
+    "schema_version": "covenant.release-inspect-result.v1",
+    "release_dir": "[REDACTED_PATH]",
+    "manifest_path": "[REDACTED_PATH]",
+    "checksums_path": "[REDACTED_PATH]",
+    "signature_path": "[REDACTED_PATH]",
+    "manifest_valid": true,
+    "checksum_status": "verified",
+    "signature": {
+      "status": "verified",
+      "algorithm": "ed25519",
+      "signed_entry": "manifest.json",
+      "public_key_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "artifact_count": 1,
+    "artifacts": [
+      {
+        "name": "covenant-linux-amd64",
+        "target": {
+          "os": "linux",
+          "arch": "amd64"
+        },
+        "path": "[REDACTED_PATH]",
+        "verified": true,
+        "path_valid": true,
+        "digest_verified": true,
+        "size_verified": true,
+        "checksum_verified": true,
+        "metadata_verified": true,
+        "host_metadata_checked": true,
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "size_bytes": 1048576,
+        "actual_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "actual_size_bytes": 1048576,
+        "problems": [],
+        "attestations": [
+          {
+            "name": "attestation.intoto.json",
+            "kind": "slsa",
+            "path": "[REDACTED_PATH]",
+            "verified": true,
+            "path_valid": true,
+            "digest_verified": true,
+            "size_verified": true,
+            "checksum_verified": true,
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "size_bytes": 4096,
+            "actual_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "actual_size_bytes": 4096,
+            "problems": []
+          }
+        ]
+      }
+    ],
+    "problems": []
+  }
+}

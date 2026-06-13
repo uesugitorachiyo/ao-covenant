@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "AO Covenant Release Inspector",
+          "informationUri": "https://github.com/uesugitorachiyo/ao-covenant",
+          "rules": [
+            {
+              "id": "RELEASE_ARTIFACT_PROBLEM",
+              "shortDescription": {
+                "text": "Release artifact problem"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_ATTESTATION_PROBLEM",
+              "shortDescription": {
+                "text": "Release attestation problem"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_SUPPLEMENTAL_PROBLEM",
+              "shortDescription": {
+                "text": "Release supplemental artifact problem"
+              },
+              "help": {
+                "text": ""
+              }
+            },
+            {
+              "id": "RELEASE_PROBLEM",
+              "shortDescription": {
+                "text": "Release problem"
+              },
+              "help": {
+                "text": ""
+              }
+            }
+          ]
+        }
+      },
+      "results": []
+    }
+  ]
+}

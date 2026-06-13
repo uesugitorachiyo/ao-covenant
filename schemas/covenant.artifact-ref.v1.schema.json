@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.artifact-ref.v1",
+  "title": "AO Covenant Artifact Reference v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "artifact_id", "uri", "digest", "media_type", "producer_event_id", "path"],
+  "properties": {
+    "schema_version": { "const": "covenant.artifact-ref.v1" },
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "uri": { "type": "string", "pattern": "^covenant-artifact://sha256/[a-f0-9]{64}$" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "media_type": { "type": "string", "minLength": 1 },
+    "producer_event_id": { "type": "string", "pattern": "^event-[0-9]{6}$" },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!\\.\\.($|/))(?!.*(^|/)\\.\\.(/|$)).+$"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "covenant.release-diff-result.v1",
+  "from_dir": "dist-v0.1.0",
+  "to_dir": "dist-v0.2.0",
+  "changed": true,
+  "redacted": false,
+  "redactions": [],
+  "entries": [
+    {
+      "category": "artifacts",
+      "action": "changed",
+      "name": "covenant-linux-amd64",
+      "detail": "sha256 changed"
+    },
+    {
+      "category": "metadata",
+      "action": "changed",
+      "name": "version",
+      "detail": "v0.1.0 -\u003e v0.2.0"
+    },
+    {
+      "category": "problems",
+      "action": "present",
+      "name": "to",
+      "detail": "SHA256SUMS contains unmanifested artifact \"extra.bin\""
+    }
+  ]
+}

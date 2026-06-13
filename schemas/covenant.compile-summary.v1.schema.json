@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.compile-summary.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract", "contract_digest", "reads", "writes", "tasks", "obligations"],
+  "properties": {
+    "schema_version": { "const": "covenant.compile-summary.v1" },
+    "contract": { "type": "string", "minLength": 1 },
+    "contract_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "reads": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "writes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "tasks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/task_summary" }
+    },
+    "obligations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/obligation_summary" }
+    }
+  },
+  "$defs": {
+    "task_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "depends_on", "obligations"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "minLength": 1 },
+        "depends_on": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "obligations": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "obligation_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "required", "text"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" },
+        "text": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

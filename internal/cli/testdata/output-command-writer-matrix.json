@@ -1,0 +1,54 @@
+{
+  "schema_version": "ao-covenant.output-command-writer-matrix.v1",
+  "commands": [
+    {
+      "command": "compile --out",
+      "function": "runCompile",
+      "writer": "writeOutputPairWithRollback",
+      "contract": "output pair with digest sidecar rollback",
+      "call": "writeOutputPairWithRollback(\"compile"
+    },
+    {
+      "command": "schema validate --out",
+      "function": "writeSchemaValidationOutput",
+      "writer": "writeNamedOutputFile",
+      "contract": "named output marker schema_validation_report",
+      "call": "writeNamedOutputFile(stdout, \"schema validate"
+    },
+    {
+      "command": "release report --out",
+      "function": "writeReleaseReportOutput",
+      "writer": "writeNamedOutputFile",
+      "contract": "named output marker release_report",
+      "call": "writeNamedOutputFile(stdout, \"release report"
+    },
+    {
+      "command": "release diff --out",
+      "function": "writeReleaseDiffOutput",
+      "writer": "writeNamedOutputFile",
+      "contract": "named output marker release_diff",
+      "call": "writeNamedOutputFile(stdout, \"release diff"
+    },
+    {
+      "command": "approval create --out",
+      "function": "runApprovalCreate",
+      "writer": "writeOutputFileBytes",
+      "contract": "single artifact full-file write",
+      "call": "writeOutputFileBytes(\"approval create"
+    },
+    {
+      "command": "approval attach --out",
+      "function": "runApprovalAttach",
+      "writer": "writeOutputPairWithRollback",
+      "contract": "output pair with digest sidecar rollback",
+      "call": "writeOutputPairWithRollback(\"approval attach"
+    },
+    {
+      "command": "approval revoke --out",
+      "function": "runApprovalRevoke",
+      "writer": "writeOutputFileBytes",
+      "contract": "single artifact full-file write; append mode validates before rewrite",
+      "call": "writeOutputFileBytes(\"approval revoke"
+    }
+  ]
+}

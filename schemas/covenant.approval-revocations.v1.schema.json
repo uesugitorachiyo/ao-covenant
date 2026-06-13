@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.approval-revocations.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "revoked_tickets"],
+  "properties": {
+    "schema_version": { "const": "covenant.approval-revocations.v1" },
+    "revoked_tickets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ticket_id", "reason"],
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]*$"
+          },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

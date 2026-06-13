@@ -1,0 +1,29 @@
+{
+  "schema_version": "ao-covenant.output-pair-failure-fixture-index.v1",
+  "fixtures": [
+    {
+      "guarantee": "primary failure does not create sidecar",
+      "helper_fixture": "TestWriteOutputPairWithRollbackDoesNotWriteSidecarWhenOutputWriteFails",
+      "compile_fixture": "TestCompileCommandRejectsOutputFileWithParentFile",
+      "attach_fixture": "TestApprovalAttachRejectsOutputPathWithParentFile"
+    },
+    {
+      "guarantee": "sidecar failure removes new primary",
+      "helper_fixture": "TestWriteOutputPairWithRollbackRemovesNewOutputOnSidecarFailure",
+      "compile_fixture": "TestCompileCommandRemovesNewContractWhenDigestSidecarFails",
+      "attach_fixture": "TestApprovalAttachRemovesNewContractWhenDigestSidecarFails"
+    },
+    {
+      "guarantee": "sidecar failure restores existing primary",
+      "helper_fixture": "TestWriteOutputPairWithRollbackRestoresExistingOutputContentOnSidecarFailure",
+      "compile_fixture": "TestCompileCommandPreservesExistingContractWhenDigestSidecarFails",
+      "attach_fixture": "TestApprovalAttachPreservesExistingContractWhenDigestSidecarFails"
+    },
+    {
+      "guarantee": "rollback failure reports both failures",
+      "helper_fixture": "TestWriteOutputPairWithRollbackReportsRollbackFailure",
+      "compile_fixture": "TestCompileCommandReportsRollbackFailureWhenDigestSidecarFails",
+      "attach_fixture": "TestApprovalAttachReportsRollbackFailureWhenDigestSidecarFails"
+    }
+  ]
+}

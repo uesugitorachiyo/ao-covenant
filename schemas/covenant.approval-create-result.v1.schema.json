@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.approval-create-result.v1",
+  "title": "AO Covenant Approval Create Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "ticket_path", "ticket"],
+  "properties": {
+    "schema_version": { "const": "covenant.approval-create-result.v1" },
+    "ticket_path": { "type": "string", "minLength": 1 },
+    "ticket": { "$ref": "covenant.approval-ticket.v1" }
+  }
+}

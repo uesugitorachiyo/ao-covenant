@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.policy-decision.v1",
+  "title": "AO Covenant Policy Decision v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "decision_id", "task_id", "effect_type", "resource", "decision", "reason"],
+  "properties": {
+    "schema_version": { "const": "covenant.policy-decision.v1" },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+    "resource": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!\\.\\.($|/))(?!.*(^|/)\\.\\.(/|$)).+$"
+    },
+    "decision": { "enum": ["allow", "deny"] },
+    "reason": { "type": "string", "minLength": 1 },
+    "approval_ticket_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    }
+  }
+}

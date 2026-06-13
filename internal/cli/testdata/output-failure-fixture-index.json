@@ -1,0 +1,47 @@
+{
+  "schema_version": "ao-covenant.output-failure-fixture-index.v1",
+  "fixtures": [
+    {
+      "command": "compile --out",
+      "missing_parent": "TestCompileCommandRejectsOutputFileWithMissingParent",
+      "parent_file": "TestCompileCommandRejectsOutputFileWithParentFile",
+      "directory_target": "TestCompileCommandRejectsOutputFileDirectoryTarget"
+    },
+    {
+      "command": "schema validate --out",
+      "missing_parent": "TestSchemaValidateCommandJSONRejectsOutputFileWithMissingParent",
+      "parent_file": "TestSchemaValidateCommandJSONRejectsOutputFileWithParentFile",
+      "directory_target": "TestSchemaValidateCommandJSONRejectsOutputFileDirectoryTarget"
+    },
+    {
+      "command": "release report --out",
+      "missing_parent": "TestReleaseReportCommandRejectsOutputFileWithMissingParent",
+      "parent_file": "TestReleaseReportCommandRejectsOutputFileWithParentFile",
+      "directory_target": "TestReleaseReportCommandRejectsOutputFileDirectoryTarget"
+    },
+    {
+      "command": "release diff --out",
+      "missing_parent": "TestReleaseDiffCommandRejectsOutputFileWithMissingParent",
+      "parent_file": "TestReleaseDiffCommandRejectsOutputFileWithParentFile",
+      "directory_target": "TestReleaseDiffCommandRejectsOutputFileDirectoryTarget"
+    },
+    {
+      "command": "approval create --out",
+      "missing_parent": "TestApprovalCreateRejectsOutputPathWithMissingParent",
+      "parent_file": "TestApprovalCreateRejectsOutputPathWithParentFile",
+      "directory_target": "TestApprovalCreateRejectsOutputPathDirectoryTarget"
+    },
+    {
+      "command": "approval attach --out",
+      "missing_parent": "TestApprovalAttachRejectsOutputPathWithMissingParent",
+      "parent_file": "TestApprovalAttachRejectsOutputPathWithParentFile",
+      "directory_target": "TestApprovalAttachRejectsOutputPathDirectoryTarget"
+    },
+    {
+      "command": "approval revoke --out",
+      "missing_parent": "TestApprovalRevokeRejectsOutputPathWithMissingParent",
+      "parent_file": "TestApprovalRevokeRejectsOutputPathWithParentFile",
+      "directory_target": "TestApprovalRevokeRejectsOutputPathDirectoryTarget"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.approval-attach-result.v1",
+  "title": "AO Covenant Approval Attach Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract_path", "contract_digest", "approval_count", "ticket_id"],
+  "properties": {
+    "schema_version": { "const": "covenant.approval-attach-result.v1" },
+    "contract_path": { "type": "string", "minLength": 1 },
+    "contract_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "approval_count": { "type": "integer", "minimum": 1 },
+    "ticket_id": { "type": "string", "minLength": 1 }
+  }
+}

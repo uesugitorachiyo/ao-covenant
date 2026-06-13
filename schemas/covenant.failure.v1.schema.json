@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.failure.v1",
+  "title": "AO Covenant Failure Evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "failure_id", "event_id", "phase", "reason"],
+  "properties": {
+    "schema_version": { "const": "covenant.failure.v1" },
+    "failure_id": { "type": "string", "pattern": "^failure-[0-9]{6}$" },
+    "event_id": { "type": "string", "pattern": "^event-[0-9]{6}$" },
+    "task_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "phase": { "enum": ["policy", "adapter", "execution", "closure"] },
+    "reason": { "type": "string", "minLength": 1 }
+  }
+}

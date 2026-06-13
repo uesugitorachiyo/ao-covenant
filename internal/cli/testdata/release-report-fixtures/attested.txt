@@ -1,0 +1,31 @@
+AO Covenant Release Report
+release_dir: dist/release
+manifest_valid=true
+manifest: dist/release/manifest.json (valid)
+manifest=dist/release/manifest.json
+checksums: dist/release/SHA256SUMS (verified)
+checksums=dist/release/SHA256SUMS
+checksum_status=verified
+signature: verified
+signature=verified
+signature_file: dist/release/release-signature.json
+public_key_sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+public_key_sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+signature_public_key_sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+artifacts: 1
+artifact_count=1
+- covenant-linux-amd64 (linux/amd64): verified
+  path: covenant-linux-amd64
+  digest: verified
+  size: verified
+  checksum: verified
+  metadata: verified
+  attestation_kind: slsa
+  attestation: attestation.intoto.json [slsa] (verified)
+provenance_summary:
+  signature: verified
+  attestations: 1 verified, 0 invalid
+  supplemental_sbom: 0 verified, 0 invalid
+  supplemental_provenance: 0 verified, 0 invalid
+  invalid_evidence: 0
+problems: none

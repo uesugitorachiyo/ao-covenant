@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-fixture-index.v1",
+  "title": "AO Covenant Release Fixture Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "fixtures"],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.release-fixture-index.v1"
+    },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "directory",
+          "purpose",
+          "generated",
+          "check_command",
+          "files"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "directory": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^internal/(cli|schema)/testdata/[A-Za-z0-9._/-]+$"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1
+          },
+          "generated": {
+            "type": "boolean"
+          },
+          "refresh_command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "check_command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9._-]+$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

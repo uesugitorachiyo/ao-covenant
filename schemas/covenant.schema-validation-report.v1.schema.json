@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.schema-validation-report.v1",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "oneOf": [
+    { "$ref": "#/$defs/single_report" },
+    { "$ref": "#/$defs/batch_report" }
+  ],
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "input_mode", "source"],
+      "properties": {
+        "command": { "const": "schema validate" },
+        "input_mode": { "enum": ["file", "stdin", "dir", "files-from"] },
+        "source": { "type": "string", "minLength": 1 },
+        "explicit_schema_id": { "type": "string", "minLength": 1 },
+        "schema_filters": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "ignore_patterns": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "fail_fast": { "type": "boolean" }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_id", "file", "valid"],
+      "properties": {
+        "schema_version": { "const": "covenant.schema-validation-report.v1" },
+        "metadata": { "$ref": "#/$defs/metadata" },
+        "schema_id": { "type": "string", "minLength": 1 },
+        "file": { "type": "string", "minLength": 1 },
+        "valid": { "type": "boolean" },
+        "error": { "type": "string", "minLength": 1 },
+        "location": { "type": "string", "minLength": 1 }
+      }
+    },
+    "schema_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_id"],
+      "properties": {
+        "schema_id": { "type": "string", "minLength": 1 },
+        "total": { "type": "integer", "minimum": 0 },
+        "valid_count": { "type": "integer", "minimum": 0 },
+        "invalid_count": { "type": "integer", "minimum": 0 },
+        "skipped_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ignored_document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "pattern"],
+      "properties": {
+        "file": { "type": "string", "minLength": 1 },
+        "pattern": { "type": "string", "minLength": 1 }
+      }
+    },
+    "single_report": {
+      "allOf": [
+        { "$ref": "#/$defs/validation" },
+        { "required": ["schema_version"] }
+      ]
+    },
+    "batch_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "metadata", "valid", "total", "valid_count", "invalid_count", "validations"],
+      "properties": {
+        "schema_version": { "const": "covenant.schema-validation-report.v1" },
+        "metadata": { "$ref": "#/$defs/metadata" },
+        "valid": { "type": "boolean" },
+        "total": { "type": "integer", "minimum": 0 },
+        "valid_count": { "type": "integer", "minimum": 0 },
+        "invalid_count": { "type": "integer", "minimum": 0 },
+        "skipped_count": { "type": "integer", "minimum": 0 },
+        "ignored_count": { "type": "integer", "minimum": 0 },
+        "schemas": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/schema_summary" }
+        },
+        "ignored": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ignored_document" }
+        },
+        "validations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/validation" }
+        }
+      }
+    }
+  }
+}

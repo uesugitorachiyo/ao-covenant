@@ -1,0 +1,33 @@
+AO Covenant Release Report
+release_dir: [REDACTED_PATH]
+manifest_valid=true
+manifest: [REDACTED_PATH] (valid)
+manifest=[REDACTED_PATH]
+checksums: [REDACTED_PATH] (invalid)
+checksums=[REDACTED_PATH]
+checksum_status=invalid
+signature: verified
+signature=verified
+signature_file: [REDACTED_PATH]
+public_key_sha256: [REDACTED_DIGEST]
+public_key_sha256=[REDACTED_DIGEST]
+signature_public_key_sha256=[REDACTED_DIGEST]
+artifacts: 1
+artifact_count=1
+- covenant-linux-amd64 (linux/amd64): invalid
+  path: [REDACTED_PATH]
+  digest: invalid
+  size: verified
+  checksum: verified
+  metadata: verified
+provenance_summary:
+  signature: verified
+  attestations: 0 verified, 0 invalid
+  supplemental_sbom: 0 verified, 0 invalid
+  supplemental_provenance: 0 verified, 0 invalid
+  invalid_evidence: 0
+problems:
+- artifact "covenant-linux-amd64" sha256 mismatch: got [REDACTED_DIGEST] want [REDACTED_DIGEST]
+problem: artifact "covenant-linux-amd64" sha256 mismatch: got [REDACTED_DIGEST] want [REDACTED_DIGEST]
+- release used dist/release/covenant-linux-amd64 digest [REDACTED_DIGEST]
+problem: release used dist/release/covenant-linux-amd64 digest [REDACTED_DIGEST]

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.closure-matrix.v1",
+  "title": "AO Covenant Closure Matrix v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "contract_digest", "status", "rows"],
+  "properties": {
+    "schema_version": { "const": "covenant.closure-matrix.v1" },
+    "run_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "contract_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "status": { "enum": ["accepted", "rejected"] },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["obligation_id", "required", "status", "task_ids", "artifact_ids", "policy_decision_ids", "reason"],
+        "properties": {
+          "obligation_id": {
+            "type": "string",
+            "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+          },
+          "required": { "type": "boolean" },
+          "status": { "enum": ["closed", "open"] },
+          "task_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+            }
+          },
+          "artifact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+            }
+          },
+          "policy_decision_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+            }
+          },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

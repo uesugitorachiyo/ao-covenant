@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.schema-export-result.v1",
+  "title": "AO Covenant Schema Export Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "schemas"],
+  "properties": {
+    "schema_version": { "const": "covenant.schema-export-result.v1" },
+    "schemas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "file_name", "schema_path", "written_path"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "file_name": { "type": "string", "pattern": "^covenant\\.[a-z0-9.-]+\\.v[0-9]+\\.schema\\.json$" },
+          "schema_path": { "type": "string", "pattern": "^schemas/covenant\\.[a-z0-9.-]+\\.v[0-9]+\\.schema\\.json$" },
+          "written_path": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

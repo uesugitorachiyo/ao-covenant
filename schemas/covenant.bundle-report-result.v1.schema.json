@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.bundle-report-result.v1",
+  "title": "AO Covenant Bundle Report Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundle_path",
+    "schema_version",
+    "run_id",
+    "contract_digest",
+    "ledger_digest",
+    "entry_count",
+    "checksum_status",
+    "signature",
+    "verification",
+    "event_count",
+    "artifact_count",
+    "input_snapshot_count",
+    "policy_decision_count",
+    "closure_row_count",
+    "failure_count",
+    "revocation_list_count",
+    "revoked_ticket_count",
+    "entries",
+    "events",
+    "artifacts",
+    "input_snapshots",
+    "policy_decisions",
+    "policy_explanations",
+    "failures",
+    "closure_rows"
+  ],
+  "properties": {
+    "bundle_path": { "type": "string", "minLength": 1 },
+    "schema_version": { "const": "covenant.bundle-report-result.v1" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "contract_digest": { "type": "string", "minLength": 1 },
+    "ledger_digest": { "type": "string", "minLength": 1 },
+    "entry_count": { "type": "integer", "minimum": 0 },
+    "checksum_status": { "enum": ["verified"] },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["unsigned", "present_unverified", "verified"] },
+        "algorithm": { "type": "string", "minLength": 1 },
+        "signed_entry": { "type": "string", "minLength": 1 },
+        "public_key_sha256": { "type": "string", "minLength": 1 }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified", "event_count", "artifact_count", "input_snapshot_count", "failure_count"],
+      "properties": {
+        "verified": { "type": "boolean" },
+        "event_count": { "type": "integer", "minimum": 0 },
+        "artifact_count": { "type": "integer", "minimum": 0 },
+        "input_snapshot_count": { "type": "integer", "minimum": 0 },
+        "failure_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "event_count": { "type": "integer", "minimum": 0 },
+    "artifact_count": { "type": "integer", "minimum": 0 },
+    "input_snapshot_count": { "type": "integer", "minimum": 0 },
+    "policy_decision_count": { "type": "integer", "minimum": 0 },
+    "closure_row_count": { "type": "integer", "minimum": 0 },
+    "failure_count": { "type": "integer", "minimum": 0 },
+    "revocation_list_count": { "type": "integer", "minimum": 0 },
+    "revoked_ticket_count": { "type": "integer", "minimum": 0 },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "source", "sha256", "size_bytes"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "minLength": 1 },
+          "size_bytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["event_id", "sequence", "line", "type", "status"],
+        "properties": {
+          "event_id": { "type": "string", "minLength": 1 },
+          "sequence": { "type": "integer", "minimum": 1 },
+          "line": { "type": "integer", "minimum": 1 },
+          "type": { "enum": ["run_started", "task_started", "policy_decided", "artifact_recorded", "task_finished", "run_finished"] },
+          "task_id": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["success", "failed"] },
+          "message": { "type": "string" },
+          "artifact_ids": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "decision_id": { "type": "string", "minLength": 1 },
+          "decision": { "enum": ["allow", "deny"] },
+          "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+          "resource": { "type": "string", "minLength": 1 },
+          "approval_ticket_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "path", "digest", "media_type", "producer_event_id", "producer_found"],
+        "properties": {
+          "artifact_id": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "digest": { "type": "string", "minLength": 1 },
+          "media_type": { "type": "string", "minLength": 1 },
+          "producer_event_id": { "type": "string", "minLength": 1 },
+          "producer_task_id": { "type": "string", "minLength": 1 },
+          "producer_found": { "type": "boolean" }
+        }
+      }
+    },
+    "input_snapshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["snapshot_id", "source_path", "snapshot_path", "digest", "media_type"],
+        "properties": {
+          "snapshot_id": { "type": "string", "minLength": 1 },
+          "source_path": { "type": "string", "minLength": 1 },
+          "snapshot_path": { "type": "string", "minLength": 1 },
+          "digest": { "type": "string", "minLength": 1 },
+          "media_type": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "policy_decisions": {
+      "type": "array",
+      "items": { "$ref": "covenant.policy-decision.v1" }
+    },
+    "policy_explanations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_id", "task_id", "effect_type", "resource", "decision", "reason", "summary", "detail"],
+        "properties": {
+          "decision_id": { "type": "string", "minLength": 1 },
+          "task_id": { "type": "string", "minLength": 1 },
+          "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+          "resource": { "type": "string", "minLength": 1 },
+          "decision": { "enum": ["allow", "deny"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "approval_ticket_id": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "detail": { "type": "string", "minLength": 1 },
+          "operator_action": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["failure_id", "event_id", "event_line", "event_found", "phase", "reason"],
+        "properties": {
+          "failure_id": { "type": "string", "minLength": 1 },
+          "event_id": { "type": "string", "minLength": 1 },
+          "event_line": { "type": "integer", "minimum": 0 },
+          "event_found": { "type": "boolean" },
+          "task_id": { "type": "string", "minLength": 1 },
+          "phase": { "enum": ["policy", "adapter", "execution", "closure"] },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "closure_rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "obligation_id",
+          "required",
+          "status",
+          "task_ids",
+          "artifact_ids",
+          "missing_artifact_ids",
+          "policy_decision_ids",
+          "missing_policy_decision_ids",
+          "reason"
+        ],
+        "properties": {
+          "obligation_id": { "type": "string", "minLength": 1 },
+          "required": { "type": "boolean" },
+          "status": { "enum": ["closed", "open"] },
+          "task_ids": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "artifact_ids": {
+            "type": ["array", "null"],
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "missing_artifact_ids": {
+            "type": ["array", "null"],
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "policy_decision_ids": {
+            "type": ["array", "null"],
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "missing_policy_decision_ids": {
+            "type": ["array", "null"],
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "revocations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "revoked_count", "revoked_tickets"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "revoked_count": { "type": "integer", "minimum": 0 },
+          "revoked_tickets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["ticket_id", "reason"],
+              "properties": {
+                "ticket_id": { "type": "string", "minLength": 1 },
+                "reason": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

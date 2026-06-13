@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.approval-ticket.v1",
+  "title": "AO Covenant Approval Ticket v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "ticket_id", "task_id", "effect_type", "resource", "approved", "reason"],
+  "properties": {
+    "schema_version": { "const": "covenant.approval-ticket.v1" },
+    "ticket_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+    "resource": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!\\.\\.($|/))(?!.*(^|/)\\.\\.(/|$)).+$"
+    },
+    "approved": { "type": "boolean" },
+    "reason": { "type": "string", "minLength": 1 },
+    "operator_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.task.v1",
+  "title": "AO Covenant Task v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "adapter", "depends_on", "obligations", "timeout_seconds"],
+  "properties": {
+    "id": { "$ref": "#/$defs/portable_id" },
+    "kind": { "enum": ["scripted", "shell", "agent", "verify", "review", "evaluate"] },
+    "adapter": { "type": "string", "minLength": 1 },
+    "depends_on": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/portable_id" }
+    },
+    "obligations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/portable_id" }
+    },
+    "timeout_seconds": { "type": "integer", "minimum": 1 },
+    "declared_side_effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "resource"],
+        "properties": {
+          "type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+          "resource": { "$ref": "#/$defs/workspace_path" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "portable_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9_-]+$"
+    },
+    "workspace_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!\\.\\.($|/))(?!.*(^|/)\\.\\.(/|$)).+$"
+    }
+  }
+}

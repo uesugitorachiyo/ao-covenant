@@ -1,0 +1,7 @@
+{
+  "schema_version": "covenant.release-signature.v1",
+  "algorithm": "ed25519",
+  "signed_entry": "manifest.json",
+  "public_key_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+}

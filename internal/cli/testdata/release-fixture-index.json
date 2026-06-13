@@ -1,0 +1,77 @@
+{
+  "schema_version": "covenant.release-fixture-index.v1",
+  "fixtures": [
+    {
+      "name": "release-json",
+      "directory": "internal/schema/testdata/release-fixtures",
+      "purpose": "Stable public release JSON examples for package, verify, inspect, report, diff, signature, and redacted consumer contracts.",
+      "generated": true,
+      "refresh_command": "COVENANT_UPDATE_RELEASE_FIXTURES=1 go test ./internal/release -run 'ReleaseJSONFixturesMatchGeneratedGoldenFiles' -count=1",
+      "check_command": "go test ./internal/schema -run 'ReleaseJSONFixtures' -count=1",
+      "files": [
+        "release-diff-result-redacted.json",
+        "release-diff-result.json",
+        "release-inspect-result-redacted.json",
+        "release-inspect-result.json",
+        "release-package-result.json",
+        "release-report-result-redacted.json",
+        "release-report-result.json",
+        "release-signature.json",
+        "release-verify-result.json"
+      ]
+    },
+    {
+      "name": "release-report-text",
+      "directory": "internal/cli/testdata/release-report-fixtures",
+      "purpose": "Stable text and Markdown release report output examples.",
+      "generated": true,
+      "refresh_command": "COVENANT_UPDATE_RELEASE_REPORT_FIXTURES=1 go test ./internal/cli -run 'ReleaseReportTextFixtures' -count=1",
+      "check_command": "go test ./internal/cli -run 'ReleaseReportTextFixtures' -count=1",
+      "files": [
+        "attested.txt",
+        "invalid.txt",
+        "markdown-invalid-redacted.md",
+        "markdown-valid.md",
+        "redacted.txt",
+        "supplemental.txt",
+        "valid.txt"
+      ]
+    },
+    {
+      "name": "release-report-sarif",
+      "directory": "internal/cli/testdata/release-report-sarif-fixtures",
+      "purpose": "Stable release report SARIF examples for valid, invalid, and baseline-suppressed reports.",
+      "generated": true,
+      "refresh_command": "COVENANT_UPDATE_RELEASE_REPORT_FIXTURES=1 go test ./internal/cli -run 'ReleaseReportSARIFFixtures' -count=1",
+      "check_command": "go test ./internal/cli -run 'ReleaseReportSARIFFixtures' -count=1",
+      "files": [
+        "sarif-baseline-suppressed.json",
+        "sarif-invalid.json",
+        "sarif-valid.json"
+      ]
+    },
+    {
+      "name": "release-diff-sarif",
+      "directory": "internal/cli/testdata/release-diff-sarif-fixtures",
+      "purpose": "Stable release diff SARIF examples for matching, changed, and baseline-suppressed drift.",
+      "generated": true,
+      "refresh_command": "COVENANT_UPDATE_RELEASE_DIFF_FIXTURES=1 go test ./internal/cli -run 'ReleaseDiffSARIFFixtures' -count=1",
+      "check_command": "go test ./internal/cli -run 'ReleaseDiffSARIFFixtures' -count=1",
+      "files": [
+        "sarif-baseline-suppressed.json",
+        "sarif-changed.json",
+        "sarif-matching.json"
+      ]
+    },
+    {
+      "name": "release-redaction-policy",
+      "directory": "internal/cli/testdata/redaction-policies",
+      "purpose": "Stable release redaction policy example shared by inspect, report, and diff policy-profile tests.",
+      "generated": false,
+      "check_command": "go test ./internal/cli -run 'ReleaseRedactionPolicyFixture' -count=1",
+      "files": [
+        "release-redaction-policy.json"
+      ]
+    }
+  ]
+}

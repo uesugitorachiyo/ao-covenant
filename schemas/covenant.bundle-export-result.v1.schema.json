@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.bundle-export-result.v1",
+  "title": "AO Covenant Bundle Export Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "bundle_path", "entry_count", "manifest"],
+  "properties": {
+    "schema_version": { "const": "covenant.bundle-export-result.v1" },
+    "bundle_path": { "type": "string", "minLength": 1 },
+    "entry_count": { "type": "integer", "minimum": 1 },
+    "public_key_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "manifest": { "$ref": "covenant.evidence-bundle.v1" }
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-inspect-result.v1",
+  "title": "AO Covenant Release Inspect Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release_dir",
+    "manifest_path",
+    "checksums_path",
+    "manifest_valid",
+    "checksum_status",
+    "signature",
+    "artifact_count",
+    "artifacts",
+    "problems"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.release-inspect-result.v1" },
+    "release_dir": { "type": "string", "minLength": 1 },
+    "manifest_path": { "type": "string", "minLength": 1 },
+    "checksums_path": { "type": "string", "minLength": 1 },
+    "signature_path": { "type": "string", "minLength": 1 },
+    "manifest_valid": { "type": "boolean" },
+    "checksum_status": { "enum": ["verified", "invalid"] },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["unsigned", "present_unverified", "verified", "invalid"] },
+        "algorithm": { "const": "ed25519" },
+        "signed_entry": { "const": "manifest.json" },
+        "public_key_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "problem": { "type": "string", "minLength": 1 }
+      }
+    },
+    "artifact_count": { "type": "integer", "minimum": 0 },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "target",
+          "path",
+          "verified",
+          "path_valid",
+          "digest_verified",
+          "size_verified",
+          "checksum_verified",
+          "metadata_verified",
+          "host_metadata_checked",
+          "sha256",
+          "size_bytes",
+          "actual_sha256",
+          "actual_size_bytes",
+          "problems"
+        ],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "target": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["os", "arch"],
+            "properties": {
+              "os": { "type": "string", "minLength": 1 },
+              "arch": { "type": "string", "minLength": 1 }
+            }
+          },
+          "path": { "type": "string", "minLength": 1 },
+          "verified": { "type": "boolean" },
+          "path_valid": { "type": "boolean" },
+          "digest_verified": { "type": "boolean" },
+          "size_verified": { "type": "boolean" },
+          "checksum_verified": { "type": "boolean" },
+          "metadata_verified": { "type": "boolean" },
+          "host_metadata_checked": { "type": "boolean" },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "size_bytes": { "type": "integer", "minimum": 0 },
+          "actual_sha256": { "type": "string" },
+          "actual_size_bytes": { "type": "integer", "minimum": 0 },
+          "attestations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "path",
+                "verified",
+                "path_valid",
+                "digest_verified",
+                "size_verified",
+                "checksum_verified",
+                "sha256",
+                "size_bytes",
+                "actual_sha256",
+                "actual_size_bytes",
+                "problems"
+              ],
+              "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "kind": { "type": "string", "minLength": 1 },
+                "path": { "type": "string", "minLength": 1 },
+                "verified": { "type": "boolean" },
+                "path_valid": { "type": "boolean" },
+                "digest_verified": { "type": "boolean" },
+                "size_verified": { "type": "boolean" },
+                "checksum_verified": { "type": "boolean" },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "size_bytes": { "type": "integer", "minimum": 0 },
+                "actual_sha256": { "type": "string" },
+                "actual_size_bytes": { "type": "integer", "minimum": 0 },
+                "problems": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          },
+          "problems": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "supplemental_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "name",
+          "path",
+          "verified",
+          "path_valid",
+          "digest_verified",
+          "size_verified",
+          "checksum_verified",
+          "sha256",
+          "size_bytes",
+          "actual_sha256",
+          "actual_size_bytes",
+          "problems"
+        ],
+        "properties": {
+          "kind": { "enum": ["sbom", "provenance"] },
+          "name": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "verified": { "type": "boolean" },
+          "path_valid": { "type": "boolean" },
+          "digest_verified": { "type": "boolean" },
+          "size_verified": { "type": "boolean" },
+          "checksum_verified": { "type": "boolean" },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "size_bytes": { "type": "integer", "minimum": 0 },
+          "actual_sha256": { "type": "string" },
+          "actual_size_bytes": { "type": "integer", "minimum": 0 },
+          "problems": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "problems": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

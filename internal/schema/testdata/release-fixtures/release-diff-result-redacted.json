@@ -1,0 +1,26 @@
+{
+  "schema_version": "covenant.release-diff-result.v1",
+  "from_dir": "[REDACTED_PATH]",
+  "to_dir": "[REDACTED_PATH]",
+  "changed": true,
+  "redacted": true,
+  "redactions": [
+    "paths",
+    "digests"
+  ],
+  "redaction_profile": "partner",
+  "entries": [
+    {
+      "category": "metadata",
+      "action": "changed",
+      "name": "version",
+      "detail": "v0.1.0 -\u003e v0.2.0"
+    },
+    {
+      "category": "signatures",
+      "action": "changed",
+      "name": "public_key_sha256",
+      "detail": "[REDACTED_DIGEST] -\u003e [REDACTED_DIGEST]"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+AO Covenant Release Report
+release_dir: dist/release
+manifest_valid=true
+manifest: dist/release/manifest.json (valid)
+manifest=dist/release/manifest.json
+checksums: dist/release/SHA256SUMS (invalid)
+checksums=dist/release/SHA256SUMS
+checksum_status=invalid
+signature: verified
+signature=verified
+signature_file: dist/release/release-signature.json
+public_key_sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+public_key_sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+signature_public_key_sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+artifacts: 1
+artifact_count=1
+- covenant-linux-amd64 (linux/amd64): invalid
+  path: covenant-linux-amd64
+  digest: invalid
+  size: verified
+  checksum: verified
+  metadata: verified
+provenance_summary:
+  signature: verified
+  attestations: 0 verified, 0 invalid
+  supplemental_sbom: 0 verified, 0 invalid
+  supplemental_provenance: 0 verified, 0 invalid
+  invalid_evidence: 0
+problems:
+- artifact "covenant-linux-amd64" sha256 mismatch: got aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa want 1111111111111111111111111111111111111111111111111111111111111111
+problem: artifact "covenant-linux-amd64" sha256 mismatch: got aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa want 1111111111111111111111111111111111111111111111111111111111111111

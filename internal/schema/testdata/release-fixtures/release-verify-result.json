@@ -1,0 +1,113 @@
+{
+  "schema_version": "covenant.release-verify-result.v1",
+  "verified": true,
+  "manifest_path": "dist/manifest.json",
+  "checksums_path": "dist/checksums.txt",
+  "signature_path": "dist/manifest.sig.json",
+  "artifact_count": 1,
+  "problems": [],
+  "public_key_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "artifacts": [
+    {
+      "name": "covenant-linux-amd64",
+      "target": {
+        "os": "linux",
+        "arch": "amd64"
+      },
+      "path": "covenant-linux-amd64",
+      "verified": true,
+      "path_valid": true,
+      "digest_verified": true,
+      "size_verified": true,
+      "checksum_verified": true,
+      "metadata_verified": true,
+      "host_metadata_checked": true,
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "size_bytes": 1048576,
+      "actual_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "actual_size_bytes": 1048576,
+      "problems": [],
+      "attestations": [
+        {
+          "name": "attestation.intoto.json",
+          "kind": "slsa",
+          "path": "covenant-linux-amd64.attestation.intoto.json",
+          "verified": true,
+          "path_valid": true,
+          "digest_verified": true,
+          "size_verified": true,
+          "checksum_verified": true,
+          "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "size_bytes": 4096,
+          "actual_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "actual_size_bytes": 4096,
+          "problems": []
+        }
+      ]
+    }
+  ],
+  "supplemental_artifacts": [
+    {
+      "kind": "sbom",
+      "name": "sbom.spdx.json",
+      "path": "sbom.spdx.json",
+      "verified": true,
+      "path_valid": true,
+      "digest_verified": true,
+      "size_verified": true,
+      "checksum_verified": true,
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "size_bytes": 2048,
+      "actual_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "actual_size_bytes": 2048,
+      "problems": []
+    }
+  ],
+  "provenance": {
+    "version": "v0.1.0",
+    "commit": "0123456789abcdef0123456789abcdef01234567",
+    "date": "2026-06-12T12:00:00Z",
+    "public_key_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "signature_verified": true,
+    "artifacts": [
+      {
+        "name": "covenant-linux-amd64",
+        "target": {
+          "os": "linux",
+          "arch": "amd64"
+        },
+        "verification_status": "verified",
+        "metadata_verified": true,
+        "binary_metadata": {
+          "schema_version": "covenant.version-result.v1",
+          "version": "v0.1.0",
+          "commit": "0123456789abcdef0123456789abcdef01234567",
+          "date": "2026-06-12T12:00:00Z",
+          "go_version": "go1.25.0",
+          "os": "linux",
+          "arch": "amd64"
+        },
+        "attestations": [
+          {
+            "kind": "slsa",
+            "name": "attestation.intoto.json",
+            "path": "covenant-linux-amd64.attestation.intoto.json",
+            "verification_status": "verified",
+            "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "size_bytes": 4096
+          }
+        ]
+      }
+    ],
+    "supplemental_artifacts": [
+      {
+        "kind": "sbom",
+        "name": "sbom.spdx.json",
+        "path": "sbom.spdx.json",
+        "verification_status": "verified",
+        "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "size_bytes": 2048
+      }
+    ]
+  }
+}

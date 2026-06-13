@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.lint-sarif-baseline.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "accepted"],
+  "properties": {
+    "schema_version": { "const": "covenant.lint-sarif-baseline.v1" },
+    "accepted": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule_id", "justification"],
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "source_uri": { "type": "string", "minLength": 1 },
+          "line": { "type": "integer", "minimum": 1 },
+          "field": { "type": "string", "minLength": 1 },
+          "justification": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}
