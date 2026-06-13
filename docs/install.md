@@ -17,6 +17,9 @@ The release directory contains:
 - `SHA256SUMS`: checksum file for command-line verification.
 - `ao-covenant_<version>_<os>_<arch>` binaries.
 
+Maintainers should use the signed release automation documented in
+[`docs/release.md`](release.md) for public releases.
+
 ## Ubuntu
 
 Verify the downloaded artifact:

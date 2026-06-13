@@ -1,0 +1,176 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version tag, for example v0.1.0"
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    name: Signed release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref }}
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Resolve release metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            version="${GITHUB_REF_NAME}"
+          else
+            version="${{ inputs.version }}"
+            git rev-parse "$version^{commit}" >/dev/null
+          fi
+          case "$version" in
+            v*) ;;
+            *) echo "version must start with v: $version" >&2; exit 1 ;;
+          esac
+          {
+            echo "version=$version"
+            echo "commit=$(git rev-parse HEAD)"
+            echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Write release signing key
+        shell: bash
+        env:
+          COVENANT_RELEASE_SIGNING_KEY: ${{ secrets.COVENANT_RELEASE_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$COVENANT_RELEASE_SIGNING_KEY" ]]; then
+            echo "COVENANT_RELEASE_SIGNING_KEY secret is required" >&2
+            exit 1
+          fi
+          private_key="$RUNNER_TEMP/covenant-release-private-key.json"
+          public_key="$RUNNER_TEMP/covenant-release-public-key.json"
+          printf '%s' "$COVENANT_RELEASE_SIGNING_KEY" > "$private_key"
+          chmod 600 "$private_key"
+          jq '{schema_version:"covenant.bundle-public-key.v1", algorithm:.algorithm, public_key:.public_key}' "$private_key" > "$public_key"
+          {
+            echo "COVENANT_RELEASE_PRIVATE_KEY=$private_key"
+            echo "COVENANT_RELEASE_PUBLIC_KEY=$public_key"
+          } >> "$GITHUB_ENV"
+
+      - name: Test
+        run: go test -count=1 ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Create automation provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .covenant/release-inputs
+          jq -n \
+            --arg version "${{ steps.meta.outputs.version }}" \
+            --arg commit "${{ steps.meta.outputs.commit }}" \
+            --arg run_id "${GITHUB_RUN_ID}" \
+            --arg run_attempt "${GITHUB_RUN_ATTEMPT}" \
+            --arg workflow "${GITHUB_WORKFLOW}" \
+            --arg repository "${GITHUB_REPOSITORY}" \
+            --arg ref "${GITHUB_REF}" \
+            --arg sha "${GITHUB_SHA}" \
+            '{
+              schema_version: "ao-covenant.github-release-provenance.v1",
+              version: $version,
+              commit: $commit,
+              github: {
+                repository: $repository,
+                workflow: $workflow,
+                run_id: $run_id,
+                run_attempt: $run_attempt,
+                ref: $ref,
+                sha: $sha
+              }
+            }' > .covenant/release-inputs/github-release-provenance.json
+
+      - name: Package signed release
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          go run ./cmd/covenant release package \
+            --source . \
+            --out dist \
+            --version "${{ steps.meta.outputs.version }}" \
+            --commit "${{ steps.meta.outputs.commit }}" \
+            --date "${{ steps.meta.outputs.date }}" \
+            --sign-key "$COVENANT_RELEASE_PRIVATE_KEY" \
+            --provenance .covenant/release-inputs/github-release-provenance.json \
+            --target linux/amd64 \
+            --target linux/arm64 \
+            --target darwin/amd64 \
+            --target darwin/arm64 \
+            --target windows/amd64 \
+            --json > dist/release-package.json
+
+      - name: Verify signed release
+        shell: bash
+        run: |
+          set -euo pipefail
+          go run ./cmd/covenant release verify \
+            --dir dist \
+            --public-key "$COVENANT_RELEASE_PUBLIC_KEY" \
+            --json > dist/release-verify.json
+          go run ./cmd/covenant release report \
+            --dir dist \
+            --public-key "$COVENANT_RELEASE_PUBLIC_KEY" \
+            --json > dist/release-report.json
+
+      - name: Generate GitHub artifact attestations
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: "dist/*"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ao-covenant-${{ steps.meta.outputs.version }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          notes="$RUNNER_TEMP/release-notes.md"
+          cat > "$notes" <<EOF
+          AO Covenant ${VERSION}
+
+          This release was built by GitHub Actions, signed by AO Covenant's release key, verified by AO Covenant, and covered by GitHub artifact attestations.
+          EOF
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release upload "$VERSION" dist/* --clobber
+          else
+            gh release create "$VERSION" dist/* \
+              --verify-tag \
+              --title "AO Covenant $VERSION" \
+              --notes-file "$notes"
+          fi
