@@ -2141,9 +2141,9 @@ func schemaValidationJUnitReports(validations []schemaValidationReport) []schema
 func validateSchemaDocument(path string, schemaID string) (schemaValidationReport, error) {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
-		return schemaValidationReport{SchemaVersion: schema.SchemaValidationReportSchemaID, File: path, Valid: false, Error: err.Error()}, fmt.Errorf("read schema document: %w", err)
+		return schemaValidationReport{SchemaVersion: schema.SchemaValidationReportSchemaID, File: displayPath(path), Valid: false, Error: err.Error()}, fmt.Errorf("read schema document: %w", err)
 	}
-	return validateSchemaDocumentBytes(path, bytes, schemaID)
+	return validateSchemaDocumentBytes(displayPath(path), bytes, schemaID)
 }
 
 func validateSchemaDocumentBytes(displayPath string, bytes []byte, schemaID string) (schemaValidationReport, error) {

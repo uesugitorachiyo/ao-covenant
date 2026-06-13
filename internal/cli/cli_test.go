@@ -1921,7 +1921,7 @@ func TestSchemaExportCommandWritesSchemas(t *testing.T) {
 	if decoded.ID != "covenant.contract.v1" {
 		t.Fatalf("exported schema id = %q, want covenant.contract.v1", decoded.ID)
 	}
-	if !strings.Contains(stdout.String(), "schema=covenant.contract.v1 file=covenant.contract.v1.schema.json written="+exportedPath) {
+	if !strings.Contains(stdout.String(), "schema=covenant.contract.v1 file=covenant.contract.v1.schema.json written="+filepath.ToSlash(exportedPath)) {
 		t.Fatalf("stdout = %q, want exported schema line", stdout.String())
 	}
 	if stderr.Len() != 0 {
@@ -1965,7 +1965,7 @@ func TestSchemaExportCommandPrintsJSON(t *testing.T) {
 	if first.ID != "covenant.contract.v1" || first.FileName != "covenant.contract.v1.schema.json" || first.SchemaPath != "schemas/covenant.contract.v1.schema.json" {
 		t.Fatalf("first schema = %+v, want contract schema entry", first)
 	}
-	if first.WrittenPath != filepath.Join(outDir, "covenant.contract.v1.schema.json") {
+	if first.WrittenPath != filepath.ToSlash(filepath.Join(outDir, "covenant.contract.v1.schema.json")) {
 		t.Fatalf("written_path = %q, want exported contract schema path", first.WrittenPath)
 	}
 	if stderr.Len() != 0 {

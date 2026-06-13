@@ -13,6 +13,10 @@ import (
 	embedded "github.com/uesugitorachiyo/ao-covenant/schemas"
 )
 
+func schemaTestPath(fileName string) string {
+	return "schemas/" + fileName
+}
+
 func TestRequiredSchemasExistAndMatchIDs(t *testing.T) {
 	if err := ValidateRegistry(); err != nil {
 		t.Fatalf("ValidateRegistry returned error: %v", err)
@@ -30,7 +34,7 @@ func TestCatalogListsRequiredSchemasInStableOrder(t *testing.T) {
 		if entry.ID != required[index].ID || entry.FileName != required[index].FileName {
 			t.Fatalf("catalog[%d] = %+v, want id %s file %s", index, entry, required[index].ID, required[index].FileName)
 		}
-		if entry.SchemaPath != filepath.Join("schemas", required[index].FileName) {
+		if entry.SchemaPath != schemaTestPath(required[index].FileName) {
 			t.Fatalf("catalog[%d].SchemaPath = %q, want schemas/%s", index, entry.SchemaPath, required[index].FileName)
 		}
 	}
@@ -61,7 +65,7 @@ func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	if required.FileName != "covenant.version-result.v1.schema.json" {
 		t.Fatalf("lookup file = %q", required.FileName)
 	}
-	if required.SchemaPath != filepath.Join("schemas", "covenant.version-result.v1.schema.json") {
+	if required.SchemaPath != schemaTestPath("covenant.version-result.v1.schema.json") {
 		t.Fatalf("lookup schema path = %q", required.SchemaPath)
 	}
 }
@@ -1723,7 +1727,7 @@ func TestLintResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.lint-result.v1.schema.json" {
 				t.Fatalf("lint result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.lint-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.lint-result.v1.schema.json") {
 				t.Fatalf("lint result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1744,7 +1748,7 @@ func TestSchemaValidationReportSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.schema-validation-report.v1.schema.json" {
 				t.Fatalf("schema validation report file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.schema-validation-report.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.schema-validation-report.v1.schema.json") {
 				t.Fatalf("schema validation report path = %q", entry.SchemaPath)
 			}
 		}
@@ -1765,7 +1769,7 @@ func TestCompileSummarySchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.compile-summary.v1.schema.json" {
 				t.Fatalf("compile summary schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.compile-summary.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.compile-summary.v1.schema.json") {
 				t.Fatalf("compile summary schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1786,7 +1790,7 @@ func TestCompileResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.compile-result.v1.schema.json" {
 				t.Fatalf("compile result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.compile-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.compile-result.v1.schema.json") {
 				t.Fatalf("compile result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1824,7 +1828,7 @@ func TestRunResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.run-result.v1.schema.json" {
 				t.Fatalf("run result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.run-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.run-result.v1.schema.json") {
 				t.Fatalf("run result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1845,7 +1849,7 @@ func TestSelfRunResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.self-run-result.v1.schema.json" {
 				t.Fatalf("self-run result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.self-run-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.self-run-result.v1.schema.json") {
 				t.Fatalf("self-run result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1866,7 +1870,7 @@ func TestVerifyResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.verify-result.v1.schema.json" {
 				t.Fatalf("verify result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.verify-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.verify-result.v1.schema.json") {
 				t.Fatalf("verify result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1887,7 +1891,7 @@ func TestVersionResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.version-result.v1.schema.json" {
 				t.Fatalf("version result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.version-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.version-result.v1.schema.json") {
 				t.Fatalf("version result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1908,7 +1912,7 @@ func TestReleaseManifestSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.release-manifest.v1.schema.json" {
 				t.Fatalf("release manifest schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.release-manifest.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.release-manifest.v1.schema.json") {
 				t.Fatalf("release manifest schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1929,7 +1933,7 @@ func TestReleasePackageResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.release-package-result.v1.schema.json" {
 				t.Fatalf("release package result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.release-package-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.release-package-result.v1.schema.json") {
 				t.Fatalf("release package result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1950,7 +1954,7 @@ func TestReleaseVerifyResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.release-verify-result.v1.schema.json" {
 				t.Fatalf("release verify result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.release-verify-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.release-verify-result.v1.schema.json") {
 				t.Fatalf("release verify result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1971,7 +1975,7 @@ func TestReleaseDiffResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.release-diff-result.v1.schema.json" {
 				t.Fatalf("release diff schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.release-diff-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.release-diff-result.v1.schema.json") {
 				t.Fatalf("release diff schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -1992,7 +1996,7 @@ func TestReleaseSignatureSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.release-signature.v1.schema.json" {
 				t.Fatalf("release signature schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.release-signature.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.release-signature.v1.schema.json") {
 				t.Fatalf("release signature schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2013,7 +2017,7 @@ func TestReleaseInspectResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.release-inspect-result.v1.schema.json" {
 				t.Fatalf("release inspect result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.release-inspect-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.release-inspect-result.v1.schema.json") {
 				t.Fatalf("release inspect result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2034,7 +2038,7 @@ func TestReleaseReportResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.release-report-result.v1.schema.json" {
 				t.Fatalf("release report result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.release-report-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.release-report-result.v1.schema.json") {
 				t.Fatalf("release report result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2055,7 +2059,7 @@ func TestPolicyExplainResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.policy-explain-result.v1.schema.json" {
 				t.Fatalf("policy explain result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.policy-explain-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.policy-explain-result.v1.schema.json") {
 				t.Fatalf("policy explain result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2076,7 +2080,7 @@ func TestPolicyIndexResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.policy-index-result.v1.schema.json" {
 				t.Fatalf("policy index result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.policy-index-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.policy-index-result.v1.schema.json") {
 				t.Fatalf("policy index result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2097,7 +2101,7 @@ func TestSchemaCatalogResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.schema-catalog-result.v1.schema.json" {
 				t.Fatalf("schema catalog result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.schema-catalog-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.schema-catalog-result.v1.schema.json") {
 				t.Fatalf("schema catalog result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2118,7 +2122,7 @@ func TestSchemaExportResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.schema-export-result.v1.schema.json" {
 				t.Fatalf("schema export result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.schema-export-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.schema-export-result.v1.schema.json") {
 				t.Fatalf("schema export result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2139,7 +2143,7 @@ func TestBundleInspectResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.bundle-inspect-result.v1.schema.json" {
 				t.Fatalf("bundle inspect result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.bundle-inspect-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.bundle-inspect-result.v1.schema.json") {
 				t.Fatalf("bundle inspect result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2160,7 +2164,7 @@ func TestBundleReportResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.bundle-report-result.v1.schema.json" {
 				t.Fatalf("bundle report result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.bundle-report-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.bundle-report-result.v1.schema.json") {
 				t.Fatalf("bundle report result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2181,7 +2185,7 @@ func TestBundleExportResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.bundle-export-result.v1.schema.json" {
 				t.Fatalf("bundle export result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.bundle-export-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.bundle-export-result.v1.schema.json") {
 				t.Fatalf("bundle export result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2213,7 +2217,7 @@ func TestBundleKeyFileSchemasArePublished(t *testing.T) {
 			if entry.FileName != tc.fileName {
 				t.Fatalf("%s file = %q", tc.id, entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", tc.fileName) {
+			if entry.SchemaPath != schemaTestPath(tc.fileName) {
 				t.Fatalf("%s path = %q", tc.id, entry.SchemaPath)
 			}
 		}
@@ -2234,7 +2238,7 @@ func TestBundleKeygenResultSchemaIsPublished(t *testing.T) {
 			if entry.FileName != "covenant.bundle-keygen-result.v1.schema.json" {
 				t.Fatalf("bundle keygen result schema file = %q", entry.FileName)
 			}
-			if entry.SchemaPath != filepath.Join("schemas", "covenant.bundle-keygen-result.v1.schema.json") {
+			if entry.SchemaPath != schemaTestPath("covenant.bundle-keygen-result.v1.schema.json") {
 				t.Fatalf("bundle keygen result schema path = %q", entry.SchemaPath)
 			}
 		}
@@ -2259,7 +2263,7 @@ func TestExportWritesEmbeddedSchemas(t *testing.T) {
 	for index, entry := range written {
 		requiredEntry := required[index]
 		wantPath := filepath.Join(dir, requiredEntry.FileName)
-		if entry.ID != requiredEntry.ID || entry.FileName != requiredEntry.FileName || entry.SchemaPath != filepath.Join("schemas", requiredEntry.FileName) {
+		if entry.ID != requiredEntry.ID || entry.FileName != requiredEntry.FileName || entry.SchemaPath != schemaTestPath(requiredEntry.FileName) {
 			t.Fatalf("written[%d] = %+v, want catalog entry for %+v", index, entry, requiredEntry)
 		}
 		if entry.WrittenPath != wantPath {
@@ -2678,7 +2682,7 @@ func TestApprovalCommandResultSchemasArePublished(t *testing.T) {
 				if entry.FileName != tt.fileName {
 					t.Fatalf("%s file = %q, want %q", tt.id, entry.FileName, tt.fileName)
 				}
-				if entry.SchemaPath != filepath.Join("schemas", tt.fileName) {
+				if entry.SchemaPath != schemaTestPath(tt.fileName) {
 					t.Fatalf("%s schema path = %q", tt.id, entry.SchemaPath)
 				}
 			}
@@ -2709,7 +2713,7 @@ func TestApprovalRevocationResultSchemasArePublished(t *testing.T) {
 				if entry.FileName != tt.fileName {
 					t.Fatalf("%s file = %q, want %q", tt.id, entry.FileName, tt.fileName)
 				}
-				if entry.SchemaPath != filepath.Join("schemas", tt.fileName) {
+				if entry.SchemaPath != schemaTestPath(tt.fileName) {
 					t.Fatalf("%s schema path = %q", tt.id, entry.SchemaPath)
 				}
 			}
@@ -3328,7 +3332,7 @@ func TestReleaseJSONFixturesCoverCatalogedReleaseResultSchemas(t *testing.T) {
 		if !ok {
 			t.Fatalf("fixture schema %s is not cataloged", schemaID)
 		}
-		if required.SchemaPath != filepath.Join("schemas", required.FileName) {
+		if required.SchemaPath != schemaTestPath(required.FileName) {
 			t.Fatalf("%s schema path = %q, want schemas/%s", schemaID, required.SchemaPath, required.FileName)
 		}
 		if len(readReleaseFixture(t, fileName)) == 0 {

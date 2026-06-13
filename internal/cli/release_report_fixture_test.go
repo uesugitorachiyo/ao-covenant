@@ -447,7 +447,7 @@ func (fixture releaseReportSARIFFixtureGoldenFile) assertFresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read %s: %v", path, err)
 	}
-	if !bytes.Equal(golden, fixture.JSON) {
+	if !bytes.Equal(normalizeGoldenFixtureBytes(golden), normalizeGoldenFixtureBytes(fixture.JSON)) {
 		t.Fatalf("%s is stale; regenerate with COVENANT_UPDATE_RELEASE_REPORT_FIXTURES=1 go test ./internal/cli -run 'ReleaseReportSARIFFixtures' -count=1", path)
 	}
 }
@@ -481,7 +481,7 @@ func (fixture releaseReportTextFixtureGoldenFile) assertFresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read fixture %s: %v", path, err)
 	}
-	if !bytes.Equal(got, fixture.Text) {
+	if !bytes.Equal(normalizeGoldenFixtureBytes(got), normalizeGoldenFixtureBytes(fixture.Text)) {
 		t.Fatalf("%s is stale; refresh with COVENANT_UPDATE_RELEASE_REPORT_FIXTURES=1 go test ./internal/cli -run 'ReleaseReportTextFixtures' -count=1", path)
 	}
 }

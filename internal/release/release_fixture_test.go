@@ -409,7 +409,11 @@ func (fixture releaseFixtureGoldenFile) assertFresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read %s: %v", path, err)
 	}
-	if !bytes.Equal(golden, fixture.JSON) {
+	if !bytes.Equal(normalizeReleaseFixtureBytes(golden), normalizeReleaseFixtureBytes(fixture.JSON)) {
 		t.Fatalf("%s is stale; regenerate with COVENANT_UPDATE_RELEASE_FIXTURES=1 go test ./internal/release -run 'ReleaseJSONFixturesMatchGeneratedGoldenFiles' -count=1", path)
 	}
+}
+
+func normalizeReleaseFixtureBytes(data []byte) []byte {
+	return bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 }

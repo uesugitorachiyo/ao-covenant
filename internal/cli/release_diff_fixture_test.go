@@ -152,9 +152,13 @@ func (fixture releaseDiffSARIFFixtureGoldenFile) assertFresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read %s: %v", path, err)
 	}
-	if !bytes.Equal(golden, fixture.JSON) {
+	if !bytes.Equal(normalizeGoldenFixtureBytes(golden), normalizeGoldenFixtureBytes(fixture.JSON)) {
 		t.Fatalf("%s is stale; regenerate with COVENANT_UPDATE_RELEASE_DIFF_FIXTURES=1 go test ./internal/cli -run 'ReleaseDiffSARIFFixtures' -count=1", path)
 	}
+}
+
+func normalizeGoldenFixtureBytes(data []byte) []byte {
+	return bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 }
 
 func requireReleaseDiffSARIFFixtureRules(t *testing.T, fileName string, sarif schema.SARIFLog, want map[string]bool) {
