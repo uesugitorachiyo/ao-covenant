@@ -70,6 +70,7 @@ func TestReleaseDocsExplainSigningAndProvenanceAutomation(t *testing.T) {
 		"COVENANT_RELEASE_SIGNING_KEY",
 		"covenant.bundle-private-key.v1",
 		"gh secret set COVENANT_RELEASE_SIGNING_KEY",
+		"< covenant-release-private-key.json",
 		"covenant-release-public-key.json",
 		"GitHub artifact attestations",
 		"gh release download",
@@ -81,6 +82,7 @@ func TestReleaseDocsExplainSigningAndProvenanceAutomation(t *testing.T) {
 		requireWorkflowContains(t, doc, want)
 	}
 	requireWorkflowOmits(t, doc, "private_key\":")
+	requireWorkflowOmits(t, doc, "--body-file")
 }
 
 func readRepoFile(t *testing.T, parts ...string) string {

@@ -18,7 +18,7 @@ Set the repository secret from a local private key file:
 ```sh
 gh secret set COVENANT_RELEASE_SIGNING_KEY \
   --repo uesugitorachiyo/ao-covenant \
-  --body-file covenant-release-private-key.json
+  < covenant-release-private-key.json
 ```
 
 The release workflow performs these checks before publishing:
