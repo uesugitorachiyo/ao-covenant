@@ -13,6 +13,14 @@ Do not commit the signing key. The workflow writes it to the runner temp
 directory, sets mode `0600`, derives the public key file from it, and uses that
 public key for `covenant release verify`.
 
+Set the repository secret from a local private key file:
+
+```sh
+gh secret set COVENANT_RELEASE_SIGNING_KEY \
+  --repo uesugitorachiyo/ao-covenant \
+  --body-file covenant-release-private-key.json
+```
+
 The release workflow performs these checks before publishing:
 
 - runs `go test -count=1 ./...`
@@ -21,8 +29,21 @@ The release workflow performs these checks before publishing:
 - signs the AO Covenant release manifest with the configured release key
 - verifies the signed manifest and binaries with `covenant release verify`
 - emits a machine-readable `covenant release report`
+- publishes `covenant-release-public-key.json` for consumer verification
 - generates GitHub artifact attestations for `dist/*`
 - publishes or updates the GitHub release assets
 
 Consumers can verify downloaded release artifacts with the bundled checksums,
 the signed AO Covenant manifest, and GitHub artifact attestations.
+
+Download and verify an AO Covenant release:
+
+```sh
+version=v0.1.0
+gh release download "$version" --repo uesugitorachiyo/ao-covenant --dir "ao-covenant-$version"
+cd "ao-covenant-$version"
+covenant release verify --dir . --public-key covenant-release-public-key.json
+```
+
+The `covenant-release-public-key.json` file is public verification material. It
+does not contain the release private key.

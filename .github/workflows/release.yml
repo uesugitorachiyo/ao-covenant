@@ -127,6 +127,7 @@ jobs:
             --target darwin/arm64 \
             --target windows/amd64 \
             --json > dist/release-package.json
+          cp "$COVENANT_RELEASE_PUBLIC_KEY" dist/covenant-release-public-key.json
 
       - name: Verify signed release
         shell: bash

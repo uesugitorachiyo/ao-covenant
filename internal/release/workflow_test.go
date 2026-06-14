@@ -32,8 +32,10 @@ func TestReleaseWorkflowRequiresSignedProvenanceAutomation(t *testing.T) {
 		"uses: actions/attest-build-provenance@v4",
 		"COVENANT_RELEASE_SIGNING_KEY",
 		"covenant-release-private-key.json",
+		"covenant-release-public-key.json",
 		"chmod 600",
 		"covenant.bundle-public-key.v1",
+		"cp \"$COVENANT_RELEASE_PUBLIC_KEY\" dist/covenant-release-public-key.json",
 		"go run ./cmd/covenant release package",
 		"--sign-key",
 		"--target linux/amd64",
@@ -67,8 +69,12 @@ func TestReleaseDocsExplainSigningAndProvenanceAutomation(t *testing.T) {
 	for _, want := range []string{
 		"COVENANT_RELEASE_SIGNING_KEY",
 		"covenant.bundle-private-key.v1",
+		"gh secret set COVENANT_RELEASE_SIGNING_KEY",
+		"covenant-release-public-key.json",
 		"GitHub artifact attestations",
+		"gh release download",
 		"covenant release verify",
+		"--public-key covenant-release-public-key.json",
 		"workflow_dispatch",
 		"v*",
 	} {
