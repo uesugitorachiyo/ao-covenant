@@ -32,6 +32,9 @@ The release workflow performs these checks before publishing:
 - publishes `covenant-release-public-key.json` for consumer verification
 - generates GitHub artifact attestations for `dist/*`
 - publishes or updates the GitHub release assets
+- runs post-release smoke verification against the published GitHub release:
+  downloads the release assets, runs `covenant release verify` with the
+  published public key, and runs `gh attestation verify` for `manifest.json`
 
 Consumers can verify downloaded release artifacts with the bundled checksums,
 the signed AO Covenant manifest, and GitHub artifact attestations.

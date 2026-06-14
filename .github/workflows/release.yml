@@ -19,6 +19,8 @@ jobs:
   release:
     name: Signed release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
 
     steps:
       - name: Checkout
@@ -175,3 +177,37 @@ jobs:
               --title "AO Covenant $VERSION" \
               --notes-file "$notes"
           fi
+
+  post-release-smoke:
+    name: Post-release smoke verification
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release.outputs.version }}
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download and verify published release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p smoke
+          gh release download "$VERSION" --repo "$GITHUB_REPOSITORY" --dir smoke
+          chmod +x smoke/ao-covenant_* 2>/dev/null || true
+          go run ./cmd/covenant release verify \
+            --dir smoke \
+            --public-key smoke/covenant-release-public-key.json \
+            --json > smoke/release-smoke-verify.json
+          gh attestation verify smoke/manifest.json --repo "$GITHUB_REPOSITORY"

@@ -77,6 +77,8 @@ func TestReleaseDocsExplainSigningAndProvenanceAutomation(t *testing.T) {
 		"chmod +x ao-covenant_*",
 		"covenant release verify",
 		"--public-key covenant-release-public-key.json",
+		"post-release smoke verification",
+		"gh attestation verify",
 		"workflow_dispatch",
 		"v*",
 	} {
@@ -84,6 +86,27 @@ func TestReleaseDocsExplainSigningAndProvenanceAutomation(t *testing.T) {
 	}
 	requireWorkflowOmits(t, doc, "private_key\":")
 	requireWorkflowOmits(t, doc, "--body-file")
+}
+
+func TestReleaseWorkflowRunsPostPublishSmokeVerification(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+
+	for _, want := range []string{
+		"outputs:",
+		"version: ${{ steps.meta.outputs.version }}",
+		"post-release-smoke",
+		"name: Post-release smoke verification",
+		"needs: release",
+		"ref: ${{ needs.release.outputs.version }}",
+		"gh release download \"$VERSION\"",
+		"chmod +x smoke/ao-covenant_*",
+		"go run ./cmd/covenant release verify",
+		"--dir smoke",
+		"--public-key smoke/covenant-release-public-key.json",
+		"gh attestation verify smoke/manifest.json",
+	} {
+		requireWorkflowContains(t, workflow, want)
+	}
 }
 
 func readRepoFile(t *testing.T, parts ...string) string {
