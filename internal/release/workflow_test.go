@@ -74,6 +74,7 @@ func TestReleaseDocsExplainSigningAndProvenanceAutomation(t *testing.T) {
 		"covenant-release-public-key.json",
 		"GitHub artifact attestations",
 		"gh release download",
+		"chmod +x ao-covenant_*",
 		"covenant release verify",
 		"--public-key covenant-release-public-key.json",
 		"workflow_dispatch",

@@ -42,6 +42,7 @@ Download and verify an AO Covenant release:
 version=v0.1.0
 gh release download "$version" --repo uesugitorachiyo/ao-covenant --dir "ao-covenant-$version"
 cd "ao-covenant-$version"
+chmod +x ao-covenant_*
 covenant release verify --dir . --public-key covenant-release-public-key.json
 ```
 
