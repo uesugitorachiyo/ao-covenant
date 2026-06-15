@@ -519,3 +519,56 @@ func TestSecurityAdvisoryRoutingDocumentationIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestReleaseDryRunDocumentationIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	releaseOps := readText("docs", "release.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+	dryRun := readText("docs", "release-dry-run.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Release Dry Run](docs/release-dry-run.md)"},
+		{name: "release operations link", doc: releaseOps, want: "[release dry-run checklist](release-dry-run.md)"},
+		{name: "readiness link", doc: readiness, want: "[release dry-run checklist](release-dry-run.md)"},
+		{name: "contributing link", doc: contributing, want: "[release dry-run checklist](docs/release-dry-run.md)"},
+		{name: "scope section", doc: dryRun, want: "## Scope"},
+		{name: "prerequisites section", doc: dryRun, want: "## Prerequisites"},
+		{name: "local dry run section", doc: dryRun, want: "## Local Dry Run"},
+		{name: "package section", doc: dryRun, want: "## Package Without Publishing"},
+		{name: "verify section", doc: dryRun, want: "## Verify Dry-Run Assets"},
+		{name: "review section", doc: dryRun, want: "## Review Reports"},
+		{name: "cleanup section", doc: dryRun, want: "## Cleanup"},
+		{name: "not publishing", doc: dryRun, want: "does not create a tag, GitHub release, attestation, or public release asset"},
+		{name: "readiness command", doc: dryRun, want: "./scripts/release-readiness.sh"},
+		{name: "tmpdir command", doc: dryRun, want: "tmpdir=\"$(mktemp -d)\""},
+		{name: "release package command", doc: dryRun, want: "covenant release package"},
+		{name: "release verify command", doc: dryRun, want: "covenant release verify"},
+		{name: "release report command", doc: dryRun, want: "covenant release report"},
+		{name: "release inspect command", doc: dryRun, want: "covenant release inspect"},
+		{name: "schema validation command", doc: dryRun, want: "covenant schema validate"},
+		{name: "signing key env", doc: dryRun, want: "`COVENANT_RELEASE_SIGNING_KEY`"},
+		{name: "private key warning", doc: dryRun, want: "Do not commit private keys"},
+		{name: "generated output warning", doc: dryRun, want: "generated dry-run output"},
+		{name: "release verification link", doc: dryRun, want: "[release verification walkthrough](release-verification.md)"},
+		{name: "release operations link", doc: dryRun, want: "[release operations](release.md)"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}

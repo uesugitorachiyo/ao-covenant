@@ -22,6 +22,8 @@ Consumers should verify release assets before installation with the
 [release verification walkthrough](release-verification.md). The walkthrough
 covers release downloads, `SHA256SUMS`, AO Covenant release signatures, GitHub
 artifact attestations, provenance reports, and failure handling.
+Maintainers should run the [release dry-run checklist](release-dry-run.md)
+before tagging or manually dispatching a public release.
 
 Local check:
 

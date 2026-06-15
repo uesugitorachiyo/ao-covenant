@@ -86,6 +86,7 @@ Common link points are:
 - [dependency review guide](docs/dependency-review.md)
 - [install guide](docs/install.md)
 - [release operations](docs/release.md)
+- [release dry-run checklist](docs/release-dry-run.md)
 - [release verification walkthrough](docs/release-verification.md)
 - [threat model](docs/threat-model.md)
 - [security policy](SECURITY.md)

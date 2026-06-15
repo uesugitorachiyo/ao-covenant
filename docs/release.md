@@ -10,6 +10,11 @@ release that already has one or more matching asset names. Operators must set
 existing assets. Replacement runs publish `release-replacement-policy.json`
 alongside the release artifacts so the override is visible to consumers.
 
+Before pushing a tag or manually dispatching this workflow, run the
+[release dry-run checklist](release-dry-run.md). The dry run packages, signs,
+verifies, reports, inspects, and schema-validates release artifacts locally
+without creating a tag, GitHub release, attestation, or public release asset.
+
 The workflow requires one repository secret:
 
 - `COVENANT_RELEASE_SIGNING_KEY`: the complete JSON contents of a
