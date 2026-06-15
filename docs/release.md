@@ -45,7 +45,9 @@ The release workflow performs these checks before publishing:
   published public key, and runs `gh attestation verify` for `manifest.json`
 
 Consumers can verify downloaded release artifacts with the bundled checksums,
-the signed AO Covenant manifest, and GitHub artifact attestations.
+the signed AO Covenant manifest, and GitHub artifact attestations. Use the
+[release verification walkthrough](release-verification.md) for the full
+consumer checklist.
 
 Download and verify an AO Covenant release:
 

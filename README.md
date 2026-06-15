@@ -30,6 +30,8 @@ Security model:
   boundaries, mitigated threats, operator responsibilities, and non-goals.
 - [Security Policy](SECURITY.md) defines private vulnerability reporting and
   sensitive material handling.
+- [Release Verification](docs/release-verification.md) gives consumers a
+  checksum, signature, attestation, and provenance walkthrough before install.
 
 Stable release JSON examples live in
 `internal/schema/testdata/release-fixtures/` and are validated against the
