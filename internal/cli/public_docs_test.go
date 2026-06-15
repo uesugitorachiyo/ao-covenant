@@ -462,3 +462,60 @@ func TestDependencyReviewDocumentationIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestSecurityAdvisoryRoutingDocumentationIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	security := readText("SECURITY.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+	config := readText(".github", "ISSUE_TEMPLATE", "config.yml")
+	securityIssue := readText(".github", "ISSUE_TEMPLATE", "security_sensitive_report.yml")
+	routing := readText("docs", "security-advisory-routing.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Security Advisory Routing](docs/security-advisory-routing.md)"},
+		{name: "SECURITY link", doc: security, want: "[security advisory routing guide](docs/security-advisory-routing.md)"},
+		{name: "readiness link", doc: readiness, want: "[security advisory routing guide](security-advisory-routing.md)"},
+		{name: "contributing link", doc: contributing, want: "[security advisory routing guide](docs/security-advisory-routing.md)"},
+		{name: "config routing link", doc: config, want: "security-advisory-routing.md"},
+		{name: "security issue routing link", doc: securityIssue, want: "docs/security-advisory-routing.md"},
+		{name: "private first section", doc: routing, want: "## Private-First Rule"},
+		{name: "when to use private advisory section", doc: routing, want: "## When To Use A Private Advisory"},
+		{name: "minimal public report section", doc: routing, want: "## Minimal Public Report"},
+		{name: "what to include section", doc: routing, want: "## What To Include Privately"},
+		{name: "what not to post section", doc: routing, want: "## What Not To Post Publicly"},
+		{name: "maintainer handling section", doc: routing, want: "## Maintainer Handling"},
+		{name: "github security advisories", doc: routing, want: "GitHub Security Advisories"},
+		{name: "advisory URL", doc: routing, want: "https://github.com/uesugitorachiyo/ao-covenant/security/advisories/new"},
+		{name: "public issue fallback", doc: routing, want: "If GitHub Security Advisories are unavailable"},
+		{name: "minimal summary phrase", doc: routing, want: "minimal non-sensitive routing note"},
+		{name: "no exploit details", doc: routing, want: "Do not post exploit details"},
+		{name: "no private keys", doc: routing, want: "private keys"},
+		{name: "no tokens", doc: routing, want: "tokens"},
+		{name: "no customer data", doc: routing, want: "customer data"},
+		{name: "no production evidence", doc: routing, want: "production evidence bundles"},
+		{name: "no unreleased bundles", doc: routing, want: "unreleased bundles"},
+		{name: "no local paths", doc: routing, want: "local paths"},
+		{name: "synthetic reproducer", doc: routing, want: "synthetic reproducer"},
+		{name: "security policy link", doc: routing, want: "[security policy](../SECURITY.md)"},
+		{name: "threat model link", doc: routing, want: "[threat model](threat-model.md)"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}

@@ -35,6 +35,9 @@ The [threat model](threat-model.md) defines protected assets, trust boundaries,
 mitigations, operator responsibilities, and non-goals. The
 [security policy](../SECURITY.md) defines private reporting, public issue
 limits, severity guidance, secret leakage handling, and supported-version scope.
+The [security advisory routing guide](security-advisory-routing.md) defines
+private-first reporting and minimal public report expectations for
+security-sensitive issues.
 
 Local check:
 

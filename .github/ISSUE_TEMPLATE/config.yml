@@ -2,7 +2,7 @@ blank_issues_enabled: false
 contact_links:
   - name: Private security disclosure
     url: https://github.com/uesugitorachiyo/ao-covenant/security/advisories/new
-    about: Use GitHub Security Advisories for sensitive reports. See SECURITY.md before opening a public issue.
+    about: Use GitHub Security Advisories for sensitive reports. See SECURITY.md and docs/security-advisory-routing.md before opening a public issue.
   - name: Security policy
     url: https://github.com/uesugitorachiyo/ao-covenant/blob/main/SECURITY.md
     about: Read SECURITY.md for reporting scope, public issue limits, and sensitive material rules.

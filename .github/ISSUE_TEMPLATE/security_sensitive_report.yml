@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Read SECURITY.md before continuing. Prefer GitHub Security Advisories for private disclosure when a report includes exploit details, private keys, tokens, customer data, production evidence bundles, unreleased bundles, or local paths.
+        Read SECURITY.md and docs/security-advisory-routing.md before continuing. Prefer GitHub Security Advisories for private disclosure when a report includes exploit details, private keys, tokens, customer data, production evidence bundles, unreleased bundles, or local paths.
 
         Do not post exploit details, private keys, tokens, customer data, production evidence bundles, unreleased bundles, or local paths.
   - type: dropdown

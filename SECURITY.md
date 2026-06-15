@@ -5,11 +5,16 @@ and local execution evidence. Treat suspected vulnerabilities as sensitive until
 triaged.
 
 The public [Threat Model](docs/threat-model.md) defines protected assets, trust
-boundaries, mitigated threats, operator responsibilities, and non-goals.
+boundaries, mitigated threats, operator responsibilities, and non-goals. The
+[security advisory routing guide](docs/security-advisory-routing.md) defines
+when to use a private advisory and how to keep public reports minimal.
 
 ## Reporting
 
-Use GitHub Security Advisories for private disclosure when available. Include:
+Use GitHub Security Advisories for private disclosure when available. Follow the
+[security advisory routing guide](docs/security-advisory-routing.md) when a
+report may include exploit details, private keys, tokens, customer data,
+production evidence bundles, unreleased bundles, or local paths. Include:
 
 - affected command, file, schema, workflow, or release asset
 - AO Covenant version, commit, operating system, and install source
