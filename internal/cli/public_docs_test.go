@@ -705,3 +705,61 @@ func TestReleaseRollbackRunbookIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestReleaseNoteTemplateIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	releaseOps := readText("docs", "release.md")
+	rollback := readText("docs", "release-rollback.md")
+	securityChecklist := readText("docs", "security-advisory-maintainer-checklist.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+	template := readText("docs", "release-note-template.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Release Note Template](docs/release-note-template.md)"},
+		{name: "release operations link", doc: releaseOps, want: "[release note template](release-note-template.md)"},
+		{name: "rollback link", doc: rollback, want: "[release note template](release-note-template.md)"},
+		{name: "security checklist link", doc: securityChecklist, want: "[release note template](release-note-template.md)"},
+		{name: "readiness link", doc: readiness, want: "[release note template](release-note-template.md)"},
+		{name: "contributing link", doc: contributing, want: "[release note template](docs/release-note-template.md)"},
+		{name: "title", doc: template, want: "# AO Covenant Release Note Template"},
+		{name: "scope section", doc: template, want: "## Scope"},
+		{name: "normal release section", doc: template, want: "## Normal Release Notes"},
+		{name: "replacement section", doc: template, want: "## Replacement Or Withdrawal Notice"},
+		{name: "security section", doc: template, want: "## Security-Sensitive Release Notes"},
+		{name: "verification section", doc: template, want: "## Verification Block"},
+		{name: "safe wording section", doc: template, want: "## Safe Wording Rules"},
+		{name: "maintainer checklist section", doc: template, want: "## Maintainer Checklist"},
+		{name: "affected version", doc: template, want: "Affected version:"},
+		{name: "who is affected", doc: template, want: "Who is affected:"},
+		{name: "consumer action", doc: template, want: "Required consumer action:"},
+		{name: "download guidance", doc: template, want: "What to download:"},
+		{name: "verification command", doc: template, want: "covenant release verify"},
+		{name: "report command", doc: template, want: "covenant release report"},
+		{name: "attestation command", doc: template, want: "gh attestation verify"},
+		{name: "replacement policy", doc: template, want: "release-replacement-policy.json"},
+		{name: "private key warning", doc: template, want: "Do not include private keys, credentials, production evidence, unreleased bundles, or local machine paths"},
+		{name: "exploit detail warning", doc: template, want: "Do not include exploit payloads or secret values"},
+		{name: "security policy link", doc: template, want: "[security policy](../SECURITY.md)"},
+		{name: "rollback link", doc: template, want: "[release rollback runbook](release-rollback.md)"},
+		{name: "verification link", doc: template, want: "[release verification walkthrough](release-verification.md)"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}

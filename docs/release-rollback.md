@@ -4,7 +4,8 @@ Use this runbook when a published AO Covenant release asset must be replaced,
 withdrawn, or corrected after publication. Use it with the
 [release operations](release.md), [release verification walkthrough](release-verification.md),
 [release dry-run checklist](release-dry-run.md), and
-[security policy](../SECURITY.md).
+[security policy](../SECURITY.md). Draft consumer-facing text with the
+[release note template](release-note-template.md).
 
 ## Scope
 
@@ -95,6 +96,8 @@ A consumer notice should include:
 - whether the security policy or a security advisory applies
 
 Do not include private keys, credentials, production evidence, unreleased bundles, or local machine paths in consumer notices, release notes, issues, advisories, pull requests, logs, screenshots, or workflow artifacts.
+Use the [release note template](release-note-template.md) to keep replacement
+and withdrawal notices consistent.
 
 ## Post-Action Verification
 

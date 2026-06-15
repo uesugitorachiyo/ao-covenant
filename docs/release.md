@@ -16,6 +16,10 @@ Before pushing a tag or manually dispatching this workflow, run the
 [release dry-run checklist](release-dry-run.md). The dry run packages, signs,
 verifies, reports, inspects, and schema-validates release artifacts locally
 without creating a tag, GitHub release, attestation, or public release asset.
+Draft public release notes with the [release note template](release-note-template.md)
+so normal releases, replacement notices, withdrawal notices, and
+security-sensitive summaries include consumer action and verification guidance
+without exposing private material.
 
 The workflow requires one repository secret:
 

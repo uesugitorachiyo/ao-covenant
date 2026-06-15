@@ -4,7 +4,9 @@ Use this checklist when a private report may affect AO Covenant contracts,
 evidence bundles, signing keys, release metadata, verification results, local
 execution behavior, or public documentation. Pair it with the
 [security policy](../SECURITY.md), [threat model](threat-model.md), and
-[security advisory routing guide](security-advisory-routing.md).
+[security advisory routing guide](security-advisory-routing.md). Use the
+[release note template](release-note-template.md) when public release notes or
+replacement notices need security-sensitive wording.
 
 ## Scope
 
@@ -67,6 +69,7 @@ git diff --check
 ## 5. Disclosure And Release Notes
 
 - Publish only the detail needed for users to assess impact and take action.
+- Draft public release notes with the [release note template](release-note-template.md).
 - Do not include exploit payloads, private keys, credentials, customer data,
   production evidence, unreleased bundles, or local paths.
 - If a release artifact, signature, checksum, attestation, or provenance report
