@@ -5,8 +5,9 @@ release workflow. It validates the local release package path without
 publishing anything.
 
 Use this with [release operations](release.md), the
-[release verification walkthrough](release-verification.md), and the public
-readiness index.
+[release verification walkthrough](release-verification.md), the
+[release rollback runbook](release-rollback.md), and the public readiness
+index.
 
 ## Scope
 

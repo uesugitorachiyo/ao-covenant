@@ -8,7 +8,9 @@ instead of overwriting assets when a manually dispatched workflow targets a
 release that already has one or more matching asset names. Operators must set
 `replace_existing_assets=true` and provide a `replacement_reason` to replace
 existing assets. Replacement runs publish `release-replacement-policy.json`
-alongside the release artifacts so the override is visible to consumers.
+alongside the release artifacts so the override is visible to consumers. Use
+the [release rollback runbook](release-rollback.md) before replacing,
+withdrawing, or correcting a published release.
 
 Before pushing a tag or manually dispatching this workflow, run the
 [release dry-run checklist](release-dry-run.md). The dry run packages, signs,
