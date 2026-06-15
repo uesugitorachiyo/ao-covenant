@@ -5,6 +5,7 @@ AO Covenant release. It defines the minimum asset set and verification output
 that should be present for a release to be considered known-good.
 
 Use this document with the [release verification walkthrough](release-verification.md),
+[release consumer smoke script](../scripts/release-consumer-smoke.sh),
 [release note fixtures](release-note-fixtures.md),
 [release rollback runbook](release-rollback.md), and
 [security policy](../SECURITY.md).
@@ -58,6 +59,12 @@ covenant release verify --dir . --public-key covenant-release-public-key.json
 covenant release report --dir . --public-key covenant-release-public-key.json
 covenant release inspect --dir . --public-key covenant-release-public-key.json
 gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant
+```
+
+Consumers can run the same baseline as a one-command smoke check:
+
+```sh
+../scripts/release-consumer-smoke.sh . --repo uesugitorachiyo/ao-covenant
 ```
 
 Known-good output means:

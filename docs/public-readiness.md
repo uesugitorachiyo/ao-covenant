@@ -25,6 +25,9 @@ artifact attestations, provenance reports, and failure handling. The
 [public release known-good baseline](public-release-known-good-baseline.md)
 defines the expected release asset set, platform coverage, verification output,
 schema validation, replacement policy, and sensitive-material exclusions.
+The [release consumer smoke script](../scripts/release-consumer-smoke.sh)
+provides a single consumer-facing command for downloaded release directories
+using only public release assets and an installed `covenant` binary.
 Maintainers should run the [release dry-run checklist](release-dry-run.md)
 before tagging or manually dispatching a public release. Use the
 [release rollback runbook](release-rollback.md) before replacing, withdrawing,
@@ -38,6 +41,7 @@ Local check:
 
 ```sh
 go test -count=1 ./internal/cli -run TestReleaseVerificationWalkthroughIsLinkedAndComplete
+go test -count=1 ./internal/cli -run TestReleaseConsumerSmokeScriptIsLinkedAndComplete
 ```
 
 ## Security And Disclosure

@@ -831,6 +831,75 @@ func TestPublicReleaseKnownGoodBaselineIsLinkedAndComplete(t *testing.T) {
 	}
 }
 
+func TestReleaseConsumerSmokeScriptIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	verification := readText("docs", "release-verification.md")
+	readiness := readText("docs", "public-readiness.md")
+	baseline := readText("docs", "public-release-known-good-baseline.md")
+	contributing := readText("CONTRIBUTING.md")
+	script := readText("scripts", "release-consumer-smoke.sh")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Release Consumer Smoke Script](scripts/release-consumer-smoke.sh)"},
+		{name: "verification link", doc: verification, want: "[release consumer smoke script](../scripts/release-consumer-smoke.sh)"},
+		{name: "readiness link", doc: readiness, want: "[release consumer smoke script](../scripts/release-consumer-smoke.sh)"},
+		{name: "baseline link", doc: baseline, want: "[release consumer smoke script](../scripts/release-consumer-smoke.sh)"},
+		{name: "contributing link", doc: contributing, want: "[release consumer smoke script](scripts/release-consumer-smoke.sh)"},
+		{name: "shebang", doc: script, want: "#!/usr/bin/env bash"},
+		{name: "strict shell", doc: script, want: "set -euo pipefail"},
+		{name: "usage", doc: script, want: "Usage:"},
+		{name: "custom binary", doc: script, want: "COVENANT_BIN"},
+		{name: "repo option", doc: script, want: "--repo"},
+		{name: "out option", doc: script, want: "--out"},
+		{name: "skip attestation option", doc: script, want: "--skip-attestation"},
+		{name: "manifest asset", doc: script, want: "manifest.json"},
+		{name: "checksums asset", doc: script, want: "SHA256SUMS"},
+		{name: "signature asset", doc: script, want: "release-signature.json"},
+		{name: "public key asset", doc: script, want: "covenant-release-public-key.json"},
+		{name: "linux checksum", doc: script, want: "sha256sum -c SHA256SUMS"},
+		{name: "macos checksum", doc: script, want: "shasum -a 256 -c SHA256SUMS"},
+		{name: "release verify", doc: script, want: "covenant release verify --dir \"$RELEASE_DIR\" --public-key \"$PUBLIC_KEY\" --json"},
+		{name: "release report", doc: script, want: "covenant release report --dir \"$RELEASE_DIR\" --public-key \"$PUBLIC_KEY\" --format json --out \"$OUT_DIR/release-report.json\""},
+		{name: "release inspect", doc: script, want: "covenant release inspect --dir \"$RELEASE_DIR\" --public-key \"$PUBLIC_KEY\" --json"},
+		{name: "validate verify", doc: script, want: "covenant schema validate --file \"$OUT_DIR/release-verify.json\""},
+		{name: "validate report", doc: script, want: "covenant schema validate --file \"$OUT_DIR/release-report.json\""},
+		{name: "validate inspect", doc: script, want: "covenant schema validate --file \"$OUT_DIR/release-inspect.json\""},
+		{name: "replacement policy schema", doc: script, want: "covenant.release-replacement-policy.v1"},
+		{name: "attestation", doc: script, want: "gh attestation verify \"$RELEASE_DIR/manifest.json\" --repo \"$REPO\""},
+		{name: "sensitive material warning", doc: script, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+
+	for _, forbidden := range []string{
+		"go run ./cmd/covenant",
+		"go test",
+		"COVENANT_RELEASE_SIGNING_KEY",
+		"git -C",
+		".covenant/release-readiness",
+	} {
+		if strings.Contains(script, forbidden) {
+			t.Fatalf("script contains repo-private command or path %q", forbidden)
+		}
+	}
+}
+
 func TestReleaseNoteFixturesAreLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {

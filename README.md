@@ -36,6 +36,8 @@ Security model:
   to use private advisories and how to keep public reports minimal.
 - [Release Verification](docs/release-verification.md) gives consumers a
   checksum, signature, attestation, and provenance walkthrough before install.
+- [Release Consumer Smoke Script](scripts/release-consumer-smoke.sh) gives
+  consumers a single public script for downloaded release directories.
 - [Public Release Known-Good Baseline](docs/public-release-known-good-baseline.md)
   defines the minimum public asset and verification output expectations for a
   trusted release.
