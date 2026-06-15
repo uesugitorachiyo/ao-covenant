@@ -10,6 +10,10 @@ coverage.out
 *.pem
 *.p12
 *.pfx
+*.key
 id_rsa
 id_rsa.pub
+covenant-private-key.json
+covenant-release-private-key.json
+*private-key*.json
 docs/superpowers/
