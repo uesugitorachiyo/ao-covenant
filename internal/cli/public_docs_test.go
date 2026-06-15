@@ -45,3 +45,36 @@ func TestPublicThreatModelDocumentationIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestSecurityPolicyDocumentsPublicDisclosureProcess(t *testing.T) {
+	bytes, err := os.ReadFile(filepath.Join("..", "..", "SECURITY.md"))
+	if err != nil {
+		t.Fatalf("read SECURITY.md: %v", err)
+	}
+	security := string(bytes)
+
+	for _, check := range []struct {
+		name string
+		want string
+	}{
+		{name: "reporting section", want: "## Reporting"},
+		{name: "supported versions section", want: "## Supported Versions"},
+		{name: "response expectations section", want: "## Response Expectations"},
+		{name: "severity section", want: "## Severity Guidance"},
+		{name: "public issue guidance section", want: "## Public Issue Guidance"},
+		{name: "secret leakage section", want: "## Secret Leakage"},
+		{name: "github security advisories", want: "GitHub Security Advisories"},
+		{name: "sensitive report content", want: "minimal reproducer"},
+		{name: "no public exploit details", want: "Do not post exploit details"},
+		{name: "critical severity", want: "Critical"},
+		{name: "high severity", want: "High"},
+		{name: "moderate severity", want: "Moderate"},
+		{name: "low severity", want: "Low"},
+		{name: "revocation response", want: "revoke or rotate"},
+		{name: "main branch support", want: "`main` branch"},
+	} {
+		if !strings.Contains(security, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
