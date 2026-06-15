@@ -246,6 +246,7 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 		filepath.Join(workDir, "release-readiness-summary.json"),
 		filepath.Join(workDir, "release", "manifest.json"),
 		filepath.Join(workDir, "release", "release-signature.json"),
+		filepath.Join(workDir, "release", "covenant-release-public-key.json"),
 	} {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("expected readiness artifact %s: %v\nstdout:\n%s\nstderr:\n%s", path, err, stdout.String(), stderr.String())
@@ -292,6 +293,7 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 	validateSchemaFile(t, schema.ReleaseReadinessSummarySchemaID, filepath.Join(workDir, "release-readiness-summary.json"))
 	validateSchemaFile(t, schema.ReleaseManifestSchemaID, filepath.Join(workDir, "release", "manifest.json"))
 	validateSchemaFile(t, schema.ReleaseSignatureSchemaID, filepath.Join(workDir, "release", "release-signature.json"))
+	validateSchemaFile(t, schema.BundlePublicKeySchemaID, filepath.Join(workDir, "release", "covenant-release-public-key.json"))
 }
 
 func validateSchemaFile(t *testing.T, schemaID string, path string) {

@@ -35,6 +35,7 @@ ledger_path="$run_dir/$run_id/events.ndjson"
 evidence_path="$run_dir/$run_id/evidence-pack.json"
 private_key="covenant-private-key.json"
 public_key="covenant-public-key.json"
+release_public_key="covenant-release-public-key.json"
 bundle_path="release-ready-bundle.zip"
 files_list="$WORKSPACE/schema-files.txt"
 
@@ -115,22 +116,23 @@ save_json release-package release package \
   --target "$TARGET" \
   --sign-key "$private_key" \
   --json
+cp "$WORKSPACE/$public_key" "$DIST/$release_public_key"
 covenant release verify \
   --dir "$DIST" \
-  --public-key "$public_key" > "$ARTIFACTS/release-verify.txt"
+  --public-key "$DIST/$release_public_key" > "$ARTIFACTS/release-verify.txt"
 save_json release-verify release verify \
   --dir "$DIST" \
-  --public-key "$public_key" \
+  --public-key "$DIST/$release_public_key" \
   --json
 save_json release-inspect release inspect \
   --dir "$DIST" \
-  --public-key "$public_key" \
+  --public-key "$DIST/$release_public_key" \
   --json
 
 "$BIN" version --json > "$ARTIFACTS/binary-version.json"
 "$BIN" release verify \
   --dir "$DIST" \
-  --public-key "$WORKSPACE/$public_key" \
+  --public-key "$DIST/$release_public_key" \
   --json > "$ARTIFACTS/binary-release-verify.json"
 
 {
@@ -140,6 +142,7 @@ save_json release-inspect release inspect \
   printf '%s\n' "$public_key"
   printf '%s\n' "release/manifest.json"
   printf '%s\n' "release/release-signature.json"
+  printf '%s\n' "release/$release_public_key"
   (cd "$WORKSPACE" && find artifacts -name '*.json' ! -name 'schema-validation.json' -print | sort)
 } > "$files_list"
 
