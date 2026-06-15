@@ -32,6 +32,8 @@ Security model:
   sensitive material handling.
 - [Release Verification](docs/release-verification.md) gives consumers a
   checksum, signature, attestation, and provenance walkthrough before install.
+- [Public Readiness](docs/public-readiness.md) indexes the public docs,
+  verification gates, schema checks, and repository hygiene checks.
 
 Stable release JSON examples live in
 `internal/schema/testdata/release-fixtures/` and are validated against the

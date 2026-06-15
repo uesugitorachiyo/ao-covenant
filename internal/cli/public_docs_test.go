@@ -122,3 +122,43 @@ func TestReleaseVerificationWalkthroughIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestPublicReadinessIndexIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	index := readText("docs", "public-readiness.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Public Readiness](docs/public-readiness.md)"},
+		{name: "install section", doc: index, want: "## Install And Platform Support"},
+		{name: "release verification section", doc: index, want: "## Release Verification"},
+		{name: "security section", doc: index, want: "## Security And Disclosure"},
+		{name: "schemas section", doc: index, want: "## Public Schemas And Automation"},
+		{name: "local gate section", doc: index, want: "## Local Release-Readiness Gate"},
+		{name: "repository hygiene section", doc: index, want: "## Repository Hygiene"},
+		{name: "install link", doc: index, want: "[install guide](install.md)"},
+		{name: "release verification link", doc: index, want: "[release verification walkthrough](release-verification.md)"},
+		{name: "threat model link", doc: index, want: "[threat model](threat-model.md)"},
+		{name: "security policy link", doc: index, want: "[security policy](../SECURITY.md)"},
+		{name: "schema command", doc: index, want: "covenant schema catalog"},
+		{name: "release readiness command", doc: index, want: "./scripts/release-readiness.sh"},
+		{name: "hygiene test command", doc: index, want: "TestTrackedRepositoryFilesDoNotContainLocalSecretsOrMachinePaths"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
