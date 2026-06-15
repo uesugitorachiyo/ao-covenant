@@ -1,5 +1,7 @@
 # AO Covenant
 
+[![Release Readiness](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml/badge.svg)](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml)
+
 AO Covenant is a local-first orchestration kernel for evidence-bound agent work.
 
 AO Covenant currently builds the contract, policy, run, and evidence spine:
@@ -33,7 +35,8 @@ Security model:
 - [Release Verification](docs/release-verification.md) gives consumers a
   checksum, signature, attestation, and provenance walkthrough before install.
 - [Public Readiness](docs/public-readiness.md) indexes the public docs,
-  verification gates, schema checks, and repository hygiene checks.
+  verification gates, schema checks, repository hygiene checks, and the
+  [Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml).
 - [Public API Stability](docs/public-api-stability.md) defines stable,
   experimental, and internal consumer surfaces before 1.0.
 - [Contributing](CONTRIBUTING.md) defines local setup, required checks,
