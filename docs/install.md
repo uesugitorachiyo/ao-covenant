@@ -20,6 +20,10 @@ The release directory contains:
 Maintainers should use the signed release automation documented in
 [`docs/release.md`](release.md) for public releases.
 
+Before installing a downloaded public release, follow the
+[release verification walkthrough](release-verification.md) for checksum,
+signature, attestation, and provenance checks.
+
 ## Ubuntu
 
 Verify the downloaded artifact:
