@@ -32,6 +32,8 @@ Security model:
   boundaries, mitigated threats, operator responsibilities, and non-goals.
 - [Security Policy](SECURITY.md) defines private vulnerability reporting and
   sensitive material handling.
+- [Security Advisory Routing](docs/security-advisory-routing.md) defines when
+  to use private advisories and how to keep public reports minimal.
 - [Release Verification](docs/release-verification.md) gives consumers a
   checksum, signature, attestation, and provenance walkthrough before install.
 - [Public Readiness](docs/public-readiness.md) indexes the public docs,
