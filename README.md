@@ -38,6 +38,8 @@ Security model:
   checksum, signature, attestation, and provenance walkthrough before install.
 - [Release Consumer Smoke Script](scripts/release-consumer-smoke.sh) gives
   consumers a single public script for downloaded release directories.
+- [Windows Release Consumer Smoke Script](scripts/release-consumer-smoke.ps1)
+  gives Windows consumers the same smoke path using PowerShell-native checks.
 - [Public Release Known-Good Baseline](docs/public-release-known-good-baseline.md)
   defines the minimum public asset and verification output expectations for a
   trusted release.

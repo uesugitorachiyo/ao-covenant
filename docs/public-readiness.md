@@ -28,6 +28,10 @@ schema validation, replacement policy, and sensitive-material exclusions.
 The [release consumer smoke script](../scripts/release-consumer-smoke.sh)
 provides a single consumer-facing command for downloaded release directories
 using only public release assets and an installed `covenant` binary.
+The
+[Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1)
+provides the same consumer-facing command path with PowerShell-native checksum
+verification.
 Maintainers should run the [release dry-run checklist](release-dry-run.md)
 before tagging or manually dispatching a public release. Use the
 [release rollback runbook](release-rollback.md) before replacing, withdrawing,
@@ -42,6 +46,7 @@ Local check:
 ```sh
 go test -count=1 ./internal/cli -run TestReleaseVerificationWalkthroughIsLinkedAndComplete
 go test -count=1 ./internal/cli -run TestReleaseConsumerSmokeScriptIsLinkedAndComplete
+go test -count=1 ./internal/cli -run TestReleaseConsumerSmokePowerShellScriptIsLinkedAndComplete
 ```
 
 ## Security And Disclosure
