@@ -209,3 +209,48 @@ func TestContributorGuideIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestConductAndGovernanceDocsAreLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+	conduct := readText("CODE_OF_CONDUCT.md")
+	governance := readText("GOVERNANCE.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README conduct link", doc: readme, want: "[Code of Conduct](CODE_OF_CONDUCT.md)"},
+		{name: "README governance link", doc: readme, want: "[Governance](GOVERNANCE.md)"},
+		{name: "readiness conduct link", doc: readiness, want: "[code of conduct](../CODE_OF_CONDUCT.md)"},
+		{name: "readiness governance link", doc: readiness, want: "[governance](../GOVERNANCE.md)"},
+		{name: "contributing conduct link", doc: contributing, want: "[code of conduct](CODE_OF_CONDUCT.md)"},
+		{name: "contributing governance link", doc: contributing, want: "[governance](GOVERNANCE.md)"},
+		{name: "conduct expected behavior", doc: conduct, want: "## Expected Behavior"},
+		{name: "conduct unacceptable behavior", doc: conduct, want: "## Unacceptable Behavior"},
+		{name: "conduct reporting", doc: conduct, want: "## Reporting Conduct Issues"},
+		{name: "conduct security policy link", doc: conduct, want: "[security policy](SECURITY.md)"},
+		{name: "governance project status", doc: governance, want: "## Project Status"},
+		{name: "governance decision scope", doc: governance, want: "## Maintainer Decision Scope"},
+		{name: "governance contribution decisions", doc: governance, want: "## Contribution Decisions"},
+		{name: "governance release decisions", doc: governance, want: "## Release Decisions"},
+		{name: "governance pre-1.0", doc: governance, want: "pre-1.0"},
+		{name: "governance protected main", doc: governance, want: "protected `main`"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
