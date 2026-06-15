@@ -3,6 +3,7 @@
 Use this template when drafting GitHub release notes, replacement notices,
 withdrawal notices, public advisory summaries, or corrected release notes. Pair
 it with the [release operations](release.md), [release verification walkthrough](release-verification.md),
+[release note fixtures](release-note-fixtures.md),
 [public release known-good baseline](public-release-known-good-baseline.md),
 [release rollback runbook](release-rollback.md), and
 [security policy](../SECURITY.md).
@@ -152,6 +153,8 @@ Before publishing release notes:
 
 - confirm the text names the affected version, who is affected, required
   consumer action, and what to download
+- compare wording against the [release note fixtures](release-note-fixtures.md)
+  for normal, replacement, withdrawal, and security-sensitive examples
 - confirm the verification block includes checksum, signature, report, and
   attestation expectations where applicable
 - confirm the [public release known-good baseline](public-release-known-good-baseline.md)

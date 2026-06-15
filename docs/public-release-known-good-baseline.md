@@ -5,6 +5,7 @@ AO Covenant release. It defines the minimum asset set and verification output
 that should be present for a release to be considered known-good.
 
 Use this document with the [release verification walkthrough](release-verification.md),
+[release note fixtures](release-note-fixtures.md),
 [release rollback runbook](release-rollback.md), and
 [security policy](../SECURITY.md).
 

@@ -830,3 +830,103 @@ func TestPublicReleaseKnownGoodBaselineIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestReleaseNoteFixturesAreLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	template := readText("docs", "release-note-template.md")
+	baseline := readText("docs", "public-release-known-good-baseline.md")
+	contributing := readText("CONTRIBUTING.md")
+	index := readText("docs", "release-note-fixtures.md")
+	fixtures := map[string]string{
+		"normal":             readText("internal", "cli", "testdata", "release-note-fixtures", "normal.md"),
+		"replacement":        readText("internal", "cli", "testdata", "release-note-fixtures", "replacement.md"),
+		"withdrawal":         readText("internal", "cli", "testdata", "release-note-fixtures", "withdrawal.md"),
+		"security-sensitive": readText("internal", "cli", "testdata", "release-note-fixtures", "security-sensitive.md"),
+	}
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Release Note Fixtures](docs/release-note-fixtures.md)"},
+		{name: "readiness link", doc: readiness, want: "[release note fixtures](release-note-fixtures.md)"},
+		{name: "template link", doc: template, want: "[release note fixtures](release-note-fixtures.md)"},
+		{name: "baseline link", doc: baseline, want: "[release note fixtures](release-note-fixtures.md)"},
+		{name: "contributing link", doc: contributing, want: "[release note fixtures](docs/release-note-fixtures.md)"},
+		{name: "title", doc: index, want: "# AO Covenant Release Note Fixtures"},
+		{name: "scope section", doc: index, want: "## Scope"},
+		{name: "fixture inventory section", doc: index, want: "## Fixture Inventory"},
+		{name: "stable content section", doc: index, want: "## Stable Content Requirements"},
+		{name: "safety section", doc: index, want: "## Safety Requirements"},
+		{name: "maintenance section", doc: index, want: "## Maintenance"},
+		{name: "normal fixture link", doc: index, want: "[normal.md](../internal/cli/testdata/release-note-fixtures/normal.md)"},
+		{name: "replacement fixture link", doc: index, want: "[replacement.md](../internal/cli/testdata/release-note-fixtures/replacement.md)"},
+		{name: "withdrawal fixture link", doc: index, want: "[withdrawal.md](../internal/cli/testdata/release-note-fixtures/withdrawal.md)"},
+		{name: "security fixture link", doc: index, want: "[security-sensitive.md](../internal/cli/testdata/release-note-fixtures/security-sensitive.md)"},
+		{name: "fixture test command", doc: index, want: "go test -count=1 ./internal/cli -run TestReleaseNoteFixturesAreLinkedAndComplete"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+
+	commonRequired := []string{
+		"Affected version:",
+		"Who is affected:",
+		"Required consumer action:",
+		"What to download:",
+		"Verification:",
+		"covenant release verify --dir . --public-key covenant-release-public-key.json",
+		"covenant release report --dir . --public-key covenant-release-public-key.json",
+		"gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant",
+		"Do not include private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths.",
+	}
+	for name, fixture := range fixtures {
+		for _, want := range commonRequired {
+			if !strings.Contains(fixture, want) {
+				t.Fatalf("%s fixture missing %q", name, want)
+			}
+		}
+		for _, forbidden := range []string{"BEGIN PRIVATE KEY", "private_key", "/Users/", "C:\\Users\\", "token=", "password="} {
+			if strings.Contains(fixture, forbidden) {
+				t.Fatalf("%s fixture contains forbidden sensitive marker %q", name, forbidden)
+			}
+		}
+	}
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "normal title", doc: fixtures["normal"], want: "## AO Covenant v0.1.0"},
+		{name: "normal summary", doc: fixtures["normal"], want: "Summary:"},
+		{name: "normal no action", doc: fixtures["normal"], want: "No existing installation action is required"},
+		{name: "replacement title", doc: fixtures["replacement"], want: "## Release Notice For v0.1.0"},
+		{name: "replacement status", doc: fixtures["replacement"], want: "Status:"},
+		{name: "replacement policy", doc: fixtures["replacement"], want: "release-replacement-policy.json"},
+		{name: "replacement schema", doc: fixtures["replacement"], want: "covenant.release-replacement-policy.v1"},
+		{name: "withdrawal status", doc: fixtures["withdrawal"], want: "withdrawn"},
+		{name: "withdrawal stop", doc: fixtures["withdrawal"], want: "Stop using v0.1.0"},
+		{name: "security title", doc: fixtures["security-sensitive"], want: "## Security-Sensitive Release Note For v0.1.0"},
+		{name: "security safe impact", doc: fixtures["security-sensitive"], want: "safe impact statement"},
+		{name: "security routing", doc: fixtures["security-sensitive"], want: "Security routing:"},
+		{name: "security no exploit", doc: fixtures["security-sensitive"], want: "Do not include exploit payloads or secret values."},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}

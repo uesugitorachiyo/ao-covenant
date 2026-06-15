@@ -72,6 +72,19 @@
       "files": [
         "release-redaction-policy.json"
       ]
+    },
+    {
+      "name": "release-note",
+      "directory": "internal/cli/testdata/release-note-fixtures",
+      "purpose": "Stable public release note examples for normal, replacement, withdrawal, and security-sensitive release notes.",
+      "generated": false,
+      "check_command": "go test ./internal/cli -run TestReleaseNoteFixturesAreLinkedAndComplete -count=1",
+      "files": [
+        "normal.md",
+        "replacement.md",
+        "security-sensitive.md",
+        "withdrawal.md"
+      ]
     }
   ]
 }
