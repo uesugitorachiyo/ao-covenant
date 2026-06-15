@@ -593,3 +593,60 @@ func TestReleaseDryRunDocumentationIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestReleaseRollbackRunbookIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	releaseOps := readText("docs", "release.md")
+	dryRun := readText("docs", "release-dry-run.md")
+	verification := readText("docs", "release-verification.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+	runbook := readText("docs", "release-rollback.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Release Rollback](docs/release-rollback.md)"},
+		{name: "release operations link", doc: releaseOps, want: "[release rollback runbook](release-rollback.md)"},
+		{name: "dry run link", doc: dryRun, want: "[release rollback runbook](release-rollback.md)"},
+		{name: "verification link", doc: verification, want: "[release rollback runbook](release-rollback.md)"},
+		{name: "readiness link", doc: readiness, want: "[release rollback runbook](release-rollback.md)"},
+		{name: "contributing link", doc: contributing, want: "[release rollback runbook](docs/release-rollback.md)"},
+		{name: "title", doc: runbook, want: "# AO Covenant Release Rollback And Replacement Runbook"},
+		{name: "scope section", doc: runbook, want: "## Scope"},
+		{name: "decision section", doc: runbook, want: "## Decision Flow"},
+		{name: "replace section", doc: runbook, want: "## Replace Existing Assets"},
+		{name: "rollback section", doc: runbook, want: "## Roll Back Or Withdraw A Release"},
+		{name: "consumer notice section", doc: runbook, want: "## Consumer Notice Requirements"},
+		{name: "post action section", doc: runbook, want: "## Post-Action Verification"},
+		{name: "security escalation section", doc: runbook, want: "## Security Escalation"},
+		{name: "replacement flag", doc: runbook, want: "replace_existing_assets=true"},
+		{name: "replacement reason", doc: runbook, want: "replacement_reason"},
+		{name: "replacement policy", doc: runbook, want: "release-replacement-policy.json"},
+		{name: "release verify command", doc: runbook, want: "covenant release verify"},
+		{name: "attestation command", doc: runbook, want: "gh attestation verify"},
+		{name: "release report command", doc: runbook, want: "covenant release report"},
+		{name: "no silent overwrite", doc: runbook, want: "Do not silently overwrite release assets"},
+		{name: "consumer notice", doc: runbook, want: "Consumers must be told what changed, who is affected, what to download, and what to verify"},
+		{name: "private key warning", doc: runbook, want: "Do not include private keys, credentials, production evidence, unreleased bundles, or local machine paths"},
+		{name: "security policy link", doc: runbook, want: "[security policy](../SECURITY.md)"},
+		{name: "release verification link", doc: runbook, want: "[release verification walkthrough](release-verification.md)"},
+		{name: "release operations link", doc: runbook, want: "[release operations](release.md)"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}

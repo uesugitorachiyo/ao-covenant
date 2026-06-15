@@ -23,7 +23,9 @@ Consumers should verify release assets before installation with the
 covers release downloads, `SHA256SUMS`, AO Covenant release signatures, GitHub
 artifact attestations, provenance reports, and failure handling.
 Maintainers should run the [release dry-run checklist](release-dry-run.md)
-before tagging or manually dispatching a public release.
+before tagging or manually dispatching a public release. Use the
+[release rollback runbook](release-rollback.md) before replacing, withdrawing,
+or correcting published release assets.
 
 Local check:
 

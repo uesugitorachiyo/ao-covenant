@@ -38,6 +38,8 @@ Security model:
   checksum, signature, attestation, and provenance walkthrough before install.
 - [Release Dry Run](docs/release-dry-run.md) defines the local pre-tag release
   packaging and verification checklist.
+- [Release Rollback](docs/release-rollback.md) defines replacement, rollback,
+  withdrawal, and consumer notice expectations for published assets.
 - [Public Readiness](docs/public-readiness.md) indexes the public docs,
   verification gates, schema checks, repository hygiene checks, and the
   [Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml).
