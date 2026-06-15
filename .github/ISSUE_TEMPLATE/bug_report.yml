@@ -1,0 +1,65 @@
+name: Bug report
+description: Report a reproducible AO Covenant bug using synthetic data.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Do not include private keys, tokens, production evidence bundles, or local machine paths.
+  - type: input
+    id: version
+    attributes:
+      label: AO Covenant version or commit
+      description: Use `covenant version`, the release tag, or the commit SHA.
+      placeholder: "v0.1.0 or abc1234"
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating system
+      options:
+        - Ubuntu
+        - macOS
+        - Windows
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command or workflow
+      description: Include the command, workflow, or release operation that failed.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Minimal synthetic reproducer
+      description: Provide a minimal reproduction that uses synthetic contracts, bundles, fixtures, or release files.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public issue safety
+      options:
+        - label: I removed private keys, credentials, production evidence, unreleased bundles, and local machine paths.
+          required: true
+        - label: This report does not include exploit details or confidential data.
+          required: true

@@ -1,0 +1,66 @@
+name: Release verification failure
+description: Report checksum, signature, attestation, provenance, or install verification failures.
+title: "release verification: "
+labels:
+  - release
+  - verification
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for failures while following docs/release-verification.md. Do not include private keys, credentials, production evidence, or local machine paths.
+  - type: input
+    id: release-asset
+    attributes:
+      label: Release tag and asset
+      description: Name the release tag and the archive, manifest, checksum, signature, public key, or provenance file involved.
+      placeholder: "v0.1.0 / covenant_0.1.0_linux_amd64.tar.gz"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Ubuntu
+        - macOS
+        - Windows
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: verification-command
+    attributes:
+      label: Verification command and output
+      description: Include the exact command and redacted output from the failed verification step.
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: failure-type
+    attributes:
+      label: Failure type
+      options:
+        - Checksum mismatch
+        - AO Covenant release signature failure
+        - GitHub artifact attestation failure
+        - Provenance or report mismatch
+        - Install path or platform mismatch
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result from docs/release-verification.md
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public issue safety
+      options:
+        - label: I removed private keys, credentials, production evidence, unreleased bundles, and local machine paths.
+          required: true
+        - label: I followed docs/release-verification.md before opening this issue.
+          required: true

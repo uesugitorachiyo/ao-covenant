@@ -342,3 +342,63 @@ func TestReleaseReadinessWorkflowIsDiscoverable(t *testing.T) {
 		}
 	}
 }
+
+func TestGitHubIssueAndPullRequestTemplatesAreComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	config := readText(".github", "ISSUE_TEMPLATE", "config.yml")
+	bug := readText(".github", "ISSUE_TEMPLATE", "bug_report.yml")
+	releaseVerification := readText(".github", "ISSUE_TEMPLATE", "release_verification_failure.yml")
+	securitySensitive := readText(".github", "ISSUE_TEMPLATE", "security_sensitive_report.yml")
+	pullRequest := readText(".github", "pull_request_template.md")
+	contributing := readText("CONTRIBUTING.md")
+	readiness := readText("docs", "public-readiness.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "blank issues disabled", doc: config, want: "blank_issues_enabled: false"},
+		{name: "security contact", doc: config, want: "SECURITY.md"},
+		{name: "bug template name", doc: bug, want: "name: Bug report"},
+		{name: "bug template public safety", doc: bug, want: "Do not include private keys, tokens, production evidence bundles, or local machine paths."},
+		{name: "bug version field", doc: bug, want: "AO Covenant version or commit"},
+		{name: "bug os field", doc: bug, want: "Operating system"},
+		{name: "bug repro field", doc: bug, want: "Minimal synthetic reproducer"},
+		{name: "release template name", doc: releaseVerification, want: "name: Release verification failure"},
+		{name: "release asset field", doc: releaseVerification, want: "Release tag and asset"},
+		{name: "release command field", doc: releaseVerification, want: "Verification command and output"},
+		{name: "release walkthrough link", doc: releaseVerification, want: "docs/release-verification.md"},
+		{name: "release no secrets", doc: releaseVerification, want: "Do not include private keys, credentials, production evidence, or local machine paths."},
+		{name: "security template name", doc: securitySensitive, want: "name: Security-sensitive report"},
+		{name: "security private advisory route", doc: securitySensitive, want: "GitHub Security Advisories"},
+		{name: "security public minimum", doc: securitySensitive, want: "Do not post exploit details, private keys, tokens, customer data, production evidence bundles, unreleased bundles, or local paths."},
+		{name: "security policy link", doc: securitySensitive, want: "SECURITY.md"},
+		{name: "pr summary", doc: pullRequest, want: "## Summary"},
+		{name: "pr public readiness", doc: pullRequest, want: "## Public Readiness Impact"},
+		{name: "pr security", doc: pullRequest, want: "## Security And Sensitive Material"},
+		{name: "pr verification", doc: pullRequest, want: "## Verification"},
+		{name: "pr tests", doc: pullRequest, want: "- [ ] `go test -count=1 ./...`"},
+		{name: "pr vet", doc: pullRequest, want: "- [ ] `go vet ./...`"},
+		{name: "pr yaml", doc: pullRequest, want: "YAML.load_file"},
+		{name: "pr diff check", doc: pullRequest, want: "- [ ] `git diff --check`"},
+		{name: "pr release readiness", doc: pullRequest, want: "./scripts/release-readiness.sh"},
+		{name: "pr no sensitive material", doc: pullRequest, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
+		{name: "contributing issue templates", doc: contributing, want: "Use the GitHub issue templates"},
+		{name: "contributing pr template", doc: contributing, want: "pull request template"},
+		{name: "readiness templates", doc: readiness, want: "GitHub issue and pull request templates"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}

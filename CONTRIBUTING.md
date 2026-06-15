@@ -13,6 +13,11 @@ Follow the [code of conduct](CODE_OF_CONDUCT.md) and
 [governance](GOVERNANCE.md) docs when opening issues, discussing scope, or
 requesting maintainer decisions.
 
+Use the GitHub issue templates for bug reports, release verification failures,
+and security-sensitive routing. The pull request template lists the required
+public-readiness, sensitive-material, and verification checks for proposed
+changes.
+
 ## Local Setup
 
 Use Go 1.24 or newer. Work from a clean checkout on a feature branch:

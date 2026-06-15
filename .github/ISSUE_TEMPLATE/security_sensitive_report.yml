@@ -1,0 +1,39 @@
+name: Security-sensitive report
+description: Route sensitive reports away from public issues.
+title: "security: minimal public routing note"
+labels:
+  - security
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read SECURITY.md before continuing. Prefer GitHub Security Advisories for private disclosure when a report includes exploit details, private keys, tokens, customer data, production evidence bundles, unreleased bundles, or local paths.
+
+        Do not post exploit details, private keys, tokens, customer data, production evidence bundles, unreleased bundles, or local paths.
+  - type: dropdown
+    id: sensitive-content
+    attributes:
+      label: Does this report contain sensitive details?
+      description: If yes, stop here and use GitHub Security Advisories instead of a public issue.
+      options:
+        - "Yes, I will use GitHub Security Advisories instead."
+        - "No, this public issue contains only a minimal non-sensitive routing note."
+    validations:
+      required: true
+  - type: textarea
+    id: minimal-summary
+    attributes:
+      label: Minimal public summary
+      description: Keep this intentionally brief. Do not include reproduction steps, exploit details, secrets, real evidence, or local paths.
+      placeholder: "There may be a security-sensitive issue affecting release verification. I will provide details privately."
+    validations:
+      required: true
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Public safety acknowledgement
+      options:
+        - label: I read SECURITY.md.
+          required: true
+        - label: This public issue does not include exploit details, private keys, tokens, customer data, production evidence bundles, unreleased bundles, or local paths.
+          required: true
