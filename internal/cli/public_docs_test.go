@@ -305,6 +305,61 @@ func TestPublicAPIStabilityPolicyIsLinkedAndComplete(t *testing.T) {
 	}
 }
 
+func TestPublicSchemaChangelogIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	stability := readText("docs", "public-api-stability.md")
+	contributing := readText("CONTRIBUTING.md")
+	changelog := readText("docs", "public-schema-changelog.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Public Schema Changelog](docs/public-schema-changelog.md)"},
+		{name: "readiness link", doc: readiness, want: "[public schema changelog](public-schema-changelog.md)"},
+		{name: "stability link", doc: stability, want: "[public schema changelog](public-schema-changelog.md)"},
+		{name: "contributing link", doc: contributing, want: "[public schema changelog](docs/public-schema-changelog.md)"},
+		{name: "title", doc: changelog, want: "# AO Covenant Public Schema Changelog"},
+		{name: "scope section", doc: changelog, want: "## Scope"},
+		{name: "compatibility rules section", doc: changelog, want: "## Compatibility Rules"},
+		{name: "schema history section", doc: changelog, want: "## Schema History"},
+		{name: "release readiness summary section", doc: changelog, want: "## Release Readiness Summary"},
+		{name: "consumer actions section", doc: changelog, want: "## Consumer Actions"},
+		{name: "maintainer checklist section", doc: changelog, want: "## Maintainer Checklist"},
+		{name: "contract schema", doc: changelog, want: "`covenant.contract.v1`"},
+		{name: "release readiness schema", doc: changelog, want: "`covenant.release-readiness-summary.v1`"},
+		{name: "schema catalog result schema", doc: changelog, want: "`covenant.schema-catalog-result.v1`"},
+		{name: "release fixture index schema", doc: changelog, want: "`covenant.release-fixture-index.v1`"},
+		{name: "bundle inspect schema", doc: changelog, want: "`covenant.bundle-inspect-result.v1`"},
+		{name: "release report schema", doc: changelog, want: "`covenant.release-report-result.v1`"},
+		{name: "additive schemas", doc: changelog, want: "Additive schemas"},
+		{name: "breaking schema changes", doc: changelog, want: "Breaking schema changes"},
+		{name: "pre 1.0", doc: changelog, want: "pre-1.0"},
+		{name: "schema version", doc: changelog, want: "`schema_version`"},
+		{name: "catalog command", doc: changelog, want: "covenant schema catalog"},
+		{name: "export command", doc: changelog, want: "covenant schema export"},
+		{name: "validate command", doc: changelog, want: "covenant schema validate"},
+		{name: "schema tests", doc: changelog, want: "go test -count=1 ./internal/schema ./internal/cli"},
+		{name: "release readiness command", doc: changelog, want: "./scripts/release-readiness.sh"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
 func TestReleaseReadinessWorkflowIsDiscoverable(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {

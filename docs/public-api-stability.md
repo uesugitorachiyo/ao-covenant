@@ -5,6 +5,7 @@ automation can depend on. This policy defines which surfaces are stable,
 experimental, or internal before 1.0.
 
 Use this policy with the [public readiness index](public-readiness.md), the
+[public schema changelog](public-schema-changelog.md), the
 [release verification walkthrough](release-verification.md), `CONTRIBUTING.md`,
 and the schemas published under `schemas/`.
 
