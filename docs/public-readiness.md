@@ -104,3 +104,9 @@ git diff --check
 
 Protected `main` requires the GitHub Actions matrix to pass on Ubuntu, macOS,
 and Windows before merge.
+
+## Contribution Flow
+
+Use the [contributor guide](../CONTRIBUTING.md) for local setup, required
+checks, branch and pull request rules, release-readiness expectations,
+documentation expectations, repository hygiene, and public schema expectations.
