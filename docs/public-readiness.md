@@ -84,6 +84,11 @@ rm -rf "$tmpdir"
 
 The scheduled/manual `Release Readiness` GitHub Actions workflow runs the same
 gate with read-only repository permissions and does not publish release assets.
+The public
+[Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml)
+uses a manual `workflow_dispatch` trigger, a weekly scheduled run, and
+read-only `contents: read` permission so external users can inspect whether the
+public smoke gate is healthy without treating it as a release publisher.
 
 ## Repository Hygiene
 

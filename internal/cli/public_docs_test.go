@@ -304,3 +304,41 @@ func TestPublicAPIStabilityPolicyIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestReleaseReadinessWorkflowIsDiscoverable(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	workflow := readText(".github", "workflows", "release-readiness.yml")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README badge", doc: readme, want: "[![Release Readiness](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml/badge.svg)](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml)"},
+		{name: "README workflow link", doc: readme, want: "[Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml)"},
+		{name: "readiness workflow link", doc: readiness, want: "[Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml)"},
+		{name: "manual trigger docs", doc: readiness, want: "manual `workflow_dispatch` trigger"},
+		{name: "scheduled trigger docs", doc: readiness, want: "weekly scheduled run"},
+		{name: "read-only permission docs", doc: readiness, want: "read-only `contents: read` permission"},
+		{name: "workflow dispatch trigger", doc: workflow, want: "workflow_dispatch:"},
+		{name: "workflow schedule trigger", doc: workflow, want: "schedule:"},
+		{name: "workflow cron", doc: workflow, want: "17 9 * * 1"},
+		{name: "workflow read-only contents", doc: workflow, want: "contents: read"},
+		{name: "workflow release readiness script", doc: workflow, want: "./scripts/release-readiness.sh"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
