@@ -162,3 +162,48 @@ func TestPublicReadinessIndexIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestContributorGuideIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Contributing](CONTRIBUTING.md)"},
+		{name: "readiness link", doc: readiness, want: "[contributor guide](../CONTRIBUTING.md)"},
+		{name: "setup section", doc: contributing, want: "## Local Setup"},
+		{name: "test section", doc: contributing, want: "## Required Local Checks"},
+		{name: "branch section", doc: contributing, want: "## Branch And Pull Request Rules"},
+		{name: "release readiness section", doc: contributing, want: "## Release-Readiness Gate"},
+		{name: "docs section", doc: contributing, want: "## Documentation Expectations"},
+		{name: "security section", doc: contributing, want: "## Security And Repository Hygiene"},
+		{name: "schema section", doc: contributing, want: "## Public Schema Expectations"},
+		{name: "go version", doc: contributing, want: "Go 1.24"},
+		{name: "full tests", doc: contributing, want: "go test -count=1 ./..."},
+		{name: "vet", doc: contributing, want: "go vet ./..."},
+		{name: "yaml parse", doc: contributing, want: "YAML.load_file"},
+		{name: "diff check", doc: contributing, want: "git diff --check"},
+		{name: "release readiness command", doc: contributing, want: "./scripts/release-readiness.sh"},
+		{name: "protected main", doc: contributing, want: "protected `main`"},
+		{name: "public readiness link", doc: contributing, want: "[public readiness index](docs/public-readiness.md)"},
+		{name: "security policy link", doc: contributing, want: "[security policy](SECURITY.md)"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
