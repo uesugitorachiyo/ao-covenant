@@ -3,6 +3,13 @@
 AO Covenant releases are built by `.github/workflows/release.yml` when a `v*`
 tag is pushed, or manually through `workflow_dispatch`.
 
+Existing release assets are immutable by default. AO Covenant fails closed
+instead of overwriting assets when a manually dispatched workflow targets a
+release that already has one or more matching asset names. Operators must set
+`replace_existing_assets=true` and provide a `replacement_reason` to replace
+existing assets. Replacement runs publish `release-replacement-policy.json`
+alongside the release artifacts so the override is visible to consumers.
+
 The workflow requires one repository secret:
 
 - `COVENANT_RELEASE_SIGNING_KEY`: the complete JSON contents of a
@@ -31,7 +38,8 @@ The release workflow performs these checks before publishing:
 - emits a machine-readable `covenant release report`
 - publishes `covenant-release-public-key.json` for consumer verification
 - generates GitHub artifact attestations for `dist/*`
-- publishes or updates the GitHub release assets
+- publishes new GitHub release assets, while existing asset replacement requires
+  an explicit `replace_existing_assets` override and `replacement_reason`
 - runs post-release smoke verification against the published GitHub release:
   downloads the release assets, runs `covenant release verify` with the
   published public key, and runs `gh attestation verify` for `manifest.json`

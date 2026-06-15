@@ -109,6 +109,44 @@ func TestReleaseWorkflowRunsPostPublishSmokeVerification(t *testing.T) {
 	}
 }
 
+func TestReleaseWorkflowGuardsExistingReleaseAssets(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+
+	for _, want := range []string{
+		"replace_existing_assets:",
+		"type: boolean",
+		"default: false",
+		"replacement_reason:",
+		"REPLACE_EXISTING_ASSETS",
+		"REPLACEMENT_REASON",
+		"release asset replacement requires workflow_dispatch input replace_existing_assets=true",
+		"gh release view \"$VERSION\" --json assets --jq '.assets[].name'",
+		"comm -12 \"$existing_assets\" \"$new_assets\"",
+		"release-replacement-policy.json",
+		"ao-covenant.release-replacement-policy.v1",
+		"replaced_assets:",
+		"gh release upload \"$VERSION\" dist/* --clobber",
+	} {
+		requireWorkflowContains(t, workflow, want)
+	}
+
+	requireWorkflowOmits(t, workflow, "if gh release view \"$VERSION\" >/dev/null 2>&1; then\n            gh release upload \"$VERSION\" dist/* --clobber")
+}
+
+func TestReleaseDocsExplainAssetReplacementGuard(t *testing.T) {
+	doc := readRepoFile(t, "docs", "release.md")
+
+	for _, want := range []string{
+		"replace_existing_assets",
+		"replacement_reason",
+		"release-replacement-policy.json",
+		"Existing release assets are immutable by default",
+	} {
+		requireWorkflowContains(t, doc, want)
+	}
+	requireWorkflowContainsNormalized(t, doc, "AO Covenant fails closed instead of overwriting assets")
+}
+
 func readRepoFile(t *testing.T, parts ...string) string {
 	t.Helper()
 	path := filepath.Join(append([]string{"..", ".."}, parts...)...)
@@ -130,5 +168,13 @@ func requireWorkflowOmits(t *testing.T, workflow string, forbidden string) {
 	t.Helper()
 	if strings.Contains(workflow, forbidden) {
 		t.Fatalf("workflow contains forbidden %q", forbidden)
+	}
+}
+
+func requireWorkflowContainsNormalized(t *testing.T, workflow string, want string) {
+	t.Helper()
+	normalized := strings.Join(strings.Fields(workflow), " ")
+	if !strings.Contains(normalized, want) {
+		t.Fatalf("workflow missing %q", want)
 	}
 }
