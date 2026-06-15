@@ -7,6 +7,9 @@ release provenance report.
 
 The `covenant-release-public-key.json` file is public verification material. It
 does not contain the release private key.
+Use the [public release known-good baseline](public-release-known-good-baseline.md)
+to compare the downloaded asset set, platform coverage, schema-backed
+verification outputs, and sensitive-material exclusions before install.
 If a release was replaced, withdrawn, or corrected after publication, review
 the [release rollback runbook](release-rollback.md) and any release notice
 before installing.

@@ -36,6 +36,9 @@ Security model:
   to use private advisories and how to keep public reports minimal.
 - [Release Verification](docs/release-verification.md) gives consumers a
   checksum, signature, attestation, and provenance walkthrough before install.
+- [Public Release Known-Good Baseline](docs/public-release-known-good-baseline.md)
+  defines the minimum public asset and verification output expectations for a
+  trusted release.
 - [Release Dry Run](docs/release-dry-run.md) defines the local pre-tag release
   packaging and verification checklist.
 - [Release Rollback](docs/release-rollback.md) defines replacement, rollback,

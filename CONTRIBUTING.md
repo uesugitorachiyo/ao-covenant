@@ -87,6 +87,7 @@ Common link points are:
 - [dependency review guide](docs/dependency-review.md)
 - [install guide](docs/install.md)
 - [release operations](docs/release.md)
+- [public release known-good baseline](docs/public-release-known-good-baseline.md)
 - [release dry-run checklist](docs/release-dry-run.md)
 - [release rollback runbook](docs/release-rollback.md)
 - [release note template](docs/release-note-template.md)

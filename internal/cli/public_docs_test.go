@@ -766,3 +766,67 @@ func TestReleaseNoteTemplateIsLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestPublicReleaseKnownGoodBaselineIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	verification := readText("docs", "release-verification.md")
+	readiness := readText("docs", "public-readiness.md")
+	template := readText("docs", "release-note-template.md")
+	contributing := readText("CONTRIBUTING.md")
+	baseline := readText("docs", "public-release-known-good-baseline.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Public Release Known-Good Baseline](docs/public-release-known-good-baseline.md)"},
+		{name: "verification link", doc: verification, want: "[public release known-good baseline](public-release-known-good-baseline.md)"},
+		{name: "readiness link", doc: readiness, want: "[public release known-good baseline](public-release-known-good-baseline.md)"},
+		{name: "template link", doc: template, want: "[public release known-good baseline](public-release-known-good-baseline.md)"},
+		{name: "contributing link", doc: contributing, want: "[public release known-good baseline](docs/public-release-known-good-baseline.md)"},
+		{name: "title", doc: baseline, want: "# AO Covenant Public Release Known-Good Baseline"},
+		{name: "scope section", doc: baseline, want: "## Scope"},
+		{name: "required assets section", doc: baseline, want: "## Required Release Assets"},
+		{name: "platform assets section", doc: baseline, want: "## Platform Asset Baseline"},
+		{name: "verification outputs section", doc: baseline, want: "## Verification Output Baseline"},
+		{name: "schema validation section", doc: baseline, want: "## Schema Validation Baseline"},
+		{name: "replacement policy section", doc: baseline, want: "## Replacement Policy Baseline"},
+		{name: "sensitive material section", doc: baseline, want: "## Sensitive Material Exclusions"},
+		{name: "failure handling section", doc: baseline, want: "## Failure Handling"},
+		{name: "manifest", doc: baseline, want: "`manifest.json`"},
+		{name: "checksums", doc: baseline, want: "`SHA256SUMS`"},
+		{name: "release signature", doc: baseline, want: "`release-signature.json`"},
+		{name: "public key", doc: baseline, want: "`covenant-release-public-key.json`"},
+		{name: "linux target", doc: baseline, want: "`linux/amd64`"},
+		{name: "macos target", doc: baseline, want: "`darwin/arm64`"},
+		{name: "windows target", doc: baseline, want: "`windows/amd64`"},
+		{name: "verify command", doc: baseline, want: "covenant release verify --dir . --public-key covenant-release-public-key.json"},
+		{name: "report command", doc: baseline, want: "covenant release report --dir . --public-key covenant-release-public-key.json"},
+		{name: "inspect command", doc: baseline, want: "covenant release inspect --dir . --public-key covenant-release-public-key.json"},
+		{name: "attestation command", doc: baseline, want: "gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant"},
+		{name: "verify schema", doc: baseline, want: "covenant.release-verify-result.v1"},
+		{name: "report schema", doc: baseline, want: "covenant.release-report-result.v1"},
+		{name: "inspect schema", doc: baseline, want: "covenant.release-inspect-result.v1"},
+		{name: "replacement schema", doc: baseline, want: "covenant.release-replacement-policy.v1"},
+		{name: "schema validate command", doc: baseline, want: "covenant schema validate"},
+		{name: "private key warning", doc: baseline, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
+		{name: "security policy link", doc: baseline, want: "[security policy](../SECURITY.md)"},
+		{name: "release verification link", doc: baseline, want: "[release verification walkthrough](release-verification.md)"},
+		{name: "rollback link", doc: baseline, want: "[release rollback runbook](release-rollback.md)"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
