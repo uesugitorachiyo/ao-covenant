@@ -45,6 +45,8 @@ Security model:
   [Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml).
 - [Public API Stability](docs/public-api-stability.md) defines stable,
   experimental, and internal consumer surfaces before 1.0.
+- [Public Schema Changelog](docs/public-schema-changelog.md) records public
+  schema families, compatibility expectations, and consumer validation actions.
 - [Dependency Review](docs/dependency-review.md) defines Go module and GitHub
   Actions supply-chain review expectations.
 - [Contributing](CONTRIBUTING.md) defines local setup, required checks,

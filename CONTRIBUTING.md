@@ -90,6 +90,7 @@ Common link points are:
 - [release dry-run checklist](docs/release-dry-run.md)
 - [release rollback runbook](docs/release-rollback.md)
 - [release verification walkthrough](docs/release-verification.md)
+- [public schema changelog](docs/public-schema-changelog.md)
 - [threat model](docs/threat-model.md)
 - [security policy](SECURITY.md)
 - [security advisory routing guide](docs/security-advisory-routing.md)
@@ -120,8 +121,10 @@ Public JSON output must have a stable `schema_version` and a schema under
 `schemas/` when it is intended for automation. Use the
 [public API stability policy](docs/public-api-stability.md) to decide whether a
 CLI command, JSON schema, release fixture, report, or release artifact is
-stable, experimental, or internal. Schema-backed command output should remain
-exportable and discoverable:
+stable, experimental, or internal. Use the
+[public schema changelog](docs/public-schema-changelog.md) when adding,
+renaming, removing, or changing public schema IDs. Schema-backed command output
+should remain exportable and discoverable:
 
 ```sh
 covenant schema catalog

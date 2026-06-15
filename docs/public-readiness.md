@@ -57,7 +57,9 @@ go test -count=1 ./internal/cli -run 'TestPublicThreatModelDocumentationIsLinked
 Automation consumers rely on embedded public schemas and stable fixture output.
 The [public API stability policy](public-api-stability.md) defines which CLI
 commands, JSON schemas, release fixtures, reports, and release artifacts are
-stable before 1.0. The schema catalog must remain available from the binary:
+stable before 1.0. The [public schema changelog](public-schema-changelog.md)
+records schema families, compatibility rules, and consumer validation actions.
+The schema catalog must remain available from the binary:
 
 ```sh
 covenant schema catalog
