@@ -2,6 +2,9 @@
 
 AO Covenant handles contracts, evidence bundles, signatures, and release metadata. Treat suspected vulnerabilities as sensitive until triaged.
 
+The public [Threat Model](docs/threat-model.md) defines protected assets, trust
+boundaries, mitigated threats, operator responsibilities, and non-goals.
+
 ## Reporting
 
 Use GitHub Security Advisories for private disclosure when available. If advisories are unavailable, open an issue with a minimal description and avoid posting exploit details, private keys, tokens, customer data, or unreleased evidence bundles.

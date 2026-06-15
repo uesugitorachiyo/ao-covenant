@@ -24,6 +24,13 @@ AO Covenant currently builds the contract, policy, run, and evidence spine:
 - evidence bundle export, offline inspection, and provenance reports
 - release packaging with embedded version metadata, manifest, and checksums
 
+Security model:
+
+- [Threat Model](docs/threat-model.md) defines protected assets, trust
+  boundaries, mitigated threats, operator responsibilities, and non-goals.
+- [Security Policy](SECURITY.md) defines private vulnerability reporting and
+  sensitive material handling.
+
 Stable release JSON examples live in
 `internal/schema/testdata/release-fixtures/` and are validated against the
 published schemas in tests so automation consumers can diff the public release
