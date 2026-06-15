@@ -204,7 +204,7 @@ jobs:
                 --arg created_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                 --slurpfile replaced_assets "$replaced_assets_json" \
                 '{
-                  schema_version: "ao-covenant.release-replacement-policy.v1",
+                  schema_version: "covenant.release-replacement-policy.v1",
                   version: $version,
                   reason: $reason,
                   created_at: $created_at,
@@ -215,6 +215,7 @@ jobs:
                   },
                   replaced_assets: $replaced_assets[0]
                 }' > dist/release-replacement-policy.json
+              go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file dist/release-replacement-policy.json
               gh release upload "$VERSION" dist/* --clobber
             else
               gh release upload "$VERSION" dist/*

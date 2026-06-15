@@ -54,6 +54,33 @@ func TestKnownSchemaIDRecognizesCatalogEntries(t *testing.T) {
 	}
 }
 
+func TestReleaseReplacementPolicySchemaValidatesPublishedArtifact(t *testing.T) {
+	const schemaID = "covenant.release-replacement-policy.v1"
+	document := []byte(`{
+		"schema_version": "covenant.release-replacement-policy.v1",
+		"version": "v0.1.0",
+		"reason": "operator requested release asset replacement",
+		"created_at": "2026-06-15T12:34:56Z",
+		"github": {
+			"repository": "uesugitorachiyo/ao-covenant",
+			"run_id": "1234567890",
+			"run_attempt": "2"
+		},
+		"replaced_assets": [
+			"manifest.json",
+			"SHA256SUMS",
+			"ao-covenant_linux_amd64.tar.gz"
+		]
+	}`)
+
+	if !KnownSchemaID(schemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", schemaID)
+	}
+	if err := ValidateBytes(schemaID, document); err != nil {
+		t.Fatalf("ValidateBytes(%q) returned error: %v", schemaID, err)
+	}
+}
+
 func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	required, ok := RequiredSchemaByID(VersionResultSchemaID)
 	if !ok {

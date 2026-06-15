@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-replacement-policy.v1",
+  "title": "AO Covenant Release Replacement Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "version",
+    "reason",
+    "created_at",
+    "github",
+    "replaced_assets"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.release-replacement-policy.v1"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^v[0-9][A-Za-z0-9._-]*$"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "github": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "run_id", "run_attempt"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[0-9]+$"
+        },
+        "run_attempt": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[0-9]+$"
+        }
+      }
+    },
+    "replaced_assets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    }
+  }
+}
