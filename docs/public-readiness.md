@@ -121,6 +121,9 @@ and Windows before merge.
 Use the [contributor guide](../CONTRIBUTING.md) for local setup, required
 checks, branch and pull request rules, release-readiness expectations,
 documentation expectations, repository hygiene, and public schema expectations.
+GitHub issue and pull request templates route public bugs, release verification
+failures, security-sensitive reports, and PR verification evidence into the
+same public-readiness expectations.
 Use the [code of conduct](../CODE_OF_CONDUCT.md) and
 [governance](../GOVERNANCE.md) docs for issue behavior, maintainer decision
 scope, and pre-1.0 project expectations.
