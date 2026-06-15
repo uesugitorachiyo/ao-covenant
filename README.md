@@ -34,6 +34,8 @@ Security model:
   checksum, signature, attestation, and provenance walkthrough before install.
 - [Public Readiness](docs/public-readiness.md) indexes the public docs,
   verification gates, schema checks, and repository hygiene checks.
+- [Public API Stability](docs/public-api-stability.md) defines stable,
+  experimental, and internal consumer surfaces before 1.0.
 - [Contributing](CONTRIBUTING.md) defines local setup, required checks,
   protected-branch flow, docs expectations, and schema expectations.
 - [Code of Conduct](CODE_OF_CONDUCT.md) and [Governance](GOVERNANCE.md) define

@@ -61,4 +61,5 @@ that affect automation consumers should be documented and tested in the same
 pull request.
 
 Compatibility promises should be explicit. If a surface is not documented as
-stable, treat it as subject to change before 1.0.
+stable by the [public API stability policy](docs/public-api-stability.md),
+treat it as subject to change before 1.0.

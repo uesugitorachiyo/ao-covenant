@@ -254,3 +254,53 @@ func TestConductAndGovernanceDocsAreLinkedAndComplete(t *testing.T) {
 		}
 	}
 }
+
+func TestPublicAPIStabilityPolicyIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+	governance := readText("GOVERNANCE.md")
+	stability := readText("docs", "public-api-stability.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Public API Stability](docs/public-api-stability.md)"},
+		{name: "readiness link", doc: readiness, want: "[public API stability policy](public-api-stability.md)"},
+		{name: "contributing link", doc: contributing, want: "[public API stability policy](docs/public-api-stability.md)"},
+		{name: "governance link", doc: governance, want: "[public API stability policy](docs/public-api-stability.md)"},
+		{name: "stability levels section", doc: stability, want: "## Stability Levels"},
+		{name: "stable surfaces section", doc: stability, want: "## Stable Surfaces"},
+		{name: "experimental surfaces section", doc: stability, want: "## Experimental Surfaces"},
+		{name: "cli commands section", doc: stability, want: "## CLI Commands"},
+		{name: "public schemas section", doc: stability, want: "## Public Schemas"},
+		{name: "fixtures and reports section", doc: stability, want: "## Fixtures And Reports"},
+		{name: "release artifacts section", doc: stability, want: "## Release Artifacts"},
+		{name: "change process section", doc: stability, want: "## Change Process"},
+		{name: "pre-1.0 compatibility section", doc: stability, want: "## Pre-1.0 Compatibility"},
+		{name: "stable term", doc: stability, want: "stable"},
+		{name: "experimental term", doc: stability, want: "experimental"},
+		{name: "schema version term", doc: stability, want: "`schema_version`"},
+		{name: "schemas directory", doc: stability, want: "`schemas/`"},
+		{name: "release fixtures directory", doc: stability, want: "`internal/schema/testdata/release-fixtures/`"},
+		{name: "release verification link", doc: stability, want: "[release verification walkthrough](release-verification.md)"},
+		{name: "public readiness link", doc: stability, want: "[public readiness index](public-readiness.md)"},
+		{name: "contributing mention", doc: stability, want: "`CONTRIBUTING.md`"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
