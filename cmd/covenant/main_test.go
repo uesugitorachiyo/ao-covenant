@@ -241,6 +241,7 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 		filepath.Join(workDir, "artifacts", "release-package.json"),
 		filepath.Join(workDir, "artifacts", "release-verify.json"),
 		filepath.Join(workDir, "artifacts", "schema-validation.json"),
+		filepath.Join(workDir, "artifacts", "release-readiness-summary-validation.json"),
 		filepath.Join(workDir, "artifacts", "binary-release-verify.json"),
 		filepath.Join(workDir, "release-readiness-summary.json"),
 		filepath.Join(workDir, "release", "manifest.json"),
@@ -259,7 +260,7 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 		t.Fatalf("release readiness summary is not JSON: %v\n%s", err, string(summaryBytes))
 	}
 	for key, want := range map[string]string{
-		"schema_version": "ao-covenant.release-readiness-summary.v1",
+		"schema_version": schema.ReleaseReadinessSummarySchemaID,
 		"status":         "passed",
 		"version":        "v0.1.0-script-smoke",
 		"commit":         "script-smoke",
@@ -286,7 +287,9 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 	validateSchemaFile(t, schema.ReleasePackageResultSchemaID, filepath.Join(workDir, "artifacts", "release-package.json"))
 	validateSchemaFile(t, schema.ReleaseVerifyResultSchemaID, filepath.Join(workDir, "artifacts", "release-verify.json"))
 	validateSchemaFile(t, schema.SchemaValidationReportSchemaID, filepath.Join(workDir, "artifacts", "schema-validation.json"))
+	validateSchemaFile(t, schema.SchemaValidationReportSchemaID, filepath.Join(workDir, "artifacts", "release-readiness-summary-validation.json"))
 	validateSchemaFile(t, schema.ReleaseVerifyResultSchemaID, filepath.Join(workDir, "artifacts", "binary-release-verify.json"))
+	validateSchemaFile(t, schema.ReleaseReadinessSummarySchemaID, filepath.Join(workDir, "release-readiness-summary.json"))
 	validateSchemaFile(t, schema.ReleaseManifestSchemaID, filepath.Join(workDir, "release", "manifest.json"))
 	validateSchemaFile(t, schema.ReleaseSignatureSchemaID, filepath.Join(workDir, "release", "release-signature.json"))
 }

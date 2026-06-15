@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-readiness-summary.v1",
+  "title": "AO Covenant Release Readiness Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "version",
+    "commit",
+    "date",
+    "target",
+    "checks",
+    "artifact_counts",
+    "sensitivity"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.release-readiness-summary.v1" },
+    "status": { "enum": ["passed"] },
+    "version": { "type": "string", "minLength": 1 },
+    "commit": { "type": "string", "minLength": 1 },
+    "date": { "type": "string", "minLength": 1 },
+    "target": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    },
+    "artifact_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["json_reports", "generated_release_files"],
+      "properties": {
+        "json_reports": { "type": "integer", "minimum": 0 },
+        "generated_release_files": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "sensitivity": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

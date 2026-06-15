@@ -339,6 +339,8 @@ func TestReleaseReadinessWorkflowIsDiscoverable(t *testing.T) {
 		{name: "workflow uploads summary artifact", doc: workflow, want: "ao-covenant-release-readiness-summary"},
 		{name: "workflow uploads summary only", doc: workflow, want: "release-readiness-summary.json"},
 		{name: "readiness summary docs", doc: readiness, want: "non-sensitive `release-readiness-summary.json`"},
+		{name: "readiness summary schema docs", doc: readiness, want: "`covenant.release-readiness-summary.v1`"},
+		{name: "readiness summary validation docs", doc: readiness, want: "covenant schema validate --schema covenant.release-readiness-summary.v1 --file release-readiness-summary.json"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
 			t.Fatalf("%s missing %q", check.name, check.want)
