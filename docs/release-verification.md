@@ -13,6 +13,10 @@ verification outputs, and sensitive-material exclusions before install.
 If a release was replaced, withdrawn, or corrected after publication, review
 the [release rollback runbook](release-rollback.md) and any release notice
 before installing.
+Consumers can run the
+[release consumer smoke script](../scripts/release-consumer-smoke.sh) against a
+downloaded release directory to perform the checksum, signature, schema, report,
+inspection, and manifest attestation checks in one command.
 
 ## 1. Download Release Assets
 
@@ -26,6 +30,12 @@ gh release download "$version" \
   --repo uesugitorachiyo/ao-covenant \
   --dir "$workdir"
 cd "$workdir"
+```
+
+Optional one-command smoke check after download:
+
+```sh
+../scripts/release-consumer-smoke.sh . --repo uesugitorachiyo/ao-covenant
 ```
 
 The directory should include:
