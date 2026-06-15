@@ -133,6 +133,39 @@ func TestReleaseWorkflowGuardsExistingReleaseAssets(t *testing.T) {
 	requireWorkflowOmits(t, workflow, "if gh release view \"$VERSION\" >/dev/null 2>&1; then\n            gh release upload \"$VERSION\" dist/* --clobber")
 }
 
+func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "release-readiness.yml")
+
+	for _, want := range []string{
+		"name: Release Readiness",
+		"workflow_dispatch:",
+		"schedule:",
+		"cron:",
+		"contents: read",
+		"uses: actions/checkout@v6",
+		"uses: actions/setup-go@v6",
+		"go-version-file: go.mod",
+		"cache: true",
+		"COVENANT_RELEASE_READINESS_DIR",
+		"$RUNNER_TEMP/covenant-release-readiness",
+		"./scripts/release-readiness.sh",
+	} {
+		requireWorkflowContains(t, workflow, want)
+	}
+
+	for _, forbidden := range []string{
+		"contents: write",
+		"id-token: write",
+		"attestations: write",
+		"actions/upload-artifact",
+		"gh release",
+		"release package",
+		"release upload",
+	} {
+		requireWorkflowOmits(t, workflow, forbidden)
+	}
+}
+
 func TestReleaseDocsExplainAssetReplacementGuard(t *testing.T) {
 	doc := readRepoFile(t, "docs", "release.md")
 

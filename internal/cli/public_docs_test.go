@@ -155,6 +155,8 @@ func TestPublicReadinessIndexIsLinkedAndComplete(t *testing.T) {
 		{name: "security policy link", doc: index, want: "[security policy](../SECURITY.md)"},
 		{name: "schema command", doc: index, want: "covenant schema catalog"},
 		{name: "release readiness command", doc: index, want: "./scripts/release-readiness.sh"},
+		{name: "release readiness workflow", doc: index, want: "`Release Readiness` GitHub Actions workflow"},
+		{name: "release readiness read-only permissions", doc: index, want: "read-only repository permissions"},
 		{name: "hygiene test command", doc: index, want: "TestTrackedRepositoryFilesDoNotContainLocalSecretsOrMachinePaths"},
 	} {
 		if !strings.Contains(check.doc, check.want) {

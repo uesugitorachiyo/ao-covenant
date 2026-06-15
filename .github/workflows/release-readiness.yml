@@ -1,0 +1,28 @@
+name: Release Readiness
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Release-readiness smoke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run release-readiness smoke gate
+        shell: bash
+        run: COVENANT_RELEASE_READINESS_DIR="$RUNNER_TEMP/covenant-release-readiness" ./scripts/release-readiness.sh

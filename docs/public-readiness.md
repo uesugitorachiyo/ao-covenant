@@ -79,6 +79,9 @@ COVENANT_RELEASE_READINESS_DIR="$tmpdir" ./scripts/release-readiness.sh
 rm -rf "$tmpdir"
 ```
 
+The scheduled/manual `Release Readiness` GitHub Actions workflow runs the same
+gate with read-only repository permissions and does not publish release assets.
+
 ## Repository Hygiene
 
 The repository must not publish generated local AO Covenant artifacts, private
