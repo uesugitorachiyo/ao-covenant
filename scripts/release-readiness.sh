@@ -19,6 +19,7 @@ ARTIFACTS="$READINESS_DIR/artifacts"
 DIST="$READINESS_DIR/release"
 BIN_DIR="$READINESS_DIR/bin"
 BIN="$BIN_DIR/covenant"
+SUMMARY="$READINESS_DIR/release-readiness-summary.json"
 if [[ "$(go env GOOS)" == "windows" ]]; then
   BIN="$BIN.exe"
 fi
@@ -48,6 +49,16 @@ save_json() {
   local name="$1"
   shift
   covenant "$@" > "$ARTIFACTS/$name.json"
+}
+
+json_string() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  value="${value//$'\r'/\\r}"
+  value="${value//$'\t'/\\t}"
+  printf '"%s"' "$value"
 }
 
 echo "release readiness: workspace=$READINESS_DIR"
@@ -136,5 +147,45 @@ covenant schema validate \
   --files-from "$files_list" \
   --json \
   --out "$ARTIFACTS/schema-validation.json" > "$ARTIFACTS/schema-validation.stdout"
+
+json_report_count="$(find "$ARTIFACTS" -maxdepth 1 -type f -name '*.json' | wc -l | tr -d '[:space:]')"
+release_file_count="$(find "$DIST" -maxdepth 1 -type f | wc -l | tr -d '[:space:]')"
+
+{
+  printf '{\n'
+  printf '  "schema_version": "ao-covenant.release-readiness-summary.v1",\n'
+  printf '  "status": "passed",\n'
+  printf '  "version": %s,\n' "$(json_string "$VERSION")"
+  printf '  "commit": %s,\n' "$(json_string "$COMMIT")"
+  printf '  "date": %s,\n' "$(json_string "$DATE_VALUE")"
+  printf '  "target": %s,\n' "$(json_string "$TARGET")"
+  printf '  "checks": [\n'
+  printf '    "version",\n'
+  printf '    "compile",\n'
+  printf '    "lint-brief",\n'
+  printf '    "lint-contract",\n'
+  printf '    "run",\n'
+  printf '    "verify",\n'
+  printf '    "policy-explain",\n'
+  printf '    "policy-index",\n'
+  printf '    "bundle-keygen",\n'
+  printf '    "bundle-export",\n'
+  printf '    "bundle-verify",\n'
+  printf '    "bundle-inspect",\n'
+  printf '    "bundle-report",\n'
+  printf '    "release-package",\n'
+  printf '    "release-verify",\n'
+  printf '    "release-inspect",\n'
+  printf '    "binary-version",\n'
+  printf '    "binary-release-verify",\n'
+  printf '    "schema-validation"\n'
+  printf '  ],\n'
+  printf '  "artifact_counts": {\n'
+  printf '    "json_reports": %s,\n' "$json_report_count"
+  printf '    "generated_release_files": %s\n' "$release_file_count"
+  printf '  },\n'
+  printf '  "sensitivity": "summary-only; does not include workspace paths, signing key paths, bundle paths, checksums, manifest entries, or generated release asset names"\n'
+  printf '}\n'
+} > "$SUMMARY"
 
 echo "release readiness complete: $READINESS_DIR"

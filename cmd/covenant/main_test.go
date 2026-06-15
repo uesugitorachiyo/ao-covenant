@@ -242,11 +242,45 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 		filepath.Join(workDir, "artifacts", "release-verify.json"),
 		filepath.Join(workDir, "artifacts", "schema-validation.json"),
 		filepath.Join(workDir, "artifacts", "binary-release-verify.json"),
+		filepath.Join(workDir, "release-readiness-summary.json"),
 		filepath.Join(workDir, "release", "manifest.json"),
 		filepath.Join(workDir, "release", "release-signature.json"),
 	} {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("expected readiness artifact %s: %v\nstdout:\n%s\nstderr:\n%s", path, err, stdout.String(), stderr.String())
+		}
+	}
+	summaryBytes, err := os.ReadFile(filepath.Join(workDir, "release-readiness-summary.json"))
+	if err != nil {
+		t.Fatalf("read release readiness summary: %v", err)
+	}
+	var summary map[string]any
+	if err := json.Unmarshal(summaryBytes, &summary); err != nil {
+		t.Fatalf("release readiness summary is not JSON: %v\n%s", err, string(summaryBytes))
+	}
+	for key, want := range map[string]string{
+		"schema_version": "ao-covenant.release-readiness-summary.v1",
+		"status":         "passed",
+		"version":        "v0.1.0-script-smoke",
+		"commit":         "script-smoke",
+		"date":           "2026-06-12T00:00:00Z",
+		"target":         runtime.GOOS + "/" + runtime.GOARCH,
+	} {
+		if got, ok := summary[key].(string); !ok || got != want {
+			t.Fatalf("summary[%q] = %v, want %q\njson:\n%s", key, summary[key], want, string(summaryBytes))
+		}
+	}
+	for _, forbidden := range []string{
+		workDir,
+		"covenant-private-key.json",
+		"covenant-public-key.json",
+		"release-ready-bundle.zip",
+		"SHA256SUMS",
+		"manifest.json",
+		"release-signature.json",
+	} {
+		if strings.Contains(string(summaryBytes), forbidden) {
+			t.Fatalf("release readiness summary contains sensitive or generated detail %q:\n%s", forbidden, string(summaryBytes))
 		}
 	}
 	validateSchemaFile(t, schema.ReleasePackageResultSchemaID, filepath.Join(workDir, "artifacts", "release-package.json"))
