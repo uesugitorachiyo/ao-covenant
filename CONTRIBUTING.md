@@ -9,6 +9,10 @@ Start with the [public readiness index](docs/public-readiness.md), the
 [threat model](docs/threat-model.md), and the [security policy](SECURITY.md)
 before changing public behavior.
 
+Follow the [code of conduct](CODE_OF_CONDUCT.md) and
+[governance](GOVERNANCE.md) docs when opening issues, discussing scope, or
+requesting maintainer decisions.
+
 ## Local Setup
 
 Use Go 1.24 or newer. Work from a clean checkout on a feature branch:

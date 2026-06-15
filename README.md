@@ -36,6 +36,8 @@ Security model:
   verification gates, schema checks, and repository hygiene checks.
 - [Contributing](CONTRIBUTING.md) defines local setup, required checks,
   protected-branch flow, docs expectations, and schema expectations.
+- [Code of Conduct](CODE_OF_CONDUCT.md) and [Governance](GOVERNANCE.md) define
+  collaboration expectations and pre-1.0 maintainer decision scope.
 
 Stable release JSON examples live in
 `internal/schema/testdata/release-fixtures/` and are validated against the
