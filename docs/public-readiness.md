@@ -95,6 +95,9 @@ public smoke gate is healthy without treating it as a release publisher.
 The repository must not publish generated local AO Covenant artifacts, private
 key files, PEM private-key blocks, or machine-specific home paths. Ignore rules
 and tracked-file scans enforce that boundary.
+The [dependency review guide](dependency-review.md) defines Go module and
+GitHub Actions supply-chain review expectations before dependency, workflow, or
+permission changes are merged.
 
 Local check:
 

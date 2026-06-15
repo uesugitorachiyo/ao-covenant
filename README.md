@@ -39,6 +39,8 @@ Security model:
   [Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml).
 - [Public API Stability](docs/public-api-stability.md) defines stable,
   experimental, and internal consumer surfaces before 1.0.
+- [Dependency Review](docs/dependency-review.md) defines Go module and GitHub
+  Actions supply-chain review expectations.
 - [Contributing](CONTRIBUTING.md) defines local setup, required checks,
   protected-branch flow, docs expectations, and schema expectations.
 - [Code of Conduct](CODE_OF_CONDUCT.md) and [Governance](GOVERNANCE.md) define

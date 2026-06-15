@@ -20,7 +20,7 @@ changes.
 
 ## Local Setup
 
-Use Go 1.24 or newer. Work from a clean checkout on a feature branch:
+Use Go 1.26 or newer. Work from a clean checkout on a feature branch:
 
 ```sh
 git checkout main
@@ -82,6 +82,7 @@ Public behavior changes should update the public docs in the same pull request.
 Common link points are:
 
 - [public readiness index](docs/public-readiness.md)
+- [dependency review guide](docs/dependency-review.md)
 - [install guide](docs/install.md)
 - [release operations](docs/release.md)
 - [release verification walkthrough](docs/release-verification.md)
@@ -124,3 +125,11 @@ covenant schema export --out /tmp/ao-covenant-schemas
 
 When changing public schemas or fixture-backed release outputs, update tests and
 fixtures in the same pull request and document any consumer-visible change.
+
+## Dependency And Supply-Chain Expectations
+
+Use the [dependency review guide](docs/dependency-review.md) when changing
+`go.mod`, `go.sum`, GitHub Actions versions, workflow permissions, release
+attestation behavior, or artifact upload behavior. Dependency pull requests
+should explain why the change is needed and include the relevant verification
+commands.
