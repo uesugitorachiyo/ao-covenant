@@ -94,6 +94,7 @@ Common link points are:
 - [release note fixtures](docs/release-note-fixtures.md)
 - [release verification walkthrough](docs/release-verification.md)
 - [release consumer smoke script](scripts/release-consumer-smoke.sh)
+- [Windows release consumer smoke script](scripts/release-consumer-smoke.ps1)
 - [public schema changelog](docs/public-schema-changelog.md)
 - [threat model](docs/threat-model.md)
 - [security policy](SECURITY.md)

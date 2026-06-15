@@ -17,6 +17,9 @@ Consumers can run the
 [release consumer smoke script](../scripts/release-consumer-smoke.sh) against a
 downloaded release directory to perform the checksum, signature, schema, report,
 inspection, and manifest attestation checks in one command.
+Windows consumers can run the
+[Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1)
+for the same checks with PowerShell-native checksum verification.
 
 ## 1. Download Release Assets
 
@@ -36,6 +39,12 @@ Optional one-command smoke check after download:
 
 ```sh
 ../scripts/release-consumer-smoke.sh . --repo uesugitorachiyo/ao-covenant
+```
+
+On Windows PowerShell:
+
+```powershell
+..\scripts\release-consumer-smoke.ps1 . -Repo uesugitorachiyo/ao-covenant
 ```
 
 The directory should include:

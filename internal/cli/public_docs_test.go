@@ -2,7 +2,9 @@ package cli
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -899,6 +901,94 @@ func TestReleaseConsumerSmokeScriptIsLinkedAndComplete(t *testing.T) {
 		if strings.Contains(script, forbidden) {
 			t.Fatalf("script contains repo-private command or path %q", forbidden)
 		}
+	}
+}
+
+func TestReleaseConsumerSmokePowerShellScriptIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	verification := readText("docs", "release-verification.md")
+	readiness := readText("docs", "public-readiness.md")
+	baseline := readText("docs", "public-release-known-good-baseline.md")
+	contributing := readText("CONTRIBUTING.md")
+	script := readText("scripts", "release-consumer-smoke.ps1")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Windows Release Consumer Smoke Script](scripts/release-consumer-smoke.ps1)"},
+		{name: "verification link", doc: verification, want: "[Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1)"},
+		{name: "readiness link", doc: readiness, want: "[Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1)"},
+		{name: "baseline link", doc: baseline, want: "[Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1)"},
+		{name: "contributing link", doc: contributing, want: "[Windows release consumer smoke script](scripts/release-consumer-smoke.ps1)"},
+		{name: "strict mode", doc: script, want: "Set-StrictMode -Version Latest"},
+		{name: "stop on error", doc: script, want: "$ErrorActionPreference = \"Stop\""},
+		{name: "usage", doc: script, want: "Usage:"},
+		{name: "release dir parameter", doc: script, want: "[Parameter(Mandatory = $true, Position = 0)]"},
+		{name: "custom binary", doc: script, want: "COVENANT_BIN"},
+		{name: "repo option", doc: script, want: "-Repo"},
+		{name: "out option", doc: script, want: "-Out"},
+		{name: "skip attestation option", doc: script, want: "-SkipAttestation"},
+		{name: "manifest asset", doc: script, want: "manifest.json"},
+		{name: "checksums asset", doc: script, want: "SHA256SUMS"},
+		{name: "signature asset", doc: script, want: "release-signature.json"},
+		{name: "public key asset", doc: script, want: "covenant-release-public-key.json"},
+		{name: "windows checksum", doc: script, want: "Get-FileHash -Algorithm SHA256"},
+		{name: "release verify", doc: script, want: "covenant release verify --dir $ReleaseDirPath --public-key $PublicKey --json"},
+		{name: "release report", doc: script, want: "covenant release report --dir $ReleaseDirPath --public-key $PublicKey --format json --out (Join-Path $OutDir \"release-report.json\")"},
+		{name: "release inspect", doc: script, want: "covenant release inspect --dir $ReleaseDirPath --public-key $PublicKey --json"},
+		{name: "validate verify", doc: script, want: "covenant schema validate --file (Join-Path $OutDir \"release-verify.json\")"},
+		{name: "validate report", doc: script, want: "covenant schema validate --file (Join-Path $OutDir \"release-report.json\")"},
+		{name: "validate inspect", doc: script, want: "covenant schema validate --file (Join-Path $OutDir \"release-inspect.json\")"},
+		{name: "replacement policy schema", doc: script, want: "covenant.release-replacement-policy.v1"},
+		{name: "attestation", doc: script, want: "gh attestation verify (Join-Path $ReleaseDirPath \"manifest.json\") --repo $Repo"},
+		{name: "sensitive material warning", doc: script, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+
+	for _, forbidden := range []string{
+		"go run ./cmd/covenant",
+		"go test",
+		"COVENANT_RELEASE_SIGNING_KEY",
+		"git -C",
+		".covenant/release-readiness",
+		"sha256sum",
+		"shasum",
+	} {
+		if strings.Contains(script, forbidden) {
+			t.Fatalf("script contains non-Windows, repo-private command, or path %q", forbidden)
+		}
+	}
+}
+
+func TestReleaseConsumerSmokePowerShellScriptParsesOnWindows(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("PowerShell parser check runs on Windows CI")
+	}
+	repoRoot := filepath.Join("..", "..")
+	scriptPath, err := filepath.Abs(filepath.Join(repoRoot, "scripts", "release-consumer-smoke.ps1"))
+	if err != nil {
+		t.Fatalf("resolve PowerShell smoke script path: %v", err)
+	}
+	escapedScriptPath := strings.ReplaceAll(scriptPath, "'", "''")
+	command := `$path = '` + escapedScriptPath + `'; $tokens = $null; $errors = $null; [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }`
+	output, err := exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command).CombinedOutput()
+	if err != nil {
+		t.Fatalf("parse %s: %v\n%s", scriptPath, err, output)
 	}
 }
 

@@ -6,6 +6,7 @@ that should be present for a release to be considered known-good.
 
 Use this document with the [release verification walkthrough](release-verification.md),
 [release consumer smoke script](../scripts/release-consumer-smoke.sh),
+[Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1),
 [release note fixtures](release-note-fixtures.md),
 [release rollback runbook](release-rollback.md), and
 [security policy](../SECURITY.md).
@@ -65,6 +66,12 @@ Consumers can run the same baseline as a one-command smoke check:
 
 ```sh
 ../scripts/release-consumer-smoke.sh . --repo uesugitorachiyo/ao-covenant
+```
+
+On Windows PowerShell:
+
+```powershell
+..\scripts\release-consumer-smoke.ps1 . -Repo uesugitorachiyo/ao-covenant
 ```
 
 Known-good output means:
