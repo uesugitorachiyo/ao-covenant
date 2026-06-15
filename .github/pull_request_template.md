@@ -13,6 +13,11 @@
 - [ ] This PR does not commit private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths.
 - [ ] Security-sensitive behavior was checked against `SECURITY.md` and `docs/threat-model.md`.
 
+## Dependency And Supply-Chain Review
+
+- [ ] No `go.mod`, `go.sum`, GitHub Actions, workflow permission, artifact upload, or attestation behavior changed.
+- [ ] Dependency or workflow changes were checked against `docs/dependency-review.md`.
+
 ## Verification
 
 - [ ] `go test -count=1 ./...`

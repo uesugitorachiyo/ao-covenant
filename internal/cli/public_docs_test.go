@@ -194,7 +194,7 @@ func TestContributorGuideIsLinkedAndComplete(t *testing.T) {
 		{name: "docs section", doc: contributing, want: "## Documentation Expectations"},
 		{name: "security section", doc: contributing, want: "## Security And Repository Hygiene"},
 		{name: "schema section", doc: contributing, want: "## Public Schema Expectations"},
-		{name: "go version", doc: contributing, want: "Go 1.24"},
+		{name: "go version", doc: contributing, want: "Go 1.26"},
 		{name: "full tests", doc: contributing, want: "go test -count=1 ./..."},
 		{name: "vet", doc: contributing, want: "go vet ./..."},
 		{name: "yaml parse", doc: contributing, want: "YAML.load_file"},
@@ -396,6 +396,63 @@ func TestGitHubIssueAndPullRequestTemplatesAreComplete(t *testing.T) {
 		{name: "contributing issue templates", doc: contributing, want: "Use the GitHub issue templates"},
 		{name: "contributing pr template", doc: contributing, want: "pull request template"},
 		{name: "readiness templates", doc: readiness, want: "GitHub issue and pull request templates"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
+func TestDependencyReviewDocumentationIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+	pullRequest := readText(".github", "pull_request_template.md")
+	dependencyReview := readText("docs", "dependency-review.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Dependency Review](docs/dependency-review.md)"},
+		{name: "readiness link", doc: readiness, want: "[dependency review guide](dependency-review.md)"},
+		{name: "contributing link", doc: contributing, want: "[dependency review guide](docs/dependency-review.md)"},
+		{name: "PR template dependency section", doc: pullRequest, want: "## Dependency And Supply-Chain Review"},
+		{name: "PR template dependency guide", doc: pullRequest, want: "docs/dependency-review.md"},
+		{name: "go module section", doc: dependencyReview, want: "## Go Module Dependencies"},
+		{name: "github actions section", doc: dependencyReview, want: "## GitHub Actions Dependencies"},
+		{name: "permissions section", doc: dependencyReview, want: "## Workflow Permissions"},
+		{name: "update process section", doc: dependencyReview, want: "## Update Process"},
+		{name: "review checklist section", doc: dependencyReview, want: "## Review Checklist"},
+		{name: "security response section", doc: dependencyReview, want: "## Security Response"},
+		{name: "go mod tidy command", doc: dependencyReview, want: "go mod tidy"},
+		{name: "go mod verify command", doc: dependencyReview, want: "go mod verify"},
+		{name: "go list modules command", doc: dependencyReview, want: "go list -m all"},
+		{name: "go sum", doc: dependencyReview, want: "`go.sum`"},
+		{name: "go version file", doc: dependencyReview, want: "`go-version-file: go.mod`"},
+		{name: "github action checkout", doc: dependencyReview, want: "`actions/checkout@v6`"},
+		{name: "github action setup go", doc: dependencyReview, want: "`actions/setup-go@v6`"},
+		{name: "github action attestation", doc: dependencyReview, want: "`actions/attest-build-provenance@v4`"},
+		{name: "github action upload artifact", doc: dependencyReview, want: "`actions/upload-artifact@v7`"},
+		{name: "permissions contents read", doc: dependencyReview, want: "`contents: read`"},
+		{name: "permissions id token", doc: dependencyReview, want: "`id-token: write`"},
+		{name: "permissions attestations", doc: dependencyReview, want: "`attestations: write`"},
+		{name: "security policy", doc: dependencyReview, want: "[security policy](../SECURITY.md)"},
+		{name: "baseline test", doc: dependencyReview, want: "go test -count=1 ./..."},
+		{name: "baseline vet", doc: dependencyReview, want: "go vet ./..."},
+		{name: "yaml parse", doc: dependencyReview, want: "YAML.load_file"},
+		{name: "release readiness", doc: dependencyReview, want: "./scripts/release-readiness.sh"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
 			t.Fatalf("%s missing %q", check.name, check.want)
