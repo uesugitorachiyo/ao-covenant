@@ -91,6 +91,7 @@ Common link points are:
 - [release dry-run checklist](docs/release-dry-run.md)
 - [release rollback runbook](docs/release-rollback.md)
 - [release note template](docs/release-note-template.md)
+- [release note fixtures](docs/release-note-fixtures.md)
 - [release verification walkthrough](docs/release-verification.md)
 - [public schema changelog](docs/public-schema-changelog.md)
 - [threat model](docs/threat-model.md)

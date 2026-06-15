@@ -31,7 +31,8 @@ before tagging or manually dispatching a public release. Use the
 or correcting published release assets. Use the
 [release note template](release-note-template.md) before publishing normal
 release notes, replacement notices, withdrawal notices, or security-sensitive
-release summaries.
+release summaries. Use the [release note fixtures](release-note-fixtures.md)
+as stable examples for common public release-note cases.
 
 Local check:
 

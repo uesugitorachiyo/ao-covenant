@@ -45,6 +45,9 @@ Security model:
   withdrawal, and consumer notice expectations for published assets.
 - [Release Note Template](docs/release-note-template.md) defines safe public
   release note, replacement notice, and security-sensitive wording blocks.
+- [Release Note Fixtures](docs/release-note-fixtures.md) provides stable public
+  examples for normal, replacement, withdrawal, and security-sensitive release
+  notes.
 - [Public Readiness](docs/public-readiness.md) indexes the public docs,
   verification gates, schema checks, repository hygiene checks, and the
   [Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml).
