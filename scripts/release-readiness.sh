@@ -149,11 +149,12 @@ covenant schema validate \
   --out "$ARTIFACTS/schema-validation.json" > "$ARTIFACTS/schema-validation.stdout"
 
 json_report_count="$(find "$ARTIFACTS" -maxdepth 1 -type f -name '*.json' | wc -l | tr -d '[:space:]')"
+summary_validation_report_count=$((json_report_count + 1))
 release_file_count="$(find "$DIST" -maxdepth 1 -type f | wc -l | tr -d '[:space:]')"
 
 {
   printf '{\n'
-  printf '  "schema_version": "ao-covenant.release-readiness-summary.v1",\n'
+  printf '  "schema_version": "covenant.release-readiness-summary.v1",\n'
   printf '  "status": "passed",\n'
   printf '  "version": %s,\n' "$(json_string "$VERSION")"
   printf '  "commit": %s,\n' "$(json_string "$COMMIT")"
@@ -178,14 +179,21 @@ release_file_count="$(find "$DIST" -maxdepth 1 -type f | wc -l | tr -d '[:space:
   printf '    "release-inspect",\n'
   printf '    "binary-version",\n'
   printf '    "binary-release-verify",\n'
-  printf '    "schema-validation"\n'
+  printf '    "schema-validation",\n'
+  printf '    "release-readiness-summary-validation"\n'
   printf '  ],\n'
   printf '  "artifact_counts": {\n'
-  printf '    "json_reports": %s,\n' "$json_report_count"
+  printf '    "json_reports": %s,\n' "$summary_validation_report_count"
   printf '    "generated_release_files": %s\n' "$release_file_count"
   printf '  },\n'
   printf '  "sensitivity": "summary-only; does not include workspace paths, signing key paths, bundle paths, checksums, manifest entries, or generated release asset names"\n'
   printf '}\n'
 } > "$SUMMARY"
+
+covenant schema validate \
+  --schema covenant.release-readiness-summary.v1 \
+  --file "$SUMMARY" \
+  --json \
+  --out "$ARTIFACTS/release-readiness-summary-validation.json" > "$ARTIFACTS/release-readiness-summary-validation.stdout"
 
 echo "release readiness complete: $READINESS_DIR"

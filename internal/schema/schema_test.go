@@ -3360,6 +3360,39 @@ func TestReleaseJSONFixturesCoverCatalogedReleaseResultSchemas(t *testing.T) {
 	}
 }
 
+func TestReleaseReadinessSummarySchemaValidatesPublicArtifact(t *testing.T) {
+	const releaseReadinessSummarySchemaID = "covenant.release-readiness-summary.v1"
+	summary := []byte(`{
+	  "schema_version": "covenant.release-readiness-summary.v1",
+	  "status": "passed",
+	  "version": "v0.1.0-readiness",
+	  "commit": "0123456",
+	  "date": "2026-06-15T12:00:00Z",
+	  "target": "linux/amd64",
+	  "checks": [
+	    "version",
+	    "compile",
+	    "schema-validation"
+	  ],
+	  "artifact_counts": {
+	    "json_reports": 19,
+	    "generated_release_files": 7
+	  },
+	  "sensitivity": "summary-only; does not include workspace paths, signing key paths, bundle paths, checksums, manifest entries, or generated release asset names"
+	}`)
+
+	required, ok := RequiredSchemaByID(releaseReadinessSummarySchemaID)
+	if !ok {
+		t.Fatalf("%s is not cataloged", releaseReadinessSummarySchemaID)
+	}
+	if required.FileName != "covenant.release-readiness-summary.v1.schema.json" {
+		t.Fatalf("schema file = %q, want covenant.release-readiness-summary.v1.schema.json", required.FileName)
+	}
+	if err := ValidateBytes(releaseReadinessSummarySchemaID, summary); err != nil {
+		t.Fatalf("release readiness summary did not validate against published schema: %v\njson:\n%s", err, string(summary))
+	}
+}
+
 func TestReleaseRedactedJSONFixturesUseStableRedactionTokens(t *testing.T) {
 	tests := []struct {
 		fileName          string

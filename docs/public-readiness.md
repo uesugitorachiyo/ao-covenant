@@ -98,6 +98,12 @@ It uploads only a non-sensitive `release-readiness-summary.json` artifact with
 status, release metadata, check names, and aggregate counts; it does not upload
 the generated workspace, signing keys, bundles, checksums, manifest entries, or
 release files.
+The summary is a public automation artifact using
+`covenant.release-readiness-summary.v1` and can be checked after download:
+
+```sh
+covenant schema validate --schema covenant.release-readiness-summary.v1 --file release-readiness-summary.json
+```
 
 ## Repository Hygiene
 
