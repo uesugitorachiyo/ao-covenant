@@ -634,6 +634,8 @@ func TestReleaseDryRunDocumentationIsLinkedAndComplete(t *testing.T) {
 		{name: "readiness command", doc: dryRun, want: "./scripts/release-readiness.sh"},
 		{name: "tmpdir command", doc: dryRun, want: "tmpdir=\"$(mktemp -d)\""},
 		{name: "release package command", doc: dryRun, want: "covenant release package"},
+		{name: "readiness public key output", doc: dryRun, want: "`release/covenant-release-public-key.json`"},
+		{name: "dry-run public key copy", doc: dryRun, want: "install the public verification key into the release directory before verification"},
 		{name: "release verify command", doc: dryRun, want: "covenant release verify"},
 		{name: "release report command", doc: dryRun, want: "covenant release report"},
 		{name: "release inspect command", doc: dryRun, want: "covenant release inspect"},

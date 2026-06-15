@@ -70,6 +70,10 @@ Review the non-sensitive summary:
 cat "$tmpdir/release-readiness/release-readiness-summary.json"
 ```
 
+The readiness output installs the public verification key at
+`release/covenant-release-public-key.json` so the generated release directory
+matches the public consumer verification shape.
+
 ## Package Without Publishing
 
 Package release artifacts into a temp directory. This mirrors the release
@@ -101,6 +105,7 @@ go run ./cmd/covenant release package \
   --target windows/amd64 \
   --json > "$dist/release-package.json"
 
+# Copy to install the public verification key into the release directory before verification.
 cp "$tmpdir/covenant-release-public-key.json" "$dist/covenant-release-public-key.json"
 ```
 
