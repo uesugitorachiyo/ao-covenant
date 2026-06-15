@@ -8,7 +8,8 @@ schemas.
 Start with the [public readiness index](docs/public-readiness.md), the
 [threat model](docs/threat-model.md), the [security policy](SECURITY.md), and
 the [security advisory routing guide](docs/security-advisory-routing.md) before
-changing public behavior.
+changing public behavior. Maintainers handling private reports should use the
+[security advisory maintainer checklist](docs/security-advisory-maintainer-checklist.md).
 
 Follow the [code of conduct](CODE_OF_CONDUCT.md) and
 [governance](GOVERNANCE.md) docs when opening issues, discussing scope, or
@@ -91,6 +92,7 @@ Common link points are:
 - [threat model](docs/threat-model.md)
 - [security policy](SECURITY.md)
 - [security advisory routing guide](docs/security-advisory-routing.md)
+- [security advisory maintainer checklist](docs/security-advisory-maintainer-checklist.md)
 
 When adding a public doc, add or update a guard in
 `internal/cli/public_docs_test.go` so the document and key links remain
