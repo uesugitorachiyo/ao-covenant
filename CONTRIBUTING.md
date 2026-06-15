@@ -34,7 +34,7 @@ Run these checks before opening a pull request:
 ```sh
 go test -count=1 ./...
 go vet ./...
-ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml
+ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml .github/workflows/release-readiness.yml
 git diff --check
 ```
 
@@ -105,8 +105,11 @@ Report suspected vulnerabilities through the [security policy](SECURITY.md).
 ## Public Schema Expectations
 
 Public JSON output must have a stable `schema_version` and a schema under
-`schemas/` when it is intended for automation. Schema-backed command output
-should remain exportable and discoverable:
+`schemas/` when it is intended for automation. Use the
+[public API stability policy](docs/public-api-stability.md) to decide whether a
+CLI command, JSON schema, release fixture, report, or release artifact is
+stable, experimental, or internal. Schema-backed command output should remain
+exportable and discoverable:
 
 ```sh
 covenant schema catalog

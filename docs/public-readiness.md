@@ -45,7 +45,9 @@ go test -count=1 ./internal/cli -run 'TestPublicThreatModelDocumentationIsLinked
 ## Public Schemas And Automation
 
 Automation consumers rely on embedded public schemas and stable fixture output.
-The schema catalog must remain available from the binary:
+The [public API stability policy](public-api-stability.md) defines which CLI
+commands, JSON schemas, release fixtures, reports, and release artifacts are
+stable before 1.0. The schema catalog must remain available from the binary:
 
 ```sh
 covenant schema catalog
@@ -56,6 +58,7 @@ covenant schema export --out /tmp/ao-covenant-schemas
 Local check:
 
 ```sh
+go test -count=1 ./internal/cli -run TestPublicAPIStabilityPolicyIsLinkedAndComplete
 go test -count=1 ./internal/schema ./internal/cli
 ```
 
@@ -101,7 +104,7 @@ Run the full local baseline before opening a public-facing PR:
 ```sh
 go test -count=1 ./...
 go vet ./...
-ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml
+ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml .github/workflows/release-readiness.yml
 git diff --check
 ```
 
