@@ -483,6 +483,7 @@ func TestSecurityAdvisoryRoutingDocumentationIsLinkedAndComplete(t *testing.T) {
 	config := readText(".github", "ISSUE_TEMPLATE", "config.yml")
 	securityIssue := readText(".github", "ISSUE_TEMPLATE", "security_sensitive_report.yml")
 	routing := readText("docs", "security-advisory-routing.md")
+	checklist := readText("docs", "security-advisory-maintainer-checklist.md")
 
 	for _, check := range []struct {
 		name string
@@ -491,10 +492,14 @@ func TestSecurityAdvisoryRoutingDocumentationIsLinkedAndComplete(t *testing.T) {
 	}{
 		{name: "README link", doc: readme, want: "[Security Advisory Routing](docs/security-advisory-routing.md)"},
 		{name: "SECURITY link", doc: security, want: "[security advisory routing guide](docs/security-advisory-routing.md)"},
+		{name: "SECURITY checklist link", doc: security, want: "[security advisory maintainer checklist](docs/security-advisory-maintainer-checklist.md)"},
 		{name: "readiness link", doc: readiness, want: "[security advisory routing guide](security-advisory-routing.md)"},
+		{name: "readiness checklist link", doc: readiness, want: "[security advisory maintainer checklist](security-advisory-maintainer-checklist.md)"},
 		{name: "contributing link", doc: contributing, want: "[security advisory routing guide](docs/security-advisory-routing.md)"},
+		{name: "contributing checklist link", doc: contributing, want: "[security advisory maintainer checklist](docs/security-advisory-maintainer-checklist.md)"},
 		{name: "config routing link", doc: config, want: "security-advisory-routing.md"},
 		{name: "security issue routing link", doc: securityIssue, want: "docs/security-advisory-routing.md"},
+		{name: "routing checklist link", doc: routing, want: "[maintainer checklist](security-advisory-maintainer-checklist.md)"},
 		{name: "private first section", doc: routing, want: "## Private-First Rule"},
 		{name: "when to use private advisory section", doc: routing, want: "## When To Use A Private Advisory"},
 		{name: "minimal public report section", doc: routing, want: "## Minimal Public Report"},
@@ -515,6 +520,20 @@ func TestSecurityAdvisoryRoutingDocumentationIsLinkedAndComplete(t *testing.T) {
 		{name: "synthetic reproducer", doc: routing, want: "synthetic reproducer"},
 		{name: "security policy link", doc: routing, want: "[security policy](../SECURITY.md)"},
 		{name: "threat model link", doc: routing, want: "[threat model](threat-model.md)"},
+		{name: "checklist title", doc: checklist, want: "# AO Covenant Security Advisory Maintainer Checklist"},
+		{name: "checklist scope", doc: checklist, want: "## Scope"},
+		{name: "checklist intake", doc: checklist, want: "## 1. Intake And Routing"},
+		{name: "checklist containment", doc: checklist, want: "## 2. Containment And Evidence Safety"},
+		{name: "checklist triage", doc: checklist, want: "## 3. Triage And Severity"},
+		{name: "checklist fix", doc: checklist, want: "## 4. Fix And Verification"},
+		{name: "checklist disclosure", doc: checklist, want: "## 5. Disclosure And Release Notes"},
+		{name: "checklist closure", doc: checklist, want: "## 6. Closure"},
+		{name: "checklist private advisory", doc: checklist, want: "GitHub Security Advisories"},
+		{name: "checklist synthetic reproduction", doc: checklist, want: "synthetic reproducer"},
+		{name: "checklist no secrets", doc: checklist, want: "Do not request or copy private keys, credentials, customer data, production evidence bundles, unreleased bundles, or local machine paths"},
+		{name: "checklist release readiness", doc: checklist, want: "./scripts/release-readiness.sh"},
+		{name: "checklist ci platforms", doc: checklist, want: "Ubuntu, macOS, and Windows"},
+		{name: "checklist public wording", doc: checklist, want: "do not repeat exploit details or secret values"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
 			t.Fatalf("%s missing %q", check.name, check.want)

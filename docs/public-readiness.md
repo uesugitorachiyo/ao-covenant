@@ -39,7 +39,10 @@ mitigations, operator responsibilities, and non-goals. The
 limits, severity guidance, secret leakage handling, and supported-version scope.
 The [security advisory routing guide](security-advisory-routing.md) defines
 private-first reporting and minimal public report expectations for
-security-sensitive issues.
+security-sensitive issues. The
+[security advisory maintainer checklist](security-advisory-maintainer-checklist.md)
+defines private triage, containment, verification, safe disclosure, and closure
+steps.
 
 Local check:
 

@@ -7,7 +7,9 @@ material.
 
 Use this guide with the [security policy](../SECURITY.md), the
 [threat model](threat-model.md), and the security-sensitive GitHub issue
-template.
+template. Maintainers should use the
+[maintainer checklist](security-advisory-maintainer-checklist.md) after a
+private report is opened.
 
 ## Private-First Rule
 

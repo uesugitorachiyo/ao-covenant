@@ -7,7 +7,10 @@ triaged.
 The public [Threat Model](docs/threat-model.md) defines protected assets, trust
 boundaries, mitigated threats, operator responsibilities, and non-goals. The
 [security advisory routing guide](docs/security-advisory-routing.md) defines
-when to use a private advisory and how to keep public reports minimal.
+when to use a private advisory and how to keep public reports minimal. The
+[security advisory maintainer checklist](docs/security-advisory-maintainer-checklist.md)
+defines maintainer triage, containment, verification, disclosure, and closure
+steps.
 
 ## Reporting
 
