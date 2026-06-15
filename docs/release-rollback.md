@@ -45,7 +45,8 @@ manual workflow dispatch with both:
 
 The workflow fails closed when matching release assets already exist unless
 that explicit override is supplied. Replacement runs publish
-`release-replacement-policy.json` so consumers can see which assets were
+`release-replacement-policy.json` with schema
+`covenant.release-replacement-policy.v1` so consumers can see which assets were
 replaced and why.
 
 Before replacing assets:
@@ -59,6 +60,7 @@ After replacement, download the release into an empty directory and run:
 ```sh
 covenant release verify --dir . --public-key covenant-release-public-key.json
 covenant release report --dir . --public-key covenant-release-public-key.json
+covenant schema validate --schema covenant.release-replacement-policy.v1 --file release-replacement-policy.json
 gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant
 ```
 

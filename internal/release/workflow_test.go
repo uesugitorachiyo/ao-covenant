@@ -123,14 +123,16 @@ func TestReleaseWorkflowGuardsExistingReleaseAssets(t *testing.T) {
 		"gh release view \"$VERSION\" --json assets --jq '.assets[].name'",
 		"comm -12 \"$existing_assets\" \"$new_assets\"",
 		"release-replacement-policy.json",
-		"ao-covenant.release-replacement-policy.v1",
+		"covenant.release-replacement-policy.v1",
 		"replaced_assets:",
+		"go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file dist/release-replacement-policy.json",
 		"gh release upload \"$VERSION\" dist/* --clobber",
 	} {
 		requireWorkflowContains(t, workflow, want)
 	}
 
 	requireWorkflowOmits(t, workflow, "if gh release view \"$VERSION\" >/dev/null 2>&1; then\n            gh release upload \"$VERSION\" dist/* --clobber")
+	requireWorkflowOmits(t, workflow, "ao-covenant.release-replacement-policy.v1")
 }
 
 func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
@@ -179,6 +181,8 @@ func TestReleaseDocsExplainAssetReplacementGuard(t *testing.T) {
 		"replace_existing_assets",
 		"replacement_reason",
 		"release-replacement-policy.json",
+		"`covenant.release-replacement-policy.v1`",
+		"covenant schema validate --schema covenant.release-replacement-policy.v1 --file release-replacement-policy.json",
 		"Existing release assets are immutable by default",
 	} {
 		requireWorkflowContains(t, doc, want)

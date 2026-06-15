@@ -8,8 +8,11 @@ instead of overwriting assets when a manually dispatched workflow targets a
 release that already has one or more matching asset names. Operators must set
 `replace_existing_assets=true` and provide a `replacement_reason` to replace
 existing assets. Replacement runs publish `release-replacement-policy.json`
-alongside the release artifacts so the override is visible to consumers. Use
-the [release rollback runbook](release-rollback.md) before replacing,
+alongside the release artifacts so the override is visible to consumers. The
+replacement policy uses `covenant.release-replacement-policy.v1` and is
+validated by the release workflow before upload. Consumers can validate it with
+`covenant schema validate --schema covenant.release-replacement-policy.v1 --file release-replacement-policy.json`.
+Use the [release rollback runbook](release-rollback.md) before replacing,
 withdrawing, or correcting a published release.
 
 Before pushing a tag or manually dispatching this workflow, run the
