@@ -89,6 +89,10 @@ The public
 uses a manual `workflow_dispatch` trigger, a weekly scheduled run, and
 read-only `contents: read` permission so external users can inspect whether the
 public smoke gate is healthy without treating it as a release publisher.
+It uploads only a non-sensitive `release-readiness-summary.json` artifact with
+status, release metadata, check names, and aggregate counts; it does not upload
+the generated workspace, signing keys, bundles, checksums, manifest entries, or
+release files.
 
 ## Repository Hygiene
 

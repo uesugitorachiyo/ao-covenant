@@ -336,6 +336,9 @@ func TestReleaseReadinessWorkflowIsDiscoverable(t *testing.T) {
 		{name: "workflow cron", doc: workflow, want: "17 9 * * 1"},
 		{name: "workflow read-only contents", doc: workflow, want: "contents: read"},
 		{name: "workflow release readiness script", doc: workflow, want: "./scripts/release-readiness.sh"},
+		{name: "workflow uploads summary artifact", doc: workflow, want: "ao-covenant-release-readiness-summary"},
+		{name: "workflow uploads summary only", doc: workflow, want: "release-readiness-summary.json"},
+		{name: "readiness summary docs", doc: readiness, want: "non-sensitive `release-readiness-summary.json`"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
 			t.Fatalf("%s missing %q", check.name, check.want)

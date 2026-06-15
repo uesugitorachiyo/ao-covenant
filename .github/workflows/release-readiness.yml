@@ -26,3 +26,11 @@ jobs:
       - name: Run release-readiness smoke gate
         shell: bash
         run: COVENANT_RELEASE_READINESS_DIR="$RUNNER_TEMP/covenant-release-readiness" ./scripts/release-readiness.sh
+
+      - name: Upload release-readiness summary
+        uses: actions/upload-artifact@v7
+        with:
+          name: ao-covenant-release-readiness-summary
+          path: ${{ runner.temp }}/covenant-release-readiness/release-readiness-summary.json
+          if-no-files-found: error
+          retention-days: 7

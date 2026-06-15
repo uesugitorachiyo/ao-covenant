@@ -149,6 +149,10 @@ func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
 		"COVENANT_RELEASE_READINESS_DIR",
 		"$RUNNER_TEMP/covenant-release-readiness",
 		"./scripts/release-readiness.sh",
+		"uses: actions/upload-artifact@v7",
+		"name: ao-covenant-release-readiness-summary",
+		"path: ${{ runner.temp }}/covenant-release-readiness/release-readiness-summary.json",
+		"if-no-files-found: error",
 	} {
 		requireWorkflowContains(t, workflow, want)
 	}
@@ -157,10 +161,12 @@ func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
 		"contents: write",
 		"id-token: write",
 		"attestations: write",
-		"actions/upload-artifact",
 		"gh release",
 		"release package",
 		"release upload",
+		"path: ${{ runner.temp }}/covenant-release-readiness/**",
+		"path: ${{ runner.temp }}/covenant-release-readiness/artifacts/",
+		"path: ${{ runner.temp }}/covenant-release-readiness/release/",
 	} {
 		requireWorkflowOmits(t, workflow, forbidden)
 	}
