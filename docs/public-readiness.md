@@ -21,7 +21,10 @@ go test -count=1 ./cmd/covenant -run TestReleaseReadinessScriptRunsSmokeGate
 Consumers should verify release assets before installation with the
 [release verification walkthrough](release-verification.md). The walkthrough
 covers release downloads, `SHA256SUMS`, AO Covenant release signatures, GitHub
-artifact attestations, provenance reports, and failure handling.
+artifact attestations, provenance reports, and failure handling. The
+[public release known-good baseline](public-release-known-good-baseline.md)
+defines the expected release asset set, platform coverage, verification output,
+schema validation, replacement policy, and sensitive-material exclusions.
 Maintainers should run the [release dry-run checklist](release-dry-run.md)
 before tagging or manually dispatching a public release. Use the
 [release rollback runbook](release-rollback.md) before replacing, withdrawing,

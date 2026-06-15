@@ -3,6 +3,7 @@
 Use this template when drafting GitHub release notes, replacement notices,
 withdrawal notices, public advisory summaries, or corrected release notes. Pair
 it with the [release operations](release.md), [release verification walkthrough](release-verification.md),
+[public release known-good baseline](public-release-known-good-baseline.md),
 [release rollback runbook](release-rollback.md), and
 [security policy](../SECURITY.md).
 
@@ -153,6 +154,8 @@ Before publishing release notes:
   consumer action, and what to download
 - confirm the verification block includes checksum, signature, report, and
   attestation expectations where applicable
+- confirm the [public release known-good baseline](public-release-known-good-baseline.md)
+  still matches the release asset set and verification outputs
 - confirm replacement or withdrawal notes follow the
   [release rollback runbook](release-rollback.md)
 - confirm security-sensitive wording follows the [security policy](../SECURITY.md)
