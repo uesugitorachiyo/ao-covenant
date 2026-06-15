@@ -210,8 +210,15 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 	repoRoot := filepath.Clean(filepath.Join(packageDir, "..", ".."))
 	workDir := t.TempDir()
 	scriptPath := filepath.Join(repoRoot, "scripts", "release-readiness.sh")
+	scriptInfo, err := os.Stat(scriptPath)
+	if err != nil {
+		t.Fatalf("stat release-readiness.sh: %v", err)
+	}
+	if scriptInfo.Mode()&0o111 == 0 {
+		t.Fatalf("release-readiness.sh mode = %v, want executable bit", scriptInfo.Mode().Perm())
+	}
 
-	cmd := exec.Command("bash", scriptPath)
+	cmd := exec.Command(scriptPath)
 	cmd.Dir = repoRoot
 	cmd.Env = append(os.Environ(),
 		"COVENANT_RELEASE_READINESS_DIR="+workDir,
