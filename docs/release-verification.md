@@ -146,6 +146,12 @@ If a release includes SBOM, attestation, or supplemental provenance files,
 verify those files as well when they are part of your trust decision. The
 [release attestation coverage map](release-attestation-coverage.md) defines
 the expected direct and indirect coverage for each public release asset.
+If `release-replacement-policy.json` is present, verify its GitHub attestation
+before relying on the replacement metadata:
+
+```sh
+gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant
+```
 
 ## 5. Review Provenance And Reports
 
