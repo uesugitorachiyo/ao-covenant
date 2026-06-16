@@ -102,6 +102,11 @@ fixture directory and the fixture is covered by tests. Text report fixtures are
 stable only for the command/report shape they intentionally pin. Other
 human-readable text can change before 1.0.
 
+Release attestation fixtures under
+`internal/cli/testdata/release-attestation-fixtures/` are stable public examples
+for consumers that need to test manifest and platform-binary attestation
+handling without calling GitHub.
+
 When fixture-backed output changes, update the fixture, schema if applicable,
 refresh command, and public docs together.
 

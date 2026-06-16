@@ -28,6 +28,10 @@ schema validation, replacement policy, and sensitive-material exclusions.
 The [release attestation coverage map](release-attestation-coverage.md)
 defines which public release assets require direct GitHub attestations and
 which are covered by AO Covenant signature and checksum verification.
+The
+[release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)
+provide stable public examples for passing and failing attestation trust
+decisions.
 The [release consumer smoke script](../scripts/release-consumer-smoke.sh)
 provides a single consumer-facing command for downloaded release directories
 using only public release assets and an installed `covenant` binary.

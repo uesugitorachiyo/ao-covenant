@@ -1,0 +1,28 @@
+{
+  "schema_version": "covenant.release-attestation-fixture.v1",
+  "name": "coverage-valid",
+  "description": "Consumer verifies manifest.json and the exact Linux amd64 platform binary before installation.",
+  "expected": "pass",
+  "release": {
+    "version": "v0.1.0",
+    "repo": "uesugitorachiyo/ao-covenant",
+    "manifest": "manifest.json",
+    "artifact": "ao-covenant_v0.1.0_linux_amd64",
+    "target": "linux/amd64",
+    "public_only": true
+  },
+  "checks": [
+    {
+      "name": "manifest",
+      "artifact": "manifest.json",
+      "command": "gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant",
+      "required": true
+    },
+    {
+      "name": "platform-binary",
+      "artifact": "ao-covenant_v0.1.0_linux_amd64",
+      "command": "gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant",
+      "required": true
+    }
+  ]
+}
