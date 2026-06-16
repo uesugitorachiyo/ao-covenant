@@ -72,6 +72,7 @@ fixture inventory data:
 - `covenant.release-fixture-index.v1`
 - `covenant.release-attestation-fixture.v1`
 - `covenant.release-replacement-policy.v1`
+- `covenant.release-replacement-preflight-report.v1`
 
 Bundle and provenance automation exposes offline evidence inspection, signature
 metadata, public key data, and bundle reports:

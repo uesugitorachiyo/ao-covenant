@@ -62,7 +62,9 @@ plan. Write the existing asset names to a temporary file, point
 gate used by `.github/workflows/release.yml`. The
 [release replacement preflight fixtures](../internal/cli/testdata/release-replacement-preflight-fixtures)
 show stable example inputs, generated policy output, and fail-closed
-diagnostics:
+diagnostics. Set `COVENANT_RELEASE_REPLACEMENT_REPORT_JSON` to write
+`release-replacement-preflight-report.json` with schema
+`covenant.release-replacement-preflight-report.v1` for audit review:
 
 ```sh
 printf '%s\n' manifest.json ao-covenant_v0.1.0_linux_amd64 > /tmp/existing-release-assets.txt
@@ -74,6 +76,7 @@ GITHUB_REPOSITORY=uesugitorachiyo/ao-covenant \
 GITHUB_RUN_ID=12345 \
 GITHUB_RUN_ATTEMPT=1 \
 COVENANT_RELEASE_EXISTING_ASSETS_FILE=/tmp/existing-release-assets.txt \
+COVENANT_RELEASE_REPLACEMENT_REPORT_JSON=/tmp/release-replacement-preflight-report.json \
 ./scripts/release-replacement-preflight.sh
 ```
 

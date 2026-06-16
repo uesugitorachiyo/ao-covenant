@@ -81,6 +81,48 @@ func TestReleaseReplacementPolicySchemaValidatesPublishedArtifact(t *testing.T) 
 	}
 }
 
+func TestReleaseReplacementPreflightReportSchemaValidatesPublishedArtifact(t *testing.T) {
+	const schemaID = "covenant.release-replacement-preflight-report.v1"
+	document := []byte(`{
+		"schema_version": "covenant.release-replacement-preflight-report.v1",
+		"version": "v0.1.0",
+		"status": "replacement_policy_written",
+		"replace_existing_assets": true,
+		"release_exists": true,
+		"created_at": "2026-06-16T00:00:00Z",
+		"github": {
+			"repository": "uesugitorachiyo/ao-covenant",
+			"run_id": "12345",
+			"run_attempt": "1"
+		},
+		"replacement_reason": "public release correction",
+		"policy_path": "release-replacement-policy.json",
+		"assets": {
+			"new": [
+				"SHA256SUMS",
+				"ao-covenant_v0.1.0_linux_amd64",
+				"manifest.json",
+				"release-replacement-policy.json"
+			],
+			"existing": [
+				"ao-covenant_v0.1.0_linux_amd64",
+				"manifest.json"
+			],
+			"conflicting": [
+				"ao-covenant_v0.1.0_linux_amd64",
+				"manifest.json"
+			]
+		}
+	}`)
+
+	if !KnownSchemaID(schemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", schemaID)
+	}
+	if err := ValidateBytes(schemaID, document); err != nil {
+		t.Fatalf("ValidateBytes(%q) returned error: %v", schemaID, err)
+	}
+}
+
 func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	required, ok := RequiredSchemaByID(VersionResultSchemaID)
 	if !ok {

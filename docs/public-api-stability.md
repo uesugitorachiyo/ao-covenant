@@ -111,6 +111,9 @@ Release replacement preflight fixtures under
 `internal/cli/testdata/release-replacement-preflight-fixtures/` are stable
 public examples for maintainers and consumers that need to test replacement
 policy generation and fail-closed conflict diagnostics without publishing.
+The preflight audit report uses
+`covenant.release-replacement-preflight-report.v1` and is stable for workflow
+artifact consumers.
 
 When fixture-backed output changes, update the fixture, schema if applicable,
 refresh command, and public docs together.

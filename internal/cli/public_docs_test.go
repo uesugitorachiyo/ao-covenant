@@ -488,6 +488,7 @@ func TestPublicSchemaChangelogIsLinkedAndComplete(t *testing.T) {
 		{name: "contract schema", doc: changelog, want: "`covenant.contract.v1`"},
 		{name: "release readiness schema", doc: changelog, want: "`covenant.release-readiness-summary.v1`"},
 		{name: "release replacement policy schema", doc: changelog, want: "`covenant.release-replacement-policy.v1`"},
+		{name: "release replacement preflight report schema", doc: changelog, want: "`covenant.release-replacement-preflight-report.v1`"},
 		{name: "release attestation fixture schema", doc: changelog, want: "`covenant.release-attestation-fixture.v1`"},
 		{name: "schema catalog result schema", doc: changelog, want: "`covenant.schema-catalog-result.v1`"},
 		{name: "release fixture index schema", doc: changelog, want: "`covenant.release-fixture-index.v1`"},
@@ -902,6 +903,8 @@ func TestReleaseReplacementPreflightScriptIsLinkedAndComplete(t *testing.T) {
 		{name: "conflict comparison", doc: script, want: "comm -12 \"$existing_assets\" \"$new_assets\""},
 		{name: "replacement policy", doc: script, want: "release-replacement-policy.json"},
 		{name: "replacement policy schema", doc: script, want: "covenant.release-replacement-policy.v1"},
+		{name: "replacement preflight report schema", doc: script, want: "covenant.release-replacement-preflight-report.v1"},
+		{name: "replacement preflight report env", doc: script, want: "COVENANT_RELEASE_REPLACEMENT_REPORT_JSON"},
 		{name: "schema validation", doc: script, want: "go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file \"$policy_path\""},
 		{name: "github metadata repository", doc: script, want: "GITHUB_REPOSITORY"},
 		{name: "github metadata run id", doc: script, want: "GITHUB_RUN_ID"},
@@ -956,6 +959,53 @@ func TestReleaseReplacementPreflightFixturesAreLinkedAndComplete(t *testing.T) {
 		{name: "diagnostic fixture", doc: index, want: `"fail-closed-diagnostic.txt"`},
 		{name: "policy fixture", doc: index, want: `"generated-policy.json"`},
 		{name: "fixture check command", doc: index, want: "go test ./internal/cli -run TestReleaseReplacementPreflightFixtures -count=1"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
+func TestReleaseReplacementPreflightReportIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	releaseOps := readText("docs", "release.md")
+	rollback := readText("docs", "release-rollback.md")
+	readiness := readText("docs", "public-readiness.md")
+	stability := readText("docs", "public-api-stability.md")
+	workflow := readText(".github", "workflows", "release.yml")
+	script := readText("scripts", "release-replacement-preflight.sh")
+	schemaFile := readText("schemas", "covenant.release-replacement-preflight-report.v1.schema.json")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README schema", doc: readme, want: "`covenant.release-replacement-preflight-report.v1`"},
+		{name: "release operations report", doc: releaseOps, want: "`release-replacement-preflight-report.json`"},
+		{name: "rollback report", doc: rollback, want: "`release-replacement-preflight-report.json`"},
+		{name: "readiness report", doc: readiness, want: "`release-replacement-preflight-report.json`"},
+		{name: "stability schema", doc: stability, want: "`covenant.release-replacement-preflight-report.v1`"},
+		{name: "workflow report env", doc: workflow, want: "COVENANT_RELEASE_REPLACEMENT_REPORT_JSON: ${{ runner.temp }}/release-replacement-preflight-report.json"},
+		{name: "workflow upload", doc: workflow, want: "name: Upload replacement preflight report"},
+		{name: "workflow artifact", doc: workflow, want: "ao-covenant-${{ steps.meta.outputs.version }}-replacement-preflight-report"},
+		{name: "script report env", doc: script, want: "COVENANT_RELEASE_REPLACEMENT_REPORT_JSON"},
+		{name: "script schema", doc: script, want: "covenant.release-replacement-preflight-report.v1"},
+		{name: "schema id", doc: schemaFile, want: `"$id": "covenant.release-replacement-preflight-report.v1"`},
+		{name: "schema status", doc: schemaFile, want: `"status"`},
+		{name: "schema assets", doc: schemaFile, want: `"assets"`},
+		{name: "blocked status", doc: schemaFile, want: `"blocked_existing_assets"`},
+		{name: "written status", doc: schemaFile, want: `"replacement_policy_written"`},
 	} {
 		if !strings.Contains(check.doc, check.want) {
 			t.Fatalf("%s missing %q", check.name, check.want)

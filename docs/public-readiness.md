@@ -49,7 +49,9 @@ before tagging or manually dispatching a public release. Use the
 or correcting published release assets. Use the
 [release replacement preflight script](../scripts/release-replacement-preflight.sh)
 to simulate existing-asset conflicts and validate `release-replacement-policy.json`
-before a replacement publish path. Use the
+before a replacement publish path. The release workflow uploads
+`release-replacement-preflight-report.json` with schema
+`covenant.release-replacement-preflight-report.v1` as a CI audit artifact. Use the
 [release note template](release-note-template.md) before publishing normal
 release notes, replacement notices, withdrawal notices, or security-sensitive
 release summaries. Use the [release note fixtures](release-note-fixtures.md)
