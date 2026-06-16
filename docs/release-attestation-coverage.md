@@ -30,6 +30,18 @@ they intend to install. Automation that relies on SBOM, supplemental
 provenance, release reports, or packaged attestation files should verify those
 files too.
 
+## Platform Binary Attestation Matrix
+
+Consumer trust decisions must include `manifest.json` plus the exact platform binary being installed. Replace `v0.1.0` with the release version you downloaded.
+
+| Platform | Target | Binary artifact | Attestation command |
+| --- | --- | --- | --- |
+| Ubuntu/Linux amd64 | `linux/amd64` | `ao-covenant_v0.1.0_linux_amd64` | `gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant` |
+| Ubuntu/Linux arm64 | `linux/arm64` | `ao-covenant_v0.1.0_linux_arm64` | `gh attestation verify ao-covenant_v0.1.0_linux_arm64 --repo uesugitorachiyo/ao-covenant` |
+| macOS Intel | `darwin/amd64` | `ao-covenant_v0.1.0_darwin_amd64` | `gh attestation verify ao-covenant_v0.1.0_darwin_amd64 --repo uesugitorachiyo/ao-covenant` |
+| macOS Apple Silicon | `darwin/arm64` | `ao-covenant_v0.1.0_darwin_arm64` | `gh attestation verify ao-covenant_v0.1.0_darwin_arm64 --repo uesugitorachiyo/ao-covenant` |
+| Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.0_windows_amd64.exe` | `gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant` |
+
 ## Release Asset Coverage Matrix
 
 | Asset | GitHub attestation expectation | AO Covenant verification expectation |
