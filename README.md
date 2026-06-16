@@ -97,6 +97,10 @@ Stable `release diff` SARIF examples live in
 `internal/cli/testdata/release-diff-sarif-fixtures/` and cover matching,
 changed, and baseline-suppressed drift; refresh them with
 `COVENANT_UPDATE_RELEASE_DIFF_FIXTURES=1 go test ./internal/cli -run 'ReleaseDiffSARIFFixtures' -count=1`.
+Stable release replacement preflight examples live in
+`internal/cli/testdata/release-replacement-preflight-fixtures/`; they cover
+existing asset inputs, deterministic `release-replacement-policy.json` output,
+and fail-closed conflict diagnostics.
 
 `covenant schema catalog` lists every public JSON schema embedded in the binary,
 including the schema ID, filename, and repository path. Use `--json` to emit a

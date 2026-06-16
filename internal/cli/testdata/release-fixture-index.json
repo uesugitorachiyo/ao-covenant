@@ -86,6 +86,19 @@
       ]
     },
     {
+      "name": "release-replacement-preflight",
+      "directory": "internal/cli/testdata/release-replacement-preflight-fixtures",
+      "purpose": "Stable public release replacement preflight examples for existing asset inputs, generated replacement policy output, and fail-closed conflict diagnostics.",
+      "generated": false,
+      "check_command": "go test ./internal/cli -run TestReleaseReplacementPreflightFixtures -count=1",
+      "files": [
+        "dist-assets.txt",
+        "existing-assets.txt",
+        "fail-closed-diagnostic.txt",
+        "generated-policy.json"
+      ]
+    },
+    {
       "name": "release-note",
       "directory": "internal/cli/testdata/release-note-fixtures",
       "purpose": "Stable public release note examples for normal, replacement, withdrawal, and security-sensitive release notes.",

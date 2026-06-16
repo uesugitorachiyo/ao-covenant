@@ -1,0 +1,4 @@
+release asset replacement requires workflow_dispatch input replace_existing_assets=true
+conflicting assets:
+ao-covenant_v0.1.0_linux_amd64
+manifest.json

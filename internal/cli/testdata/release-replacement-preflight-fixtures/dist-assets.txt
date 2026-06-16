@@ -1,0 +1,5 @@
+SHA256SUMS
+ao-covenant_v0.1.0_linux_amd64
+covenant-release-public-key.json
+manifest.json
+release-signature.json
