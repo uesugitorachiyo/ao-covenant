@@ -5,6 +5,7 @@ AO Covenant release. It defines the minimum asset set and verification output
 that should be present for a release to be considered known-good.
 
 Use this document with the [release verification walkthrough](release-verification.md),
+[release attestation coverage map](release-attestation-coverage.md),
 [release consumer smoke script](../scripts/release-consumer-smoke.sh),
 [Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1),
 [release note fixtures](release-note-fixtures.md),

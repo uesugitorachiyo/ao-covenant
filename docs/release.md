@@ -60,6 +60,9 @@ The release workflow performs these checks before publishing:
 
 Consumers can verify downloaded release artifacts with the bundled checksums,
 the signed AO Covenant manifest, and GitHub artifact attestations. Use the
+[release attestation coverage map](release-attestation-coverage.md) to confirm
+which assets require direct GitHub attestations and which assets are covered by
+manifest signature and checksum verification. Use the
 [release verification walkthrough](release-verification.md) for the full
 consumer checklist.
 
