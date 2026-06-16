@@ -43,7 +43,7 @@ files too.
 | `release-verify.json` | direct GitHub attestation from `dist/*` | machine-readable verification output using the public release-verify schema |
 | `release-report.json` | direct GitHub attestation from `dist/*` | machine-readable release report using the public release-report schema |
 | SBOM, provenance, and packaged attestation artifacts | direct GitHub attestation when present in `dist/*` | covered by manifest signature and checksum verification when included in the release manifest |
-| `release-replacement-policy.json` | created during the publish step after the standard attestation step; validate and review it before trusting a replacement release | schema-validated by the workflow with `covenant.release-replacement-policy.v1` and reviewed as replacement metadata |
+| `release-replacement-policy.json` | direct GitHub attestation from `dist/*` when replacement metadata is generated | schema-validated by the workflow with `covenant.release-replacement-policy.v1` and reviewed as replacement metadata |
 
 ## Consumer Verification
 
@@ -83,6 +83,7 @@ The expected workflow anchors are:
 
 - `attestations: write`
 - `actions/attest-build-provenance@v4`
+- `Preflight release asset replacement`
 - `subject-path: "dist/*"`
 - `gh attestation verify smoke/manifest.json`
 - `covenant-release-public-key.json`

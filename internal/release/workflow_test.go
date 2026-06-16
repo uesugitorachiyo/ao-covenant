@@ -127,12 +127,46 @@ func TestReleaseWorkflowMatchesAttestationCoverageMap(t *testing.T) {
 
 	for _, want := range []string{
 		"post-release smoke verification",
-		"created during the publish step after the standard attestation step",
+		"direct GitHub attestation from `dist/*` when replacement metadata is generated",
 		"manifest.json",
 		"platform binaries",
 	} {
 		requireWorkflowContains(t, coverage, want)
 	}
+}
+
+func TestReleaseWorkflowAttestsReplacementPolicyBeforePublish(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+
+	for _, want := range []string{
+		"name: Preflight release asset replacement",
+		"find dist -maxdepth 1 -type f -exec basename {} \\; | sort > \"$new_assets\"",
+		"release asset replacement requires workflow_dispatch input replace_existing_assets=true",
+		"jq -n \\",
+		"covenant.release-replacement-policy.v1",
+		"> dist/release-replacement-policy.json",
+		"go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file dist/release-replacement-policy.json",
+		"name: Generate GitHub artifact attestations",
+		"name: Publish GitHub release",
+	} {
+		requireWorkflowContains(t, workflow, want)
+	}
+
+	requireWorkflowOrder(t, workflow,
+		"name: Verify signed release",
+		"name: Preflight release asset replacement",
+		"name: Generate GitHub artifact attestations",
+		"name: Upload workflow artifact",
+		"name: Publish GitHub release",
+	)
+	requireWorkflowOrder(t, workflow,
+		"> dist/release-replacement-policy.json",
+		"name: Generate GitHub artifact attestations",
+	)
+	requireWorkflowOrder(t, workflow,
+		"go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file dist/release-replacement-policy.json",
+		"name: Generate GitHub artifact attestations",
+	)
 }
 
 func TestReleaseWorkflowGuardsExistingReleaseAssets(t *testing.T) {
@@ -245,5 +279,20 @@ func requireWorkflowContainsNormalized(t *testing.T, workflow string, want strin
 	normalized := strings.Join(strings.Fields(workflow), " ")
 	if !strings.Contains(normalized, want) {
 		t.Fatalf("workflow missing %q", want)
+	}
+}
+
+func requireWorkflowOrder(t *testing.T, workflow string, wants ...string) {
+	t.Helper()
+	last := -1
+	for _, want := range wants {
+		index := strings.Index(workflow, want)
+		if index == -1 {
+			t.Fatalf("workflow missing %q", want)
+		}
+		if index <= last {
+			t.Fatalf("workflow has %q out of order", want)
+		}
+		last = index
 	}
 }
