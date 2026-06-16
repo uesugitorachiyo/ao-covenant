@@ -51,6 +51,9 @@ The release workflow performs these checks before publishing:
 - verifies the signed manifest and binaries with `covenant release verify`
 - emits a machine-readable `covenant release report`
 - publishes `covenant-release-public-key.json` for consumer verification
+- preflights existing release asset conflicts and writes
+  `release-replacement-policy.json` before attestation when replacement is
+  explicitly requested
 - generates GitHub artifact attestations for `dist/*`
 - publishes new GitHub release assets, while existing asset replacement requires
   an explicit `replace_existing_assets` override and `replacement_reason`

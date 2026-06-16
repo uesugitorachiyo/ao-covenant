@@ -223,7 +223,7 @@ func TestReleaseAttestationCoverageMapIsLinkedAndComplete(t *testing.T) {
 		{name: "platform binaries", doc: coverage, want: "platform binaries"},
 		{name: "direct coverage phrase", doc: coverage, want: "direct GitHub attestation"},
 		{name: "indirect coverage phrase", doc: coverage, want: "covered by manifest signature and checksum verification"},
-		{name: "replacement nuance", doc: coverage, want: "created during the publish step after the standard attestation step"},
+		{name: "replacement direct coverage", doc: coverage, want: "direct GitHub attestation from `dist/*` when replacement metadata is generated"},
 		{name: "sensitive warning", doc: coverage, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
 	} {
 		if !strings.Contains(check.doc, check.want) {

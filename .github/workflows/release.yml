@@ -153,19 +153,7 @@ jobs:
             --public-key "$COVENANT_RELEASE_PUBLIC_KEY" \
             --json > dist/release-report.json
 
-      - name: Generate GitHub artifact attestations
-        uses: actions/attest-build-provenance@v4
-        with:
-          subject-path: "dist/*"
-
-      - name: Upload workflow artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ao-covenant-${{ steps.meta.outputs.version }}
-          path: dist/*
-          if-no-files-found: error
-
-      - name: Publish GitHub release
+      - name: Preflight release asset replacement
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -174,17 +162,15 @@ jobs:
           REPLACEMENT_REASON: ${{ github.event_name == 'workflow_dispatch' && inputs.replacement_reason || '' }}
         run: |
           set -euo pipefail
-          notes="$RUNNER_TEMP/release-notes.md"
           existing_assets="$RUNNER_TEMP/existing-release-assets.txt"
           new_assets="$RUNNER_TEMP/new-release-assets.txt"
           replaced_assets_json="$RUNNER_TEMP/replaced-assets.json"
-          cat > "$notes" <<EOF
-          AO Covenant ${VERSION}
-
-          This release was built by GitHub Actions, signed by AO Covenant's release key, verified by AO Covenant, and covered by GitHub artifact attestations.
-          EOF
           find dist -maxdepth 1 -type f -exec basename {} \; | sort > "$new_assets"
           if gh release view "$VERSION" >/dev/null 2>&1; then
+            if [[ "$REPLACE_EXISTING_ASSETS" == "true" ]]; then
+              printf '%s\n' "release-replacement-policy.json" >> "$new_assets"
+              sort -u "$new_assets" -o "$new_assets"
+            fi
             gh release view "$VERSION" --json assets --jq '.assets[].name' | sort > "$existing_assets"
             conflicts="$(comm -12 "$existing_assets" "$new_assets" || true)"
             if [[ -n "$conflicts" && "$REPLACE_EXISTING_ASSETS" != "true" ]]; then
@@ -216,6 +202,37 @@ jobs:
                   replaced_assets: $replaced_assets[0]
                 }' > dist/release-replacement-policy.json
               go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file dist/release-replacement-policy.json
+            fi
+          fi
+
+      - name: Generate GitHub artifact attestations
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: "dist/*"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ao-covenant-${{ steps.meta.outputs.version }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          REPLACE_EXISTING_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.replace_existing_assets || false }}
+        run: |
+          set -euo pipefail
+          notes="$RUNNER_TEMP/release-notes.md"
+          cat > "$notes" <<EOF
+          AO Covenant ${VERSION}
+
+          This release was built by GitHub Actions, signed by AO Covenant's release key, verified by AO Covenant, and covered by GitHub artifact attestations.
+          EOF
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            if [[ "$REPLACE_EXISTING_ASSETS" == "true" ]]; then
               gh release upload "$VERSION" dist/* --clobber
             else
               gh release upload "$VERSION" dist/*
