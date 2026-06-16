@@ -93,6 +93,7 @@ Common link points are:
 - [release note template](docs/release-note-template.md)
 - [release note fixtures](docs/release-note-fixtures.md)
 - [release verification walkthrough](docs/release-verification.md)
+- [release attestation coverage map](docs/release-attestation-coverage.md)
 - [release consumer smoke script](scripts/release-consumer-smoke.sh)
 - [Windows release consumer smoke script](scripts/release-consumer-smoke.ps1)
 - [public schema changelog](docs/public-schema-changelog.md)

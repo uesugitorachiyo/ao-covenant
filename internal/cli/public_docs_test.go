@@ -167,6 +167,71 @@ func TestPublicReadinessIndexIsLinkedAndComplete(t *testing.T) {
 	}
 }
 
+func TestReleaseAttestationCoverageMapIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	contributing := readText("CONTRIBUTING.md")
+	releaseDoc := readText("docs", "release.md")
+	readiness := readText("docs", "public-readiness.md")
+	knownGood := readText("docs", "public-release-known-good-baseline.md")
+	verification := readText("docs", "release-verification.md")
+	coverage := readText("docs", "release-attestation-coverage.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Release Attestation Coverage](docs/release-attestation-coverage.md)"},
+		{name: "contributor link", doc: contributing, want: "[release attestation coverage map](docs/release-attestation-coverage.md)"},
+		{name: "release operations link", doc: releaseDoc, want: "[release attestation coverage map](release-attestation-coverage.md)"},
+		{name: "public readiness link", doc: readiness, want: "[release attestation coverage map](release-attestation-coverage.md)"},
+		{name: "known good link", doc: knownGood, want: "[release attestation coverage map](release-attestation-coverage.md)"},
+		{name: "verification walkthrough link", doc: verification, want: "[release attestation coverage map](release-attestation-coverage.md)"},
+		{name: "title", doc: coverage, want: "# AO Covenant Release Attestation Coverage"},
+		{name: "scope section", doc: coverage, want: "## Scope"},
+		{name: "required attestations section", doc: coverage, want: "## Required GitHub Attestations"},
+		{name: "matrix section", doc: coverage, want: "## Release Asset Coverage Matrix"},
+		{name: "consumer section", doc: coverage, want: "## Consumer Verification"},
+		{name: "maintainer section", doc: coverage, want: "## Maintainer Checks"},
+		{name: "failure section", doc: coverage, want: "## Failure Handling"},
+		{name: "non-goals section", doc: coverage, want: "## Non-Goals"},
+		{name: "attestation action", doc: coverage, want: "actions/attest-build-provenance@v4"},
+		{name: "subject path", doc: coverage, want: "subject-path: \"dist/*\""},
+		{name: "permission", doc: coverage, want: "attestations: write"},
+		{name: "manifest command", doc: coverage, want: "gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant"},
+		{name: "binary command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant"},
+		{name: "shell smoke", doc: coverage, want: "scripts/release-consumer-smoke.sh"},
+		{name: "powershell smoke", doc: coverage, want: "scripts/release-consumer-smoke.ps1"},
+		{name: "manifest asset", doc: coverage, want: "manifest.json"},
+		{name: "checksum asset", doc: coverage, want: "SHA256SUMS"},
+		{name: "signature asset", doc: coverage, want: "release-signature.json"},
+		{name: "public key asset", doc: coverage, want: "covenant-release-public-key.json"},
+		{name: "package report", doc: coverage, want: "release-package.json"},
+		{name: "verify report", doc: coverage, want: "release-verify.json"},
+		{name: "release report", doc: coverage, want: "release-report.json"},
+		{name: "replacement policy", doc: coverage, want: "release-replacement-policy.json"},
+		{name: "platform binaries", doc: coverage, want: "platform binaries"},
+		{name: "direct coverage phrase", doc: coverage, want: "direct GitHub attestation"},
+		{name: "indirect coverage phrase", doc: coverage, want: "covered by manifest signature and checksum verification"},
+		{name: "replacement nuance", doc: coverage, want: "created during the publish step after the standard attestation step"},
+		{name: "sensitive warning", doc: coverage, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
 func TestContributorGuideIsLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {

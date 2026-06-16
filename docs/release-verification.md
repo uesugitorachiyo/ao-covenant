@@ -10,6 +10,9 @@ does not contain the release private key.
 Use the [public release known-good baseline](public-release-known-good-baseline.md)
 to compare the downloaded asset set, platform coverage, schema-backed
 verification outputs, and sensitive-material exclusions before install.
+Use the [release attestation coverage map](release-attestation-coverage.md)
+to decide which release files need direct GitHub artifact attestation checks
+and which files are covered by AO Covenant signature and checksum verification.
 If a release was replaced, withdrawn, or corrected after publication, review
 the [release rollback runbook](release-rollback.md) and any release notice
 before installing.
@@ -125,7 +128,9 @@ gh attestation verify ao-covenant_v0.1.0_linux_amd64 \
 
 Use the matching binary name for macOS or Windows. If a release includes SBOM,
 attestation, or supplemental provenance files, verify those files as well when
-they are part of your trust decision.
+they are part of your trust decision. The
+[release attestation coverage map](release-attestation-coverage.md) defines
+the expected direct and indirect coverage for each public release asset.
 
 ## 5. Review Provenance And Reports
 

@@ -36,6 +36,9 @@ Security model:
   to use private advisories and how to keep public reports minimal.
 - [Release Verification](docs/release-verification.md) gives consumers a
   checksum, signature, attestation, and provenance walkthrough before install.
+- [Release Attestation Coverage](docs/release-attestation-coverage.md) defines
+  which public release assets need direct GitHub attestations and which are
+  covered by AO Covenant signature and checksum verification.
 - [Release Consumer Smoke Script](scripts/release-consumer-smoke.sh) gives
   consumers a single public script for downloaded release directories.
 - [Windows Release Consumer Smoke Script](scripts/release-consumer-smoke.ps1)

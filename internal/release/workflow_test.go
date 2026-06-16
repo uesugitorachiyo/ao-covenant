@@ -109,6 +109,32 @@ func TestReleaseWorkflowRunsPostPublishSmokeVerification(t *testing.T) {
 	}
 }
 
+func TestReleaseWorkflowMatchesAttestationCoverageMap(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+	coverage := readRepoFile(t, "docs", "release-attestation-coverage.md")
+
+	for _, want := range []string{
+		"attestations: write",
+		"actions/attest-build-provenance@v4",
+		"subject-path: \"dist/*\"",
+		"gh attestation verify smoke/manifest.json",
+		"covenant-release-public-key.json",
+		"release-replacement-policy.json",
+	} {
+		requireWorkflowContains(t, workflow, want)
+		requireWorkflowContains(t, coverage, want)
+	}
+
+	for _, want := range []string{
+		"post-release smoke verification",
+		"created during the publish step after the standard attestation step",
+		"manifest.json",
+		"platform binaries",
+	} {
+		requireWorkflowContains(t, coverage, want)
+	}
+}
+
 func TestReleaseWorkflowGuardsExistingReleaseAssets(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
 

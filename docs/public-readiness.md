@@ -25,6 +25,9 @@ artifact attestations, provenance reports, and failure handling. The
 [public release known-good baseline](public-release-known-good-baseline.md)
 defines the expected release asset set, platform coverage, verification output,
 schema validation, replacement policy, and sensitive-material exclusions.
+The [release attestation coverage map](release-attestation-coverage.md)
+defines which public release assets require direct GitHub attestations and
+which are covered by AO Covenant signature and checksum verification.
 The [release consumer smoke script](../scripts/release-consumer-smoke.sh)
 provides a single consumer-facing command for downloaded release directories
 using only public release assets and an installed `covenant` binary.
