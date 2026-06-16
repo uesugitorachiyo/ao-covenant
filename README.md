@@ -50,6 +50,9 @@ Security model:
   packaging and verification checklist.
 - [Release Rollback](docs/release-rollback.md) defines replacement, rollback,
   withdrawal, and consumer notice expectations for published assets.
+- [Release Replacement Preflight Script](scripts/release-replacement-preflight.sh)
+  guards replacement runs and can simulate existing GitHub release assets before
+  publishing.
 - [Release Note Template](docs/release-note-template.md) defines safe public
   release note, replacement notice, and security-sensitive wording blocks.
 - [Release Note Fixtures](docs/release-note-fixtures.md) provides stable public

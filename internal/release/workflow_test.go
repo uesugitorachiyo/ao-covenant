@@ -111,6 +111,7 @@ func TestReleaseWorkflowRunsPostPublishSmokeVerification(t *testing.T) {
 
 func TestReleaseWorkflowMatchesAttestationCoverageMap(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+	replacementPreflight := readRepoFile(t, "scripts", "release-replacement-preflight.sh")
 	coverage := readRepoFile(t, "docs", "release-attestation-coverage.md")
 
 	for _, want := range []string{
@@ -119,11 +120,18 @@ func TestReleaseWorkflowMatchesAttestationCoverageMap(t *testing.T) {
 		"subject-path: \"dist/*\"",
 		"gh attestation verify smoke/manifest.json",
 		"covenant-release-public-key.json",
-		"release-replacement-policy.json",
 	} {
 		requireWorkflowContains(t, workflow, want)
 		requireWorkflowContains(t, coverage, want)
 	}
+
+	for _, want := range []string{
+		"release-replacement-policy.json",
+		"./scripts/release-replacement-preflight.sh",
+	} {
+		requireWorkflowContains(t, workflow+replacementPreflight, want)
+	}
+	requireWorkflowContains(t, coverage, "release-replacement-policy.json")
 
 	for _, want := range []string{
 		"post-release smoke verification",
@@ -140,12 +148,11 @@ func TestReleaseWorkflowAttestsReplacementPolicyBeforePublish(t *testing.T) {
 
 	for _, want := range []string{
 		"name: Preflight release asset replacement",
-		"find dist -maxdepth 1 -type f -exec basename {} \\; | sort > \"$new_assets\"",
-		"release asset replacement requires workflow_dispatch input replace_existing_assets=true",
-		"jq -n \\",
-		"covenant.release-replacement-policy.v1",
-		"> dist/release-replacement-policy.json",
-		"go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file dist/release-replacement-policy.json",
+		"./scripts/release-replacement-preflight.sh",
+		"DIST_DIR: dist",
+		"VERSION: ${{ steps.meta.outputs.version }}",
+		"REPLACE_EXISTING_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.replace_existing_assets || false }}",
+		"REPLACEMENT_REASON: ${{ github.event_name == 'workflow_dispatch' && inputs.replacement_reason || '' }}",
 		"name: Generate GitHub artifact attestations",
 		"name: Publish GitHub release",
 	} {
@@ -160,35 +167,40 @@ func TestReleaseWorkflowAttestsReplacementPolicyBeforePublish(t *testing.T) {
 		"name: Publish GitHub release",
 	)
 	requireWorkflowOrder(t, workflow,
-		"> dist/release-replacement-policy.json",
-		"name: Generate GitHub artifact attestations",
-	)
-	requireWorkflowOrder(t, workflow,
-		"go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file dist/release-replacement-policy.json",
+		"./scripts/release-replacement-preflight.sh",
 		"name: Generate GitHub artifact attestations",
 	)
 }
 
 func TestReleaseWorkflowGuardsExistingReleaseAssets(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+	script := readRepoFile(t, "scripts", "release-replacement-preflight.sh")
 
 	for _, want := range []string{
 		"replace_existing_assets:",
 		"type: boolean",
 		"default: false",
 		"replacement_reason:",
+		"DIST_DIR: dist",
 		"REPLACE_EXISTING_ASSETS",
 		"REPLACEMENT_REASON",
+		"./scripts/release-replacement-preflight.sh",
+		"gh release upload \"$VERSION\" dist/* --clobber",
+	} {
+		requireWorkflowContains(t, workflow, want)
+	}
+
+	for _, want := range []string{
 		"release asset replacement requires workflow_dispatch input replace_existing_assets=true",
 		"gh release view \"$VERSION\" --json assets --jq '.assets[].name'",
 		"comm -12 \"$existing_assets\" \"$new_assets\"",
 		"release-replacement-policy.json",
 		"covenant.release-replacement-policy.v1",
-		"replaced_assets:",
-		"go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file dist/release-replacement-policy.json",
-		"gh release upload \"$VERSION\" dist/* --clobber",
+		"\"replaced_assets\":",
+		"go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file \"$policy_path\"",
+		"COVENANT_RELEASE_EXISTING_ASSETS_FILE",
 	} {
-		requireWorkflowContains(t, workflow, want)
+		requireWorkflowContains(t, script, want)
 	}
 
 	requireWorkflowOmits(t, workflow, "if gh release view \"$VERSION\" >/dev/null 2>&1; then\n            gh release upload \"$VERSION\" dist/* --clobber")

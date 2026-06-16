@@ -859,6 +859,70 @@ func TestReleaseRollbackRunbookIsLinkedAndComplete(t *testing.T) {
 	}
 }
 
+func TestReleaseReplacementPreflightScriptIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	releaseOps := readText("docs", "release.md")
+	rollback := readText("docs", "release-rollback.md")
+	readiness := readText("docs", "public-readiness.md")
+	contributing := readText("CONTRIBUTING.md")
+	workflow := readText(".github", "workflows", "release.yml")
+	script := readText("scripts", "release-replacement-preflight.sh")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Release Replacement Preflight Script](scripts/release-replacement-preflight.sh)"},
+		{name: "release operations link", doc: releaseOps, want: "[release replacement preflight script](../scripts/release-replacement-preflight.sh)"},
+		{name: "rollback link", doc: rollback, want: "[release replacement preflight script](../scripts/release-replacement-preflight.sh)"},
+		{name: "readiness link", doc: readiness, want: "[release replacement preflight script](../scripts/release-replacement-preflight.sh)"},
+		{name: "contributing link", doc: contributing, want: "[release replacement preflight script](scripts/release-replacement-preflight.sh)"},
+		{name: "workflow call", doc: workflow, want: "./scripts/release-replacement-preflight.sh"},
+		{name: "workflow dist env", doc: workflow, want: "DIST_DIR: dist"},
+		{name: "shebang", doc: script, want: "#!/usr/bin/env bash"},
+		{name: "strict shell", doc: script, want: "set -euo pipefail"},
+		{name: "dist env", doc: script, want: "DIST_DIR"},
+		{name: "version env", doc: script, want: "VERSION"},
+		{name: "replacement opt in env", doc: script, want: "REPLACE_EXISTING_ASSETS"},
+		{name: "replacement reason env", doc: script, want: "REPLACEMENT_REASON"},
+		{name: "offline fixture env", doc: script, want: "COVENANT_RELEASE_EXISTING_ASSETS_FILE"},
+		{name: "fail closed diagnostic", doc: script, want: "release asset replacement requires workflow_dispatch input replace_existing_assets=true"},
+		{name: "existing assets", doc: script, want: "gh release view \"$VERSION\" --json assets --jq '.assets[].name'"},
+		{name: "conflict comparison", doc: script, want: "comm -12 \"$existing_assets\" \"$new_assets\""},
+		{name: "replacement policy", doc: script, want: "release-replacement-policy.json"},
+		{name: "replacement policy schema", doc: script, want: "covenant.release-replacement-policy.v1"},
+		{name: "schema validation", doc: script, want: "go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file \"$policy_path\""},
+		{name: "github metadata repository", doc: script, want: "GITHUB_REPOSITORY"},
+		{name: "github metadata run id", doc: script, want: "GITHUB_RUN_ID"},
+		{name: "github metadata run attempt", doc: script, want: "GITHUB_RUN_ATTEMPT"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+
+	for _, forbidden := range []string{
+		"COVENANT_RELEASE_SIGNING_KEY",
+		"private_key",
+		"/Users/",
+	} {
+		if strings.Contains(script, forbidden) {
+			t.Fatalf("script contains sensitive or local-specific content %q", forbidden)
+		}
+	}
+}
+
 func TestReleaseNoteTemplateIsLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {

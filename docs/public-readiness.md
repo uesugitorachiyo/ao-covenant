@@ -43,6 +43,9 @@ Maintainers should run the [release dry-run checklist](release-dry-run.md)
 before tagging or manually dispatching a public release. Use the
 [release rollback runbook](release-rollback.md) before replacing, withdrawing,
 or correcting published release assets. Use the
+[release replacement preflight script](../scripts/release-replacement-preflight.sh)
+to simulate existing-asset conflicts and validate `release-replacement-policy.json`
+before a replacement publish path. Use the
 [release note template](release-note-template.md) before publishing normal
 release notes, replacement notices, withdrawal notices, or security-sensitive
 release summaries. Use the [release note fixtures](release-note-fixtures.md)
