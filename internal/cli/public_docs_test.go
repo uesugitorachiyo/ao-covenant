@@ -116,6 +116,7 @@ func TestReleaseVerificationWalkthroughIsLinkedAndComplete(t *testing.T) {
 		{name: "windows checksum command", doc: walkthrough, want: "Get-FileHash"},
 		{name: "release verify command", doc: walkthrough, want: "covenant release verify --dir . --public-key covenant-release-public-key.json"},
 		{name: "attestation command", doc: walkthrough, want: "gh attestation verify"},
+		{name: "replacement attestation command", doc: walkthrough, want: "gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant"},
 		{name: "report command", doc: walkthrough, want: "covenant release report --dir . --public-key covenant-release-public-key.json"},
 		{name: "public key warning", doc: walkthrough, want: "does not contain the release private key"},
 	} {
@@ -210,6 +211,7 @@ func TestReleaseAttestationCoverageMapIsLinkedAndComplete(t *testing.T) {
 		{name: "permission", doc: coverage, want: "attestations: write"},
 		{name: "manifest command", doc: coverage, want: "gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant"},
 		{name: "binary command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant"},
+		{name: "replacement policy command", doc: coverage, want: "gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant"},
 		{name: "shell smoke", doc: coverage, want: "scripts/release-consumer-smoke.sh"},
 		{name: "powershell smoke", doc: coverage, want: "scripts/release-consumer-smoke.ps1"},
 		{name: "manifest asset", doc: coverage, want: "manifest.json"},
@@ -1124,6 +1126,7 @@ func TestPublicReleaseKnownGoodBaselineIsLinkedAndComplete(t *testing.T) {
 		{name: "report command", doc: baseline, want: "covenant release report --dir . --public-key covenant-release-public-key.json"},
 		{name: "inspect command", doc: baseline, want: "covenant release inspect --dir . --public-key covenant-release-public-key.json"},
 		{name: "attestation command", doc: baseline, want: "gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant"},
+		{name: "replacement attestation command", doc: baseline, want: "gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant"},
 		{name: "verify schema", doc: baseline, want: "covenant.release-verify-result.v1"},
 		{name: "report schema", doc: baseline, want: "covenant.release-report-result.v1"},
 		{name: "inspect schema", doc: baseline, want: "covenant.release-inspect-result.v1"},
@@ -1189,6 +1192,7 @@ func TestReleaseConsumerSmokeScriptIsLinkedAndComplete(t *testing.T) {
 		{name: "validate inspect", doc: script, want: "covenant schema validate --file \"$OUT_DIR/release-inspect.json\""},
 		{name: "replacement policy schema", doc: script, want: "covenant.release-replacement-policy.v1"},
 		{name: "attestation", doc: script, want: "gh attestation verify \"$RELEASE_DIR/manifest.json\" --repo \"$REPO\""},
+		{name: "replacement policy attestation", doc: script, want: "gh attestation verify \"$RELEASE_DIR/release-replacement-policy.json\" --repo \"$REPO\""},
 		{name: "sensitive material warning", doc: script, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
@@ -1258,6 +1262,7 @@ func TestReleaseConsumerSmokePowerShellScriptIsLinkedAndComplete(t *testing.T) {
 		{name: "validate inspect", doc: script, want: "covenant schema validate --file (Join-Path $OutDir \"release-inspect.json\")"},
 		{name: "replacement policy schema", doc: script, want: "covenant.release-replacement-policy.v1"},
 		{name: "attestation", doc: script, want: "gh attestation verify (Join-Path $ReleaseDirPath \"manifest.json\") --repo $Repo"},
+		{name: "replacement policy attestation", doc: script, want: "gh attestation verify (Join-Path $ReleaseDirPath \"release-replacement-policy.json\") --repo $Repo"},
 		{name: "sensitive material warning", doc: script, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
 	} {
 		if !strings.Contains(check.doc, check.want) {

@@ -84,10 +84,13 @@ Manual minimum checks:
 covenant release verify --dir . --public-key covenant-release-public-key.json
 gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant
 gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant
+gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant
 ```
 
 Use the platform binary name that matches your operating system and CPU. Treat
-the manifest and installed binary as the minimum attestation set.
+the manifest and installed binary as the minimum attestation set. Run the
+replacement policy attestation command only when
+`release-replacement-policy.json` is present.
 
 ## Maintainer Checks
 

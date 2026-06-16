@@ -167,6 +167,14 @@ if (-not $SkipAttestation) {
     if ($LASTEXITCODE -ne 0) {
         Fail "gh attestation verification failed"
     }
+    if (Test-Path -LiteralPath $ReplacementPolicy -PathType Leaf) {
+        # Equivalent public command:
+        # gh attestation verify (Join-Path $ReleaseDirPath "release-replacement-policy.json") --repo $Repo
+        gh attestation verify $ReplacementPolicy --repo $Repo
+        if ($LASTEXITCODE -ne 0) {
+            Fail "gh replacement policy attestation verification failed"
+        }
+    }
 }
 
 Write-Host "release consumer smoke complete: outputs=$OutDir"

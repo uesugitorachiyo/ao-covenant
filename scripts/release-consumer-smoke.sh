@@ -154,16 +154,22 @@ fi
 "$COVENANT_BIN" schema validate --file "$OUT_DIR/release-report.json"
 "$COVENANT_BIN" schema validate --file "$OUT_DIR/release-inspect.json"
 
-if [[ -f "$RELEASE_DIR/release-replacement-policy.json" ]]; then
+REPLACEMENT_POLICY="$RELEASE_DIR/release-replacement-policy.json"
+if [[ -f "$REPLACEMENT_POLICY" ]]; then
   "$COVENANT_BIN" schema validate \
     --schema covenant.release-replacement-policy.v1 \
-    --file "$RELEASE_DIR/release-replacement-policy.json"
+    --file "$REPLACEMENT_POLICY"
 fi
 
 if [[ "$SKIP_ATTESTATION" != "true" ]]; then
   # Equivalent public command:
   # gh attestation verify "$RELEASE_DIR/manifest.json" --repo "$REPO"
   gh attestation verify "$RELEASE_DIR/manifest.json" --repo "$REPO"
+  if [[ -f "$REPLACEMENT_POLICY" ]]; then
+    # Equivalent public command:
+    # gh attestation verify "$RELEASE_DIR/release-replacement-policy.json" --repo "$REPO"
+    gh attestation verify "$REPLACEMENT_POLICY" --repo "$REPO"
+  fi
 fi
 
 echo "release consumer smoke complete: outputs=$OUT_DIR"

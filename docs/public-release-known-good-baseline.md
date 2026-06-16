@@ -122,6 +122,7 @@ Validate the replacement policy before installing:
 
 ```sh
 covenant schema validate --schema covenant.release-replacement-policy.v1 --file release-replacement-policy.json
+gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant
 ```
 
 If the replacement policy is missing when release notes say assets were
