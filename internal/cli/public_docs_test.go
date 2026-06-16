@@ -794,6 +794,11 @@ func TestReleaseDryRunDocumentationIsLinkedAndComplete(t *testing.T) {
 		{name: "generated output warning", doc: dryRun, want: "generated dry-run output"},
 		{name: "release verification link", doc: dryRun, want: "[release verification walkthrough](release-verification.md)"},
 		{name: "release operations link", doc: dryRun, want: "[release operations](release.md)"},
+		{name: "workflow dry run input", doc: dryRun, want: "`dry_run=true`"},
+		{name: "workflow dry run no publish", doc: dryRun, want: "does not publish GitHub release assets, create GitHub artifact attestations, or run post-release smoke verification"},
+		{name: "workflow dry run artifacts", doc: dryRun, want: "uploads workflow artifacts only"},
+		{name: "release operations dry run", doc: releaseOps, want: "`dry_run=true`"},
+		{name: "readiness dry run", doc: readiness, want: "`dry_run=true`"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
 			t.Fatalf("%s missing %q", check.name, check.want)

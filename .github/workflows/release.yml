@@ -9,6 +9,11 @@ on:
       version:
         description: "Release version tag, for example v0.1.0"
         required: true
+      dry_run:
+        description: "Package, verify, preflight, and upload workflow artifacts without publishing"
+        required: false
+        default: true
+        type: boolean
       replace_existing_assets:
         description: "Explicitly replace assets on an existing GitHub release"
         required: false
@@ -30,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.meta.outputs.version }}
+      dry_run: ${{ steps.meta.outputs.dry_run }}
 
     steps:
       - name: Checkout
@@ -55,6 +61,10 @@ jobs:
             version="${{ inputs.version }}"
             git rev-parse "$version^{commit}" >/dev/null
           fi
+          dry_run="false"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
+            dry_run="true"
+          fi
           case "$version" in
             v*) ;;
             *) echo "version must start with v: $version" >&2; exit 1 ;;
@@ -63,6 +73,7 @@ jobs:
             echo "version=$version"
             echo "commit=$(git rev-parse HEAD)"
             echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "dry_run=$dry_run"
           } >> "$GITHUB_OUTPUT"
 
       - name: Write release signing key
@@ -174,6 +185,7 @@ jobs:
           if-no-files-found: error
 
       - name: Generate GitHub artifact attestations
+        if: steps.meta.outputs.dry_run != 'true'
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: "dist/*"
@@ -186,6 +198,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub release
+        if: steps.meta.outputs.dry_run != 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -215,6 +228,7 @@ jobs:
   post-release-smoke:
     name: Post-release smoke verification
     needs: release
+    if: needs.release.outputs.dry_run != 'true'
     runs-on: ubuntu-latest
 
     steps:

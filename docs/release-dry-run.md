@@ -74,6 +74,33 @@ The readiness output installs the public verification key at
 `release/covenant-release-public-key.json` so the generated release directory
 matches the public consumer verification shape.
 
+## Workflow Dry Run
+
+Use the release workflow `workflow_dispatch` path with `dry_run=true` when the
+GitHub-hosted release job itself needs validation. Manual dispatches default to
+`dry_run=true`; set `dry_run=false` only when intentionally publishing.
+
+The workflow dry run packages, signs, verifies, preflights replacement
+conflicts, writes `release-replacement-preflight-report.json`, and uploads workflow artifacts only.
+It does not publish GitHub release assets, create GitHub artifact attestations, or run post-release smoke verification.
+
+Required dispatch inputs:
+
+- `version`: existing release tag to check out and package
+- `dry_run=true`
+
+Optional replacement review inputs:
+
+- `replace_existing_assets=true`
+- `replacement_reason`
+
+Review the uploaded workflow artifacts before publishing:
+
+- `ao-covenant-<version>`: generated `dist/*` release package artifacts for
+  maintainer inspection only
+- `ao-covenant-<version>-replacement-preflight-report`: existing asset,
+  conflict, and replacement-policy audit report
+
 ## Package Without Publishing
 
 Package release artifacts into a temp directory. This mirrors the release

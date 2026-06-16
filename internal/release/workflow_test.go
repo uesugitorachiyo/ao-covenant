@@ -109,6 +109,41 @@ func TestReleaseWorkflowRunsPostPublishSmokeVerification(t *testing.T) {
 	}
 }
 
+func TestReleaseWorkflowSupportsDryRunDispatchWithoutPublishing(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+
+	for _, want := range []string{
+		"dry_run:",
+		"description: \"Package, verify, preflight, and upload workflow artifacts without publishing\"",
+		"default: true",
+		"type: boolean",
+		"dry_run: ${{ steps.meta.outputs.dry_run }}",
+		"dry_run=\"false\"",
+		"if [[ \"${{ github.event_name }}\" == \"workflow_dispatch\" && \"${{ inputs.dry_run }}\" == \"true\" ]]; then",
+		"dry_run=\"true\"",
+		"echo \"dry_run=$dry_run\"",
+		"name: Generate GitHub artifact attestations",
+		"if: steps.meta.outputs.dry_run != 'true'",
+		"name: Publish GitHub release",
+		"name: Post-release smoke verification",
+		"if: needs.release.outputs.dry_run != 'true'",
+		"name: Upload workflow artifact",
+		"path: dist/*",
+		"name: Upload replacement preflight report",
+	} {
+		requireWorkflowContains(t, workflow, want)
+	}
+
+	requireWorkflowOrder(t, workflow,
+		"name: Upload replacement preflight report",
+		"name: Generate GitHub artifact attestations",
+		"name: Upload workflow artifact",
+		"name: Publish GitHub release",
+	)
+	requireWorkflowOmits(t, workflow, "if: steps.meta.outputs.dry_run == 'true'\n        uses: actions/attest-build-provenance")
+	requireWorkflowOmits(t, workflow, "if: steps.meta.outputs.dry_run == 'true'\n        run: |\n          set -euo pipefail\n          notes=")
+}
+
 func TestReleaseWorkflowMatchesAttestationCoverageMap(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
 	replacementPreflight := readRepoFile(t, "scripts", "release-replacement-preflight.sh")
