@@ -2,6 +2,11 @@
 
 AO Covenant releases are built by `.github/workflows/release.yml` when a `v*`
 tag is pushed, or manually through `workflow_dispatch`.
+Manual workflow dispatches default to `dry_run=true`, which packages, signs,
+verifies, preflights, and uploads workflow artifacts without publishing GitHub
+release assets, creating GitHub artifact attestations, or running post-release
+smoke verification. Set `dry_run=false` only when intentionally publishing a
+manual release.
 
 Existing release assets are immutable by default. AO Covenant fails closed
 instead of overwriting assets when a manually dispatched workflow targets a
@@ -26,6 +31,8 @@ Before pushing a tag or manually dispatching this workflow, run the
 [release dry-run checklist](release-dry-run.md). The dry run packages, signs,
 verifies, reports, inspects, and schema-validates release artifacts locally
 without creating a tag, GitHub release, attestation, or public release asset.
+The release workflow also supports a non-publishing `dry_run=true` dispatch
+mode for validating the release job on GitHub-hosted runners.
 Draft public release notes with the [release note template](release-note-template.md)
 so normal releases, replacement notices, withdrawal notices, and
 security-sensitive summaries include consumer action and verification guidance
@@ -63,6 +70,9 @@ The release workflow performs these checks before publishing:
   explicitly requested by running `./scripts/release-replacement-preflight.sh`
 - uploads `release-replacement-preflight-report.json` as a workflow artifact
   for audit review
+- when manually dispatched with `dry_run=true`, uploads workflow artifacts only
+  and skips GitHub artifact attestations, release publishing, and post-release
+  smoke verification
 - generates GitHub artifact attestations for `dist/*`
 - publishes new GitHub release assets, while existing asset replacement requires
   an explicit `replace_existing_assets` override and `replacement_reason`
