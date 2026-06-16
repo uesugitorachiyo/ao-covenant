@@ -74,6 +74,18 @@
       ]
     },
     {
+      "name": "release-attestation",
+      "directory": "internal/cli/testdata/release-attestation-fixtures",
+      "purpose": "Stable public release attestation coverage examples for successful consumer checks and common attestation failure cases.",
+      "generated": false,
+      "check_command": "go test ./internal/cli -run TestReleaseAttestationFixturesAreStableAndIndexed -count=1",
+      "files": [
+        "coverage-valid.json",
+        "failure-missing-binary-attestation.json",
+        "failure-tampered-manifest-attestation.json"
+      ]
+    },
+    {
       "name": "release-note",
       "directory": "internal/cli/testdata/release-note-fixtures",
       "purpose": "Stable public release note examples for normal, replacement, withdrawal, and security-sensitive release notes.",

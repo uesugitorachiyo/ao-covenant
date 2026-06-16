@@ -273,6 +273,45 @@ func TestReleaseAttestationConsumerMatrixIsDocumented(t *testing.T) {
 	}
 }
 
+func TestReleaseAttestationFixturesAreLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	coverage := readText("docs", "release-attestation-coverage.md")
+	verification := readText("docs", "release-verification.md")
+	readiness := readText("docs", "public-readiness.md")
+	stability := readText("docs", "public-api-stability.md")
+	index := readText("internal", "cli", "testdata", "release-fixture-index.json")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "coverage fixture link", doc: coverage, want: "[release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)"},
+		{name: "verification fixture link", doc: verification, want: "[release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)"},
+		{name: "readiness fixture link", doc: readiness, want: "[release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)"},
+		{name: "stability fixture directory", doc: stability, want: "`internal/cli/testdata/release-attestation-fixtures/`"},
+		{name: "index fixture name", doc: index, want: `"name": "release-attestation"`},
+		{name: "index fixture directory", doc: index, want: `"directory": "internal/cli/testdata/release-attestation-fixtures"`},
+		{name: "valid fixture", doc: index, want: `"coverage-valid.json"`},
+		{name: "missing binary fixture", doc: index, want: `"failure-missing-binary-attestation.json"`},
+		{name: "tampered manifest fixture", doc: index, want: `"failure-tampered-manifest-attestation.json"`},
+		{name: "fixture check command", doc: index, want: "go test ./internal/cli -run TestReleaseAttestationFixturesAreStableAndIndexed -count=1"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
 func TestContributorGuideIsLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {
@@ -449,6 +488,7 @@ func TestPublicSchemaChangelogIsLinkedAndComplete(t *testing.T) {
 		{name: "contract schema", doc: changelog, want: "`covenant.contract.v1`"},
 		{name: "release readiness schema", doc: changelog, want: "`covenant.release-readiness-summary.v1`"},
 		{name: "release replacement policy schema", doc: changelog, want: "`covenant.release-replacement-policy.v1`"},
+		{name: "release attestation fixture schema", doc: changelog, want: "`covenant.release-attestation-fixture.v1`"},
 		{name: "schema catalog result schema", doc: changelog, want: "`covenant.schema-catalog-result.v1`"},
 		{name: "release fixture index schema", doc: changelog, want: "`covenant.release-fixture-index.v1`"},
 		{name: "bundle inspect schema", doc: changelog, want: "`covenant.bundle-inspect-result.v1`"},

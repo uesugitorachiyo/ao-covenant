@@ -1,0 +1,39 @@
+{
+  "schema_version": "covenant.release-attestation-fixture.v1",
+  "name": "failure-tampered-manifest-attestation",
+  "description": "The manifest attestation fails, so every downstream binary trust decision is invalid.",
+  "expected": "fail",
+  "release": {
+    "version": "v0.1.0",
+    "repo": "uesugitorachiyo/ao-covenant",
+    "manifest": "manifest.json",
+    "artifact": "ao-covenant_v0.1.0_linux_amd64",
+    "target": "linux/amd64",
+    "public_only": true
+  },
+  "checks": [
+    {
+      "name": "manifest",
+      "artifact": "manifest.json",
+      "command": "gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant",
+      "required": true
+    },
+    {
+      "name": "platform-binary",
+      "artifact": "ao-covenant_v0.1.0_linux_amd64",
+      "command": "gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant",
+      "required": true
+    }
+  ],
+  "failure": {
+    "reason": "The release manifest does not verify against GitHub artifact attestations.",
+    "failing_check": "manifest",
+    "consumer_action": "Stop distribution and report the release integrity failure through the security policy.",
+    "sensitive_omitted": [
+      "private keys",
+      "credentials",
+      "production evidence bundles",
+      "local machine paths"
+    ]
+  }
+}

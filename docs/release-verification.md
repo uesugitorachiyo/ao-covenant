@@ -139,6 +139,9 @@ Use the matching binary name for your platform. Consumers should verify
 | macOS Apple Silicon | `darwin/arm64` | `ao-covenant_v0.1.0_darwin_arm64` | `gh attestation verify ao-covenant_v0.1.0_darwin_arm64 --repo uesugitorachiyo/ao-covenant` |
 | Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.0_windows_amd64.exe` | `gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant` |
 
+Stable [release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)
+show the expected pass case and common failure cases for consumer automation.
+
 If a release includes SBOM, attestation, or supplemental provenance files,
 verify those files as well when they are part of your trust decision. The
 [release attestation coverage map](release-attestation-coverage.md) defines

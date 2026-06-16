@@ -42,6 +42,10 @@ Consumer trust decisions must include `manifest.json` plus the exact platform bi
 | macOS Apple Silicon | `darwin/arm64` | `ao-covenant_v0.1.0_darwin_arm64` | `gh attestation verify ao-covenant_v0.1.0_darwin_arm64 --repo uesugitorachiyo/ao-covenant` |
 | Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.0_windows_amd64.exe` | `gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant` |
 
+Stable [release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)
+provide public examples for a passing manifest-plus-binary trust decision,
+missing binary attestation failure, and tampered manifest attestation failure.
+
 ## Release Asset Coverage Matrix
 
 | Asset | GitHub attestation expectation | AO Covenant verification expectation |
