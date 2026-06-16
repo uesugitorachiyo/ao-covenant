@@ -90,6 +90,7 @@ Common link points are:
 - [public release known-good baseline](docs/public-release-known-good-baseline.md)
 - [release dry-run checklist](docs/release-dry-run.md)
 - [release rollback runbook](docs/release-rollback.md)
+- [release replacement preflight script](scripts/release-replacement-preflight.sh)
 - [release note template](docs/release-note-template.md)
 - [release note fixtures](docs/release-note-fixtures.md)
 - [release verification walkthrough](docs/release-verification.md)

@@ -12,6 +12,10 @@ alongside the release artifacts so the override is visible to consumers. The
 replacement policy uses `covenant.release-replacement-policy.v1` and is
 validated by the release workflow before upload. Consumers can validate it with
 `covenant schema validate --schema covenant.release-replacement-policy.v1 --file release-replacement-policy.json`.
+The [release replacement preflight script](../scripts/release-replacement-preflight.sh)
+performs the conflict check, fail-closed replacement gate, replacement-policy
+generation, and schema validation before GitHub artifact attestations are
+created.
 Use the [release rollback runbook](release-rollback.md) before replacing,
 withdrawing, or correcting a published release.
 
@@ -53,7 +57,7 @@ The release workflow performs these checks before publishing:
 - publishes `covenant-release-public-key.json` for consumer verification
 - preflights existing release asset conflicts and writes
   `release-replacement-policy.json` before attestation when replacement is
-  explicitly requested
+  explicitly requested by running `./scripts/release-replacement-preflight.sh`
 - generates GitHub artifact attestations for `dist/*`
 - publishes new GitHub release assets, while existing asset replacement requires
   an explicit `replace_existing_assets` override and `replacement_reason`

@@ -55,6 +55,25 @@ Before replacing assets:
 ./scripts/release-readiness.sh
 ```
 
+Use the [release replacement preflight script](../scripts/release-replacement-preflight.sh)
+to simulate the conflict set without publishing when reviewing a replacement
+plan. Write the existing asset names to a temporary file, point
+`COVENANT_RELEASE_EXISTING_ASSETS_FILE` at it, and run the same replacement
+gate used by `.github/workflows/release.yml`:
+
+```sh
+printf '%s\n' manifest.json ao-covenant_v0.1.0_linux_amd64 > /tmp/existing-release-assets.txt
+DIST_DIR=dist \
+VERSION=v0.1.0 \
+REPLACE_EXISTING_ASSETS=true \
+REPLACEMENT_REASON="public release correction" \
+GITHUB_REPOSITORY=uesugitorachiyo/ao-covenant \
+GITHUB_RUN_ID=12345 \
+GITHUB_RUN_ATTEMPT=1 \
+COVENANT_RELEASE_EXISTING_ASSETS_FILE=/tmp/existing-release-assets.txt \
+./scripts/release-replacement-preflight.sh
+```
+
 After replacement, download the release into an empty directory and run:
 
 ```sh
