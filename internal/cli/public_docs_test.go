@@ -923,6 +923,46 @@ func TestReleaseReplacementPreflightScriptIsLinkedAndComplete(t *testing.T) {
 	}
 }
 
+func TestReleaseReplacementPreflightFixturesAreLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	stability := readText("docs", "public-api-stability.md")
+	runbook := readText("docs", "release-rollback.md")
+	index := readText("internal", "cli", "testdata", "release-fixture-index.json")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README fixture directory", doc: readme, want: "`internal/cli/testdata/release-replacement-preflight-fixtures/`"},
+		{name: "readiness fixture link", doc: readiness, want: "[release replacement preflight fixtures](../internal/cli/testdata/release-replacement-preflight-fixtures)"},
+		{name: "stability fixture directory", doc: stability, want: "`internal/cli/testdata/release-replacement-preflight-fixtures/`"},
+		{name: "runbook fixture link", doc: runbook, want: "[release replacement preflight fixtures](../internal/cli/testdata/release-replacement-preflight-fixtures)"},
+		{name: "index fixture name", doc: index, want: `"name": "release-replacement-preflight"`},
+		{name: "index fixture directory", doc: index, want: `"directory": "internal/cli/testdata/release-replacement-preflight-fixtures"`},
+		{name: "dist assets fixture", doc: index, want: `"dist-assets.txt"`},
+		{name: "existing assets fixture", doc: index, want: `"existing-assets.txt"`},
+		{name: "diagnostic fixture", doc: index, want: `"fail-closed-diagnostic.txt"`},
+		{name: "policy fixture", doc: index, want: `"generated-policy.json"`},
+		{name: "fixture check command", doc: index, want: "go test ./internal/cli -run TestReleaseReplacementPreflightFixtures -count=1"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
 func TestReleaseNoteTemplateIsLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {

@@ -1,0 +1,12 @@
+{
+  "schema_version": "covenant.release-replacement-policy.v1",
+  "version": "v0.1.0",
+  "reason": "public release correction",
+  "created_at": "2026-06-16T00:00:00Z",
+  "github": {
+    "repository": "uesugitorachiyo/ao-covenant",
+    "run_id": "12345",
+    "run_attempt": "1"
+  },
+  "replaced_assets": ["ao-covenant_v0.1.0_linux_amd64","manifest.json"]
+}

@@ -32,6 +32,10 @@ The
 [release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)
 provide stable public examples for passing and failing attestation trust
 decisions.
+The
+[release replacement preflight fixtures](../internal/cli/testdata/release-replacement-preflight-fixtures)
+provide stable public examples for replacement conflict inputs, generated
+policy output, and fail-closed diagnostics.
 The [release consumer smoke script](../scripts/release-consumer-smoke.sh)
 provides a single consumer-facing command for downloaded release directories
 using only public release assets and an installed `covenant` binary.

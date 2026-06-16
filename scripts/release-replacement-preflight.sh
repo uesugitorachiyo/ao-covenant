@@ -77,7 +77,7 @@ require_policy_metadata() {
 write_replacement_policy() {
   local policy_path="$DIST_DIR/release-replacement-policy.json"
   local created_at
-  created_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  created_at="${COVENANT_RELEASE_REPLACEMENT_CREATED_AT:-"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}"
 
   {
     printf '{\n'

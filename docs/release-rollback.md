@@ -59,7 +59,10 @@ Use the [release replacement preflight script](../scripts/release-replacement-pr
 to simulate the conflict set without publishing when reviewing a replacement
 plan. Write the existing asset names to a temporary file, point
 `COVENANT_RELEASE_EXISTING_ASSETS_FILE` at it, and run the same replacement
-gate used by `.github/workflows/release.yml`:
+gate used by `.github/workflows/release.yml`. The
+[release replacement preflight fixtures](../internal/cli/testdata/release-replacement-preflight-fixtures)
+show stable example inputs, generated policy output, and fail-closed
+diagnostics:
 
 ```sh
 printf '%s\n' manifest.json ao-covenant_v0.1.0_linux_amd64 > /tmp/existing-release-assets.txt
