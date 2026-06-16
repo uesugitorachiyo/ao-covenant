@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-replacement-preflight-report.v1",
+  "title": "AO Covenant Release Replacement Preflight Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "version",
+    "status",
+    "replace_existing_assets",
+    "release_exists",
+    "created_at",
+    "assets"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.release-replacement-preflight-report.v1"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^v[0-9][A-Za-z0-9._-]*$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "no_existing_release",
+        "no_conflicts",
+        "blocked_existing_assets",
+        "replacement_policy_written"
+      ]
+    },
+    "replace_existing_assets": {
+      "type": "boolean"
+    },
+    "release_exists": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "github": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[0-9]+$"
+        },
+        "run_attempt": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[0-9]+$"
+        }
+      }
+    },
+    "replacement_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_path": {
+      "type": "string",
+      "const": "release-replacement-policy.json"
+    },
+    "error": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["new", "existing", "conflicting"],
+      "properties": {
+        "new": {
+          "$ref": "#/$defs/asset_names"
+        },
+        "existing": {
+          "$ref": "#/$defs/asset_names"
+        },
+        "conflicting": {
+          "$ref": "#/$defs/asset_names"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "asset_names": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9._-]+$"
+      }
+    }
+  }
+}

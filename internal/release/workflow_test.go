@@ -148,11 +148,17 @@ func TestReleaseWorkflowAttestsReplacementPolicyBeforePublish(t *testing.T) {
 
 	for _, want := range []string{
 		"name: Preflight release asset replacement",
+		"id: replacement_preflight",
 		"./scripts/release-replacement-preflight.sh",
 		"DIST_DIR: dist",
 		"VERSION: ${{ steps.meta.outputs.version }}",
 		"REPLACE_EXISTING_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.replace_existing_assets || false }}",
 		"REPLACEMENT_REASON: ${{ github.event_name == 'workflow_dispatch' && inputs.replacement_reason || '' }}",
+		"COVENANT_RELEASE_REPLACEMENT_REPORT_JSON: ${{ runner.temp }}/release-replacement-preflight-report.json",
+		"name: Upload replacement preflight report",
+		"if: always() && steps.replacement_preflight.conclusion != 'skipped'",
+		"name: ao-covenant-${{ steps.meta.outputs.version }}-replacement-preflight-report",
+		"path: ${{ runner.temp }}/release-replacement-preflight-report.json",
 		"name: Generate GitHub artifact attestations",
 		"name: Publish GitHub release",
 	} {
@@ -162,6 +168,7 @@ func TestReleaseWorkflowAttestsReplacementPolicyBeforePublish(t *testing.T) {
 	requireWorkflowOrder(t, workflow,
 		"name: Verify signed release",
 		"name: Preflight release asset replacement",
+		"name: Upload replacement preflight report",
 		"name: Generate GitHub artifact attestations",
 		"name: Upload workflow artifact",
 		"name: Publish GitHub release",
@@ -184,6 +191,7 @@ func TestReleaseWorkflowGuardsExistingReleaseAssets(t *testing.T) {
 		"DIST_DIR: dist",
 		"REPLACE_EXISTING_ASSETS",
 		"REPLACEMENT_REASON",
+		"COVENANT_RELEASE_REPLACEMENT_REPORT_JSON",
 		"./scripts/release-replacement-preflight.sh",
 		"gh release upload \"$VERSION\" dist/* --clobber",
 	} {
@@ -199,6 +207,8 @@ func TestReleaseWorkflowGuardsExistingReleaseAssets(t *testing.T) {
 		"\"replaced_assets\":",
 		"go run ./cmd/covenant schema validate --schema covenant.release-replacement-policy.v1 --file \"$policy_path\"",
 		"COVENANT_RELEASE_EXISTING_ASSETS_FILE",
+		"covenant.release-replacement-preflight-report.v1",
+		"write_preflight_report",
 	} {
 		requireWorkflowContains(t, script, want)
 	}

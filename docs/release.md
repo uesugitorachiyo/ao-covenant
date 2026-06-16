@@ -15,7 +15,10 @@ validated by the release workflow before upload. Consumers can validate it with
 The [release replacement preflight script](../scripts/release-replacement-preflight.sh)
 performs the conflict check, fail-closed replacement gate, replacement-policy
 generation, and schema validation before GitHub artifact attestations are
-created.
+created. It also writes `release-replacement-preflight-report.json` as a
+workflow artifact with schema `covenant.release-replacement-preflight-report.v1`
+so maintainers can audit existing assets, conflicts, and replacement decisions
+without adding that report to public release assets.
 Use the [release rollback runbook](release-rollback.md) before replacing,
 withdrawing, or correcting a published release.
 
@@ -58,6 +61,8 @@ The release workflow performs these checks before publishing:
 - preflights existing release asset conflicts and writes
   `release-replacement-policy.json` before attestation when replacement is
   explicitly requested by running `./scripts/release-replacement-preflight.sh`
+- uploads `release-replacement-preflight-report.json` as a workflow artifact
+  for audit review
 - generates GitHub artifact attestations for `dist/*`
 - publishes new GitHub release assets, while existing asset replacement requires
   an explicit `replace_existing_assets` override and `replacement_reason`

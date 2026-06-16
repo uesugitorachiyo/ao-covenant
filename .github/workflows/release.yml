@@ -154,6 +154,7 @@ jobs:
             --json > dist/release-report.json
 
       - name: Preflight release asset replacement
+        id: replacement_preflight
         shell: bash
         env:
           DIST_DIR: dist
@@ -161,7 +162,16 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
           REPLACE_EXISTING_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.replace_existing_assets || false }}
           REPLACEMENT_REASON: ${{ github.event_name == 'workflow_dispatch' && inputs.replacement_reason || '' }}
+          COVENANT_RELEASE_REPLACEMENT_REPORT_JSON: ${{ runner.temp }}/release-replacement-preflight-report.json
         run: ./scripts/release-replacement-preflight.sh
+
+      - name: Upload replacement preflight report
+        if: always() && steps.replacement_preflight.conclusion != 'skipped'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ao-covenant-${{ steps.meta.outputs.version }}-replacement-preflight-report
+          path: ${{ runner.temp }}/release-replacement-preflight-report.json
+          if-no-files-found: error
 
       - name: Generate GitHub artifact attestations
         uses: actions/attest-build-provenance@v4

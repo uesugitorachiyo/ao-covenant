@@ -101,6 +101,9 @@ Stable release replacement preflight examples live in
 `internal/cli/testdata/release-replacement-preflight-fixtures/`; they cover
 existing asset inputs, deterministic `release-replacement-policy.json` output,
 and fail-closed conflict diagnostics.
+The release replacement preflight script can also emit
+`release-replacement-preflight-report.json` with schema
+`covenant.release-replacement-preflight-report.v1` for CI audit artifacts.
 
 `covenant schema catalog` lists every public JSON schema embedded in the binary,
 including the schema ID, filename, and repository path. Use `--json` to emit a
