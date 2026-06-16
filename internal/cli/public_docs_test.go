@@ -232,6 +232,47 @@ func TestReleaseAttestationCoverageMapIsLinkedAndComplete(t *testing.T) {
 	}
 }
 
+func TestReleaseAttestationConsumerMatrixIsDocumented(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	coverage := readText("docs", "release-attestation-coverage.md")
+	verification := readText("docs", "release-verification.md")
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "coverage matrix section", doc: coverage, want: "## Platform Binary Attestation Matrix"},
+		{name: "verification matrix section", doc: verification, want: "## Platform Binary Attestation Matrix"},
+		{name: "manifest minimum", doc: coverage, want: "`manifest.json` plus the exact platform binary"},
+		{name: "verification manifest minimum", doc: verification, want: "`manifest.json` plus the exact platform binary"},
+		{name: "linux amd64 row", doc: coverage, want: "| Ubuntu/Linux amd64 | `linux/amd64` | `ao-covenant_v0.1.0_linux_amd64` |"},
+		{name: "linux arm64 row", doc: coverage, want: "| Ubuntu/Linux arm64 | `linux/arm64` | `ao-covenant_v0.1.0_linux_arm64` |"},
+		{name: "macos amd64 row", doc: coverage, want: "| macOS Intel | `darwin/amd64` | `ao-covenant_v0.1.0_darwin_amd64` |"},
+		{name: "macos arm64 row", doc: coverage, want: "| macOS Apple Silicon | `darwin/arm64` | `ao-covenant_v0.1.0_darwin_arm64` |"},
+		{name: "windows amd64 row", doc: coverage, want: "| Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.0_windows_amd64.exe` |"},
+		{name: "linux amd64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant"},
+		{name: "linux arm64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_linux_arm64 --repo uesugitorachiyo/ao-covenant"},
+		{name: "macos amd64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_darwin_amd64 --repo uesugitorachiyo/ao-covenant"},
+		{name: "macos arm64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_darwin_arm64 --repo uesugitorachiyo/ao-covenant"},
+		{name: "windows amd64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant"},
+		{name: "verification windows command", doc: verification, want: "gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant"},
+		{name: "version substitution", doc: verification, want: "replace `v0.1.0` with the release version you downloaded"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
 func TestContributorGuideIsLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {
