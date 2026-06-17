@@ -3438,6 +3438,11 @@ func TestReleaseReadinessSummarySchemaValidatesPublicArtifact(t *testing.T) {
 	  "commit": "0123456",
 	  "date": "2026-06-15T12:00:00Z",
 	  "target": "linux/amd64",
+	  "platform": {
+	    "os": "linux",
+	    "arch": "amd64",
+	    "script": "scripts/release-readiness.sh"
+	  },
 	  "checks": [
 	    "version",
 	    "compile",

@@ -883,10 +883,19 @@ For the full local release gate, run:
 ./scripts/release-readiness.sh
 ```
 
-The script writes its generated workspace to `.covenant/release-readiness` by
-default and can be redirected with `COVENANT_RELEASE_READINESS_DIR`. It also
-accepts `COVENANT_RELEASE_VERSION`, `COVENANT_RELEASE_COMMIT`,
-`COVENANT_RELEASE_DATE`, and `COVENANT_RELEASE_TARGET`.
+On Windows PowerShell, use the
+[Windows Release Readiness Script](scripts/release-readiness.ps1):
+
+```powershell
+.\scripts\release-readiness.ps1
+```
+
+The scripts write generated workspaces to `.covenant/release-readiness` by
+default and can be redirected with `COVENANT_RELEASE_READINESS_DIR` or the
+PowerShell `-ReadinessDir` parameter. They also accept
+`COVENANT_RELEASE_VERSION`, `COVENANT_RELEASE_COMMIT`,
+`COVENANT_RELEASE_DATE`, and `COVENANT_RELEASE_TARGET`; the PowerShell script
+exposes matching `-Version`, `-Commit`, `-Date`, and `-Target` parameters.
 
 See `docs/install.md` for Ubuntu, macOS, and Windows install and checksum
 verification steps.

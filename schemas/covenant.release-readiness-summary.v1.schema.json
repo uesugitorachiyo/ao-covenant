@@ -26,6 +26,29 @@
       "minLength": 1,
       "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"
     },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "arch", "script"],
+      "properties": {
+        "os": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9._-]+$"
+        },
+        "arch": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9._-]+$"
+        },
+        "script": {
+          "enum": [
+            "scripts/release-readiness.sh",
+            "scripts/release-readiness.ps1"
+          ]
+        }
+      }
+    },
     "checks": {
       "type": "array",
       "minItems": 1,

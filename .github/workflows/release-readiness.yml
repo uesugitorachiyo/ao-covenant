@@ -11,7 +11,11 @@ permissions:
 jobs:
   smoke:
     name: Release-readiness smoke
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - name: Checkout
@@ -24,13 +28,19 @@ jobs:
           cache: true
 
       - name: Run release-readiness smoke gate
+        if: runner.os != 'Windows'
         shell: bash
         run: COVENANT_RELEASE_READINESS_DIR="$RUNNER_TEMP/covenant-release-readiness" ./scripts/release-readiness.sh
+
+      - name: Run Windows release-readiness smoke gate
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/release-readiness.ps1 -ReadinessDir "$env:RUNNER_TEMP/covenant-release-readiness"
 
       - name: Upload release-readiness summary
         uses: actions/upload-artifact@v7
         with:
-          name: ao-covenant-release-readiness-summary
+          name: ao-covenant-release-readiness-summary-${{ matrix.os }}
           path: ${{ runner.temp }}/covenant-release-readiness/release-readiness-summary.json
           if-no-files-found: error
           retention-days: 7

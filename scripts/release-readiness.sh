@@ -12,7 +12,9 @@ else
   COMMIT="unknown"
 fi
 DATE_VALUE="${COVENANT_RELEASE_DATE:-"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}"
-TARGET="${COVENANT_RELEASE_TARGET:-"$(go env GOOS)/$(go env GOARCH)"}"
+HOST_GOOS="$(go env GOOS)"
+HOST_GOARCH="$(go env GOARCH)"
+TARGET="${COVENANT_RELEASE_TARGET:-"$HOST_GOOS/$HOST_GOARCH"}"
 
 WORKSPACE="$READINESS_DIR"
 ARTIFACTS="$READINESS_DIR/artifacts"
@@ -163,6 +165,11 @@ release_file_count="$(find "$DIST" -maxdepth 1 -type f | wc -l | tr -d '[:space:
   printf '  "commit": %s,\n' "$(json_string "$COMMIT")"
   printf '  "date": %s,\n' "$(json_string "$DATE_VALUE")"
   printf '  "target": %s,\n' "$(json_string "$TARGET")"
+  printf '  "platform": {\n'
+  printf '    "os": %s,\n' "$(json_string "$HOST_GOOS")"
+  printf '    "arch": %s,\n' "$(json_string "$HOST_GOARCH")"
+  printf '    "script": "scripts/release-readiness.sh"\n'
+  printf '  },\n'
   printf '  "checks": [\n'
   printf '    "version",\n'
   printf '    "compile",\n'
