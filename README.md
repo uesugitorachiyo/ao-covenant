@@ -30,6 +30,8 @@ Security model:
 
 - [Threat Model](docs/threat-model.md) defines protected assets, trust
   boundaries, mitigated threats, operator responsibilities, and non-goals.
+- [Release Threat Model Matrix](docs/release-threat-model-matrix.md) maps
+  release attacks to controls, evidence, operator response, and residual risk.
 - [Security Policy](SECURITY.md) defines private vulnerability reporting and
   sensitive material handling.
 - [Security Advisory Routing](docs/security-advisory-routing.md) defines when

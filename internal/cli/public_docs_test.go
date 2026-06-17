@@ -48,6 +48,68 @@ func TestPublicThreatModelDocumentationIsLinkedAndComplete(t *testing.T) {
 	}
 }
 
+func TestReleaseThreatModelMatrixIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	threatModel := readText("docs", "threat-model.md")
+	readiness := readText("docs", "public-readiness.md")
+	releaseOps := readText("docs", "release.md")
+	security := readText("SECURITY.md")
+	matrix := readText("docs", "release-threat-model-matrix.md")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Release Threat Model Matrix](docs/release-threat-model-matrix.md)"},
+		{name: "threat model link", doc: threatModel, want: "[release threat model matrix](release-threat-model-matrix.md)"},
+		{name: "readiness link", doc: readiness, want: "[release threat model matrix](release-threat-model-matrix.md)"},
+		{name: "release operations link", doc: releaseOps, want: "[release threat model matrix](release-threat-model-matrix.md)"},
+		{name: "security policy link", doc: security, want: "[release threat model matrix](docs/release-threat-model-matrix.md)"},
+		{name: "title", doc: matrix, want: "# AO Covenant Release Threat Model Matrix"},
+		{name: "scope section", doc: matrix, want: "## Scope"},
+		{name: "matrix section", doc: matrix, want: "## Attack-To-Control Matrix"},
+		{name: "evidence section", doc: matrix, want: "## Required Evidence"},
+		{name: "operator section", doc: matrix, want: "## Operator Response"},
+		{name: "residual risk section", doc: matrix, want: "## Residual Risk"},
+		{name: "signing key compromise", doc: matrix, want: "Signing key compromise"},
+		{name: "artifact substitution", doc: matrix, want: "Release artifact substitution"},
+		{name: "checksum tampering", doc: matrix, want: "Checksum or manifest tampering"},
+		{name: "attestation gap", doc: matrix, want: "GitHub attestation gap"},
+		{name: "replacement abuse", doc: matrix, want: "Unauthorized asset replacement"},
+		{name: "dry-run publish confusion", doc: matrix, want: "Dry-run publish confusion"},
+		{name: "consumer verification bypass", doc: matrix, want: "Consumer verification bypass"},
+		{name: "sensitive material exposure", doc: matrix, want: "Sensitive material exposure"},
+		{name: "private key control", doc: matrix, want: "`COVENANT_RELEASE_SIGNING_KEY`"},
+		{name: "release verify control", doc: matrix, want: "`covenant release verify`"},
+		{name: "release report control", doc: matrix, want: "`covenant release report`"},
+		{name: "consumer smoke control", doc: matrix, want: "`release-consumer-smoke.json`"},
+		{name: "dry run audit control", doc: matrix, want: "`release-dry-run-artifact-audit.json`"},
+		{name: "replacement preflight control", doc: matrix, want: "`release-replacement-preflight-report.json`"},
+		{name: "replacement policy control", doc: matrix, want: "`release-replacement-policy.json`"},
+		{name: "rollback runbook link", doc: matrix, want: "[release rollback runbook](release-rollback.md)"},
+		{name: "security policy link in matrix", doc: matrix, want: "[security policy](../SECURITY.md)"},
+		{name: "dry run checklist link", doc: matrix, want: "[release dry-run checklist](release-dry-run.md)"},
+		{name: "attestation map link", doc: matrix, want: "[release attestation coverage map](release-attestation-coverage.md)"},
+		{name: "consumer script link", doc: matrix, want: "[release consumer smoke script](../scripts/release-consumer-smoke.sh)"},
+		{name: "windows script link", doc: matrix, want: "[Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1)"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
 func TestSecurityPolicyDocumentsPublicDisclosureProcess(t *testing.T) {
 	bytes, err := os.ReadFile(filepath.Join("..", "..", "SECURITY.md"))
 	if err != nil {

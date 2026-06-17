@@ -77,6 +77,9 @@ go test -count=1 ./internal/cli -run TestReleaseConsumerSmokePowerShellScriptIsL
 
 The [threat model](threat-model.md) defines protected assets, trust boundaries,
 mitigations, operator responsibilities, and non-goals. The
+[release threat model matrix](release-threat-model-matrix.md) maps release
+attacks to controls, required evidence, operator response, and residual risk.
+The
 [security policy](../SECURITY.md) defines private reporting, public issue
 limits, severity guidance, secret leakage handling, and supported-version scope.
 The [security advisory routing guide](security-advisory-routing.md) defines
@@ -89,7 +92,7 @@ steps.
 Local check:
 
 ```sh
-go test -count=1 ./internal/cli -run 'TestPublicThreatModelDocumentationIsLinkedAndComplete|TestSecurityPolicyDocumentsPublicDisclosureProcess'
+go test -count=1 ./internal/cli -run 'TestPublicThreatModelDocumentationIsLinkedAndComplete|TestReleaseThreatModelMatrixIsLinkedAndComplete|TestSecurityPolicyDocumentsPublicDisclosureProcess'
 ```
 
 ## Public Schemas And Automation
