@@ -26,6 +26,9 @@ so maintainers can audit existing assets, conflicts, and replacement decisions
 without adding that report to public release assets.
 Use the [release rollback runbook](release-rollback.md) before replacing,
 withdrawing, or correcting a published release.
+Use the [release threat model matrix](release-threat-model-matrix.md) to map
+release attacks to controls, required evidence, operator response, and residual
+risk before broad public distribution.
 
 Before pushing a tag or manually dispatching this workflow, run the
 [release dry-run checklist](release-dry-run.md). The dry run packages, signs,

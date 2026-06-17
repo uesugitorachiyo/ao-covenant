@@ -6,6 +6,8 @@ triaged.
 
 The public [Threat Model](docs/threat-model.md) defines protected assets, trust
 boundaries, mitigated threats, operator responsibilities, and non-goals. The
+[release threat model matrix](docs/release-threat-model-matrix.md) maps public
+release attacks to controls, evidence, response, and residual risk. The
 [security advisory routing guide](docs/security-advisory-routing.md) defines
 when to use a private advisory and how to keep public reports minimal. The
 [security advisory maintainer checklist](docs/security-advisory-maintainer-checklist.md)

@@ -7,7 +7,9 @@ host operating system sandboxing, repository access control, or human review.
 
 Use this model with the [security policy](../SECURITY.md), the signed
 [release operations](release.md), and the install verification steps in
-[install.md](install.md).
+[install.md](install.md). Public-release attacks, controls, evidence, and
+operator response are mapped in the
+[release threat model matrix](release-threat-model-matrix.md).
 
 ## Protected Assets
 
