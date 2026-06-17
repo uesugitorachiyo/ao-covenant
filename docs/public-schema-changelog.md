@@ -73,6 +73,7 @@ fixture inventory data:
 - `covenant.release-attestation-fixture.v1`
 - `covenant.release-replacement-policy.v1`
 - `covenant.release-replacement-preflight-report.v1`
+- `covenant.release-dry-run-artifact-audit.v1`
 
 Bundle and provenance automation exposes offline evidence inspection, signature
 metadata, public key data, and bundle reports:
@@ -94,6 +95,21 @@ Consumers can validate a downloaded summary with:
 
 ```sh
 covenant schema validate --schema covenant.release-readiness-summary.v1 --file release-readiness-summary.json
+```
+
+## Release Dry-Run Artifact Audit
+
+The release workflow `dry_run=true` path publishes
+`release-dry-run-artifact-audit.json` using
+`covenant.release-dry-run-artifact-audit.v1`. The audit is intended for
+public automation that needs machine-readable evidence that required dry-run
+artifacts exist, have stable checksums, contain no private key material, and
+stayed inside the non-publishing trust boundary.
+
+Consumers can validate a downloaded audit with:
+
+```sh
+covenant schema validate --schema covenant.release-dry-run-artifact-audit.v1 --file release-dry-run-artifact-audit.json
 ```
 
 ## Consumer Actions

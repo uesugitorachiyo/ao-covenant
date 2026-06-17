@@ -130,13 +130,24 @@ func TestReleaseWorkflowSupportsDryRunDispatchWithoutPublishing(t *testing.T) {
 		"name: Upload workflow artifact",
 		"path: dist/*",
 		"name: Upload replacement preflight report",
+		"name: Audit dry-run workflow artifact",
+		"if: steps.meta.outputs.dry_run == 'true'",
+		"COVENANT_RELEASE_DRY_RUN_ARTIFACT_AUDIT_JSON: dist/release-dry-run-artifact-audit.json",
+		"./scripts/release-dry-run-artifact-audit.sh",
 	} {
 		requireWorkflowContains(t, workflow, want)
+	}
+	for _, unwanted := range []string{
+		"release-dry-run-artifact-audit.validation.json",
+		"release-dry-run-artifact-audit.json.validation.json",
+	} {
+		requireWorkflowOmits(t, workflow, unwanted)
 	}
 
 	requireWorkflowOrder(t, workflow,
 		"name: Upload replacement preflight report",
 		"name: Generate GitHub artifact attestations",
+		"name: Audit dry-run workflow artifact",
 		"name: Upload workflow artifact",
 		"name: Publish GitHub release",
 	)

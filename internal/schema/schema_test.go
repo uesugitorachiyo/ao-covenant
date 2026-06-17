@@ -3462,6 +3462,71 @@ func TestReleaseReadinessSummarySchemaValidatesPublicArtifact(t *testing.T) {
 	}
 }
 
+func TestReleaseDryRunArtifactAuditSchemaValidatesMachineReadableWorkflowArtifact(t *testing.T) {
+	const releaseDryRunArtifactAuditSchemaID = "covenant.release-dry-run-artifact-audit.v1"
+	audit := []byte(`{
+	  "schema_version": "covenant.release-dry-run-artifact-audit.v1",
+	  "status": "passed",
+	  "version": "v0.1.0",
+	  "dry_run": true,
+	  "generated_at": "2026-06-17T00:00:00Z",
+	  "github": {
+	    "repository": "uesugitorachiyo/ao-covenant",
+	    "run_id": "12345",
+	    "run_attempt": "2"
+	  },
+	  "required_files": [
+	    {"name": "manifest.json", "present": true, "kind": "manifest"},
+	    {"name": "SHA256SUMS", "present": true, "kind": "checksums"},
+	    {"name": "release-signature.json", "present": true, "kind": "signature"},
+	    {"name": "covenant-release-public-key.json", "present": true, "kind": "public-key"},
+	    {"name": "release-package.json", "present": true, "kind": "report"},
+	    {"name": "release-verify.json", "present": true, "kind": "report"},
+	    {"name": "release-report.json", "present": true, "kind": "report"}
+	  ],
+	  "artifacts": [
+	    {
+	      "name": "manifest.json",
+	      "kind": "manifest",
+	      "size_bytes": 42,
+	      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+	    },
+	    {
+	      "name": "ao-covenant_v0.1.0_linux_amd64",
+	      "kind": "platform-binary",
+	      "size_bytes": 99,
+	      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+	    }
+	  ],
+	  "artifact_counts": {
+	    "total_files": 8,
+	    "json_reports": 5,
+	    "platform_assets": 1,
+	    "required_files_present": 7,
+	    "forbidden_files": 0
+	  },
+	  "findings": [],
+	  "trust_boundary": {
+	    "publishes_github_release": false,
+	    "mutates_github_releases": false,
+	    "generates_github_attestations": false,
+	    "stores_credentials": false,
+	    "contains_private_key_material": false
+	  }
+	}`)
+
+	required, ok := RequiredSchemaByID(releaseDryRunArtifactAuditSchemaID)
+	if !ok {
+		t.Fatalf("%s is not cataloged", releaseDryRunArtifactAuditSchemaID)
+	}
+	if required.FileName != "covenant.release-dry-run-artifact-audit.v1.schema.json" {
+		t.Fatalf("schema file = %q, want covenant.release-dry-run-artifact-audit.v1.schema.json", required.FileName)
+	}
+	if err := ValidateBytes(releaseDryRunArtifactAuditSchemaID, audit); err != nil {
+		t.Fatalf("release dry-run artifact audit did not validate against published schema: %v\njson:\n%s", err, string(audit))
+	}
+}
+
 func TestReleaseRedactedJSONFixturesUseStableRedactionTokens(t *testing.T) {
 	tests := []struct {
 		fileName          string

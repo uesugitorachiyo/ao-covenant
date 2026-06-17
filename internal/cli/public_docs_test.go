@@ -485,10 +485,12 @@ func TestPublicSchemaChangelogIsLinkedAndComplete(t *testing.T) {
 		{name: "compatibility rules section", doc: changelog, want: "## Compatibility Rules"},
 		{name: "schema history section", doc: changelog, want: "## Schema History"},
 		{name: "release readiness summary section", doc: changelog, want: "## Release Readiness Summary"},
+		{name: "release dry-run artifact audit section", doc: changelog, want: "## Release Dry-Run Artifact Audit"},
 		{name: "consumer actions section", doc: changelog, want: "## Consumer Actions"},
 		{name: "maintainer checklist section", doc: changelog, want: "## Maintainer Checklist"},
 		{name: "contract schema", doc: changelog, want: "`covenant.contract.v1`"},
 		{name: "release readiness schema", doc: changelog, want: "`covenant.release-readiness-summary.v1`"},
+		{name: "release dry-run artifact audit schema", doc: changelog, want: "`covenant.release-dry-run-artifact-audit.v1`"},
 		{name: "release replacement policy schema", doc: changelog, want: "`covenant.release-replacement-policy.v1`"},
 		{name: "release replacement preflight report schema", doc: changelog, want: "`covenant.release-replacement-preflight-report.v1`"},
 		{name: "release attestation fixture schema", doc: changelog, want: "`covenant.release-attestation-fixture.v1`"},
@@ -505,6 +507,7 @@ func TestPublicSchemaChangelogIsLinkedAndComplete(t *testing.T) {
 		{name: "validate command", doc: changelog, want: "covenant schema validate"},
 		{name: "schema tests", doc: changelog, want: "go test -count=1 ./internal/schema ./internal/cli"},
 		{name: "release readiness command", doc: changelog, want: "./scripts/release-readiness.sh"},
+		{name: "release dry-run audit report", doc: changelog, want: "release-dry-run-artifact-audit.json"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
 			t.Fatalf("%s missing %q", check.name, check.want)
@@ -791,6 +794,9 @@ func TestReleaseDryRunDocumentationIsLinkedAndComplete(t *testing.T) {
 		{name: "release report command", doc: dryRun, want: "covenant release report"},
 		{name: "release inspect command", doc: dryRun, want: "covenant release inspect"},
 		{name: "schema validation command", doc: dryRun, want: "covenant schema validate"},
+		{name: "dry-run artifact audit script", doc: dryRun, want: "./scripts/release-dry-run-artifact-audit.sh"},
+		{name: "dry-run artifact audit schema", doc: dryRun, want: "`covenant.release-dry-run-artifact-audit.v1`"},
+		{name: "dry-run artifact audit report", doc: dryRun, want: "`release-dry-run-artifact-audit.json`"},
 		{name: "signing key env", doc: dryRun, want: "`COVENANT_RELEASE_SIGNING_KEY`"},
 		{name: "private key warning", doc: dryRun, want: "Do not commit private keys"},
 		{name: "generated output warning", doc: dryRun, want: "generated dry-run output"},
@@ -799,6 +805,8 @@ func TestReleaseDryRunDocumentationIsLinkedAndComplete(t *testing.T) {
 		{name: "workflow dry run input", doc: dryRun, want: "`dry_run=true`"},
 		{name: "workflow dry run no publish", doc: dryRun, want: "does not publish GitHub release assets, create GitHub artifact attestations, or run post-release smoke verification"},
 		{name: "workflow dry run artifacts", doc: dryRun, want: "uploads workflow artifacts only"},
+		{name: "readiness dry run audit report", doc: readiness, want: "`release-dry-run-artifact-audit.json`"},
+		{name: "readiness dry run audit schema", doc: readiness, want: "`covenant.release-dry-run-artifact-audit.v1`"},
 		{name: "release operations dry run", doc: releaseOps, want: "`dry_run=true`"},
 		{name: "readiness dry run", doc: readiness, want: "`dry_run=true`"},
 	} {

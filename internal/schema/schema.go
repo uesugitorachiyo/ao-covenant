@@ -53,6 +53,7 @@ const (
 	ReleaseFixtureIndexSchemaID               = "covenant.release-fixture-index.v1"
 	ReleaseAttestationFixtureSchemaID         = "covenant.release-attestation-fixture.v1"
 	ReleaseReadinessSummarySchemaID           = "covenant.release-readiness-summary.v1"
+	ReleaseDryRunArtifactAuditSchemaID        = "covenant.release-dry-run-artifact-audit.v1"
 	ReleaseReplacementPolicySchemaID          = "covenant.release-replacement-policy.v1"
 	ReleaseReplacementPreflightReportSchemaID = "covenant.release-replacement-preflight-report.v1"
 	PolicyExplainResultSchemaID               = "covenant.policy-explain-result.v1"
@@ -120,6 +121,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.release-fixture-index.v1.schema.json", ReleaseFixtureIndexSchemaID),
 	requiredSchema("covenant.release-attestation-fixture.v1.schema.json", ReleaseAttestationFixtureSchemaID),
 	requiredSchema("covenant.release-readiness-summary.v1.schema.json", ReleaseReadinessSummarySchemaID),
+	requiredSchema("covenant.release-dry-run-artifact-audit.v1.schema.json", ReleaseDryRunArtifactAuditSchemaID),
 	requiredSchema("covenant.release-replacement-policy.v1.schema.json", ReleaseReplacementPolicySchemaID),
 	requiredSchema("covenant.release-replacement-preflight-report.v1.schema.json", ReleaseReplacementPreflightReportSchemaID),
 	requiredSchema("covenant.policy-explain-result.v1.schema.json", PolicyExplainResultSchemaID),
