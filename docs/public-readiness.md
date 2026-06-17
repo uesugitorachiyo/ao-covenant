@@ -125,9 +125,16 @@ Run the release-readiness smoke gate before public release work:
 ./scripts/release-readiness.sh
 ```
 
-The script writes generated artifacts to `.covenant/release-readiness` by
-default. Redirect it with `COVENANT_RELEASE_READINESS_DIR` when the output
-should live outside the repository.
+On Windows PowerShell, run the
+[Windows release-readiness script](../scripts/release-readiness.ps1):
+
+```powershell
+.\scripts\release-readiness.ps1
+```
+
+The scripts write generated artifacts to `.covenant/release-readiness` by
+default. Redirect them with `COVENANT_RELEASE_READINESS_DIR` or the PowerShell
+`-ReadinessDir` parameter when the output should live outside the repository.
 
 Local check:
 
@@ -138,16 +145,17 @@ rm -rf "$tmpdir"
 ```
 
 The scheduled/manual `Release Readiness` GitHub Actions workflow runs the same
-gate with read-only repository permissions and does not publish release assets.
+gate on Ubuntu, macOS, and Windows with read-only repository permissions and
+does not publish release assets.
 The public
 [Release Readiness workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml)
 uses a manual `workflow_dispatch` trigger, a weekly scheduled run, and
 read-only `contents: read` permission so external users can inspect whether the
 public smoke gate is healthy without treating it as a release publisher.
 It uploads only a non-sensitive `release-readiness-summary.json` artifact with
-status, release metadata, check names, and aggregate counts; it does not upload
-the generated workspace, signing keys, bundles, checksums, manifest entries, or
-release files.
+status, release metadata, host `platform` metadata, check names, and aggregate
+counts; it does not upload the generated workspace, signing keys, bundles,
+checksums, manifest entries, or release files.
 The summary is a public automation artifact using
 `covenant.release-readiness-summary.v1` and can be checked after download:
 

@@ -91,6 +91,9 @@ The `Release Readiness` workflow publishes a non-sensitive
 `covenant.release-readiness-summary.v1`. The summary is intended for public
 automation that needs to inspect smoke-gate status without downloading generated
 release workspaces, signing keys, bundles, checksums, or manifests.
+The schema also accepts optional `platform` metadata with the runner OS,
+architecture, and readiness script name so Ubuntu, macOS, and Windows summaries
+can be compared without exposing local paths.
 
 Consumers can validate a downloaded summary with:
 

@@ -1377,6 +1377,83 @@ func TestReleaseConsumerSmokePowerShellScriptParsesOnWindows(t *testing.T) {
 	}
 }
 
+func TestReleaseReadinessPowerShellScriptIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	readiness := readText("docs", "public-readiness.md")
+	changelog := readText("docs", "public-schema-changelog.md")
+	script := readText("scripts", "release-readiness.ps1")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Windows Release Readiness Script](scripts/release-readiness.ps1)"},
+		{name: "readiness link", doc: readiness, want: "[Windows release-readiness script](../scripts/release-readiness.ps1)"},
+		{name: "schema changelog platform", doc: changelog, want: "optional `platform` metadata"},
+		{name: "strict mode", doc: script, want: "Set-StrictMode -Version Latest"},
+		{name: "stop on error", doc: script, want: "$ErrorActionPreference = \"Stop\""},
+		{name: "usage", doc: script, want: "Usage: .\\release-readiness.ps1"},
+		{name: "readiness dir parameter", doc: script, want: "[string]$ReadinessDir = $env:COVENANT_RELEASE_READINESS_DIR"},
+		{name: "version parameter", doc: script, want: "[string]$Version = $env:COVENANT_RELEASE_VERSION"},
+		{name: "commit parameter", doc: script, want: "[string]$Commit = $env:COVENANT_RELEASE_COMMIT"},
+		{name: "date parameter", doc: script, want: "[string]$Date = $env:COVENANT_RELEASE_DATE"},
+		{name: "target parameter", doc: script, want: "[string]$Target = $env:COVENANT_RELEASE_TARGET"},
+		{name: "go build", doc: script, want: "go build -o $Bin ./cmd/covenant"},
+		{name: "release package", doc: script, want: "release package"},
+		{name: "release verify", doc: script, want: "release verify"},
+		{name: "release inspect", doc: script, want: "release inspect"},
+		{name: "schema validation", doc: script, want: "schema validate"},
+		{name: "summary report", doc: script, want: "release-readiness-summary.json"},
+		{name: "summary schema", doc: script, want: "covenant.release-readiness-summary.v1"},
+		{name: "platform metadata", doc: script, want: "platform"},
+		{name: "script metadata", doc: script, want: "scripts/release-readiness.ps1"},
+		{name: "sensitive material warning", doc: script, want: "summary-only; does not include workspace paths, signing key paths, bundle paths, checksums, manifest entries, or generated release asset names"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+
+	for _, forbidden := range []string{
+		"#!/usr/bin/env bash",
+		"set -euo pipefail",
+		"sha256sum",
+		"shasum",
+	} {
+		if strings.Contains(script, forbidden) {
+			t.Fatalf("PowerShell release-readiness script contains non-Windows shell dependency %q", forbidden)
+		}
+	}
+}
+
+func TestReleaseReadinessPowerShellScriptParsesOnWindows(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("PowerShell parser check runs on Windows CI")
+	}
+	repoRoot := filepath.Join("..", "..")
+	scriptPath, err := filepath.Abs(filepath.Join(repoRoot, "scripts", "release-readiness.ps1"))
+	if err != nil {
+		t.Fatalf("resolve PowerShell readiness script path: %v", err)
+	}
+	escapedScriptPath := strings.ReplaceAll(scriptPath, "'", "''")
+	command := `$path = '` + escapedScriptPath + `'; $tokens = $null; $errors = $null; [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }`
+	output, err := exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command).CombinedOutput()
+	if err != nil {
+		t.Fatalf("parse %s: %v\n%s", scriptPath, err, output)
+	}
+}
+
 func TestReleaseNoteFixturesAreLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {
