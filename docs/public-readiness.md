@@ -54,7 +54,10 @@ before a replacement publish path. The release workflow uploads
 `covenant.release-replacement-preflight-report.v1` as a CI audit artifact.
 Manual release workflow dispatches default to `dry_run=true`, which uploads
 workflow artifacts only and skips release publishing, attestations, and
-post-release smoke verification. Use the
+post-release smoke verification. The dry-run path uploads
+`release-dry-run-artifact-audit.json` with schema
+`covenant.release-dry-run-artifact-audit.v1` to record required artifacts,
+checksums, platform counts, and the non-publishing trust boundary. Use the
 [release note template](release-note-template.md) before publishing normal
 release notes, replacement notices, withdrawal notices, or security-sensitive
 release summaries. Use the [release note fixtures](release-note-fixtures.md)

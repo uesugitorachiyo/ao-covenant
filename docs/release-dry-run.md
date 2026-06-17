@@ -161,6 +161,26 @@ go run ./cmd/covenant schema validate \
   --out "$dist/schema-validation.json"
 ```
 
+Generate the machine-readable dry-run artifact audit:
+
+```sh
+DIST_DIR="$dist" \
+  VERSION=v0.1.0-dry-run \
+  DRY_RUN=true \
+  COVENANT_RELEASE_DRY_RUN_ARTIFACT_AUDIT_JSON="$dist/release-dry-run-artifact-audit.json" \
+  ./scripts/release-dry-run-artifact-audit.sh
+
+go run ./cmd/covenant schema validate \
+  --schema covenant.release-dry-run-artifact-audit.v1 \
+  --file "$dist/release-dry-run-artifact-audit.json"
+```
+
+The workflow `dry_run=true` path runs the same audit before uploading
+artifacts. The uploaded `release-dry-run-artifact-audit.json` uses
+`covenant.release-dry-run-artifact-audit.v1` and records required artifact
+presence, file digests, platform asset counts, and the no-publish trust
+boundary without including private keys or local workspace paths.
+
 ## Review Reports
 
 Generate and inspect reports before any tag is created:

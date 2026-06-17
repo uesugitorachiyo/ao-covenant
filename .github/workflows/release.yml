@@ -190,6 +190,17 @@ jobs:
         with:
           subject-path: "dist/*"
 
+      - name: Audit dry-run workflow artifact
+        if: steps.meta.outputs.dry_run == 'true'
+        shell: bash
+        env:
+          DIST_DIR: dist
+          VERSION: ${{ steps.meta.outputs.version }}
+          DRY_RUN: ${{ steps.meta.outputs.dry_run }}
+          COVENANT_RELEASE_DRY_RUN_ARTIFACT_AUDIT_JSON: dist/release-dry-run-artifact-audit.json
+        run: |
+          ./scripts/release-dry-run-artifact-audit.sh
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v7
         with:

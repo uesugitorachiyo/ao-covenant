@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-dry-run-artifact-audit.v1",
+  "title": "AO Covenant Release Dry-Run Artifact Audit",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "version",
+    "dry_run",
+    "generated_at",
+    "required_files",
+    "artifacts",
+    "artifact_counts",
+    "findings",
+    "trust_boundary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.release-dry-run-artifact-audit.v1"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["passed", "failed"]
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^v[0-9][A-Za-z0-9._-]*$"
+    },
+    "dry_run": {
+      "const": true
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "github": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[0-9]+$"
+        },
+        "run_attempt": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[0-9]+$"
+        }
+      }
+    },
+    "required_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "present", "kind"],
+        "properties": {
+          "name": { "$ref": "#/$defs/artifact_name" },
+          "present": { "type": "boolean" },
+          "kind": { "$ref": "#/$defs/artifact_kind" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "kind", "size_bytes", "sha256"],
+        "properties": {
+          "name": { "$ref": "#/$defs/artifact_name" },
+          "kind": { "$ref": "#/$defs/artifact_kind" },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "artifact_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_files",
+        "json_reports",
+        "platform_assets",
+        "required_files_present",
+        "forbidden_files"
+      ],
+      "properties": {
+        "total_files": { "type": "integer", "minimum": 0 },
+        "json_reports": { "type": "integer", "minimum": 0 },
+        "platform_assets": { "type": "integer", "minimum": 0 },
+        "required_files_present": { "type": "integer", "minimum": 0 },
+        "forbidden_files": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "trust_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publishes_github_release",
+        "mutates_github_releases",
+        "generates_github_attestations",
+        "stores_credentials",
+        "contains_private_key_material"
+      ],
+      "properties": {
+        "publishes_github_release": { "type": "boolean" },
+        "mutates_github_releases": { "type": "boolean" },
+        "generates_github_attestations": { "type": "boolean" },
+        "stores_credentials": { "type": "boolean" },
+        "contains_private_key_material": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": {
+    "artifact_name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "artifact_kind": {
+      "type": "string",
+      "enum": [
+        "manifest",
+        "checksums",
+        "signature",
+        "public-key",
+        "report",
+        "platform-binary",
+        "replacement-policy",
+        "other"
+      ]
+    }
+  }
+}
