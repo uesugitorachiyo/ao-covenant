@@ -3527,6 +3527,48 @@ func TestReleaseDryRunArtifactAuditSchemaValidatesMachineReadableWorkflowArtifac
 	}
 }
 
+func TestReleaseConsumerSmokeResultSchemaValidatesMachineReadableScriptSummary(t *testing.T) {
+	const releaseConsumerSmokeResultSchemaID = "covenant.release-consumer-smoke-result.v1"
+	result := []byte(`{
+	  "schema_version": "covenant.release-consumer-smoke-result.v1",
+	  "status": "passed",
+	  "attestation_skipped": true,
+	  "attestation_checked": false,
+	  "replacement_policy_present": false,
+	  "release_files": [
+	    "manifest.json",
+	    "SHA256SUMS",
+	    "release-signature.json",
+	    "covenant-release-public-key.json"
+	  ],
+	  "report_files": [
+	    "release-verify.json",
+	    "release-report.json",
+	    "release-inspect.json"
+	  ],
+	  "checks": [
+	    {"name": "required-files", "status": "passed"},
+	    {"name": "checksums", "status": "passed"},
+	    {"name": "release-verify", "status": "passed"},
+	    {"name": "release-report", "status": "passed"},
+	    {"name": "release-inspect", "status": "passed"},
+	    {"name": "schema-validation", "status": "passed"},
+	    {"name": "attestation", "status": "skipped"}
+	  ]
+	}`)
+
+	required, ok := RequiredSchemaByID(releaseConsumerSmokeResultSchemaID)
+	if !ok {
+		t.Fatalf("%s is not cataloged", releaseConsumerSmokeResultSchemaID)
+	}
+	if required.FileName != "covenant.release-consumer-smoke-result.v1.schema.json" {
+		t.Fatalf("schema file = %q, want covenant.release-consumer-smoke-result.v1.schema.json", required.FileName)
+	}
+	if err := ValidateBytes(releaseConsumerSmokeResultSchemaID, result); err != nil {
+		t.Fatalf("release consumer smoke result did not validate against published schema: %v\njson:\n%s", err, string(result))
+	}
+}
+
 func TestReleaseRedactedJSONFixturesUseStableRedactionTokens(t *testing.T) {
 	tests := []struct {
 		fileName          string

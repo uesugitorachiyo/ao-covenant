@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.release-consumer-smoke-result.v1",
+  "title": "AO Covenant Release Consumer Smoke Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "attestation_skipped",
+    "attestation_checked",
+    "replacement_policy_present",
+    "release_files",
+    "report_files",
+    "checks"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.release-consumer-smoke-result.v1"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["passed", "failed"]
+    },
+    "attestation_skipped": {
+      "type": "boolean"
+    },
+    "attestation_checked": {
+      "type": "boolean"
+    },
+    "replacement_policy_present": {
+      "type": "boolean"
+    },
+    "release_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/file_name"
+      }
+    },
+    "report_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/file_name"
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["passed", "skipped", "failed"]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "file_name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    }
+  }
+}
