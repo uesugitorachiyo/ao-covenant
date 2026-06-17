@@ -68,6 +68,7 @@ fixture inventory data:
 - `covenant.release-package-result.v1`
 - `covenant.release-verify-result.v1`
 - `covenant.release-report-result.v1`
+- `covenant.release-consumer-smoke-result.v1`
 - `covenant.release-diff-result.v1`
 - `covenant.release-fixture-index.v1`
 - `covenant.release-attestation-fixture.v1`
@@ -110,6 +111,19 @@ Consumers can validate a downloaded audit with:
 
 ```sh
 covenant schema validate --schema covenant.release-dry-run-artifact-audit.v1 --file release-dry-run-artifact-audit.json
+```
+
+## Release Consumer Smoke Result
+
+The release consumer smoke scripts write `release-consumer-smoke.json` using
+`covenant.release-consumer-smoke-result.v1`. The result records the public file
+names and check statuses from a consumer verification run without embedding
+local release or output directory paths.
+
+Consumers can validate a smoke result with:
+
+```sh
+covenant schema validate --schema covenant.release-consumer-smoke-result.v1 --file release-consumer-smoke.json
 ```
 
 ## Consumer Actions

@@ -19,7 +19,8 @@ Options:
   --repo owner/repo       GitHub repository used for gh attestation verification.
                           Default: uesugitorachiyo/ao-covenant
   --out dir              Directory for release-verify.json, release-report.json,
-                          and release-inspect.json. Default: a temporary dir.
+                          release-inspect.json, and release-consumer-smoke.json.
+                          Default: a temporary dir.
   --skip-attestation     Skip gh attestation verification.
   -h, --help             Show this help text.
 
@@ -108,6 +109,8 @@ if [[ "$SKIP_ATTESTATION" != "true" ]]; then
   require_command gh
 fi
 
+SUMMARY_JSON="$OUT_DIR/release-consumer-smoke.json"
+
 require_file "$RELEASE_DIR/manifest.json"
 require_file "$RELEASE_DIR/SHA256SUMS"
 require_file "$RELEASE_DIR/release-signature.json"
@@ -155,13 +158,19 @@ fi
 "$COVENANT_BIN" schema validate --file "$OUT_DIR/release-inspect.json"
 
 REPLACEMENT_POLICY="$RELEASE_DIR/release-replacement-policy.json"
+REPLACEMENT_POLICY_PRESENT=false
 if [[ -f "$REPLACEMENT_POLICY" ]]; then
+  REPLACEMENT_POLICY_PRESENT=true
   "$COVENANT_BIN" schema validate \
     --schema covenant.release-replacement-policy.v1 \
     --file "$REPLACEMENT_POLICY"
 fi
 
+ATTESTATION_CHECKED=false
+ATTESTATION_STATUS=skipped
 if [[ "$SKIP_ATTESTATION" != "true" ]]; then
+  ATTESTATION_CHECKED=true
+  ATTESTATION_STATUS=passed
   # Equivalent public command:
   # gh attestation verify "$RELEASE_DIR/manifest.json" --repo "$REPO"
   gh attestation verify "$RELEASE_DIR/manifest.json" --repo "$REPO"
@@ -172,4 +181,41 @@ if [[ "$SKIP_ATTESTATION" != "true" ]]; then
   fi
 fi
 
+# Equivalent public command:
+# covenant schema validate --schema covenant.release-consumer-smoke-result.v1 --file "$OUT_DIR/release-consumer-smoke.json"
+cat > "$SUMMARY_JSON" <<JSON
+{
+  "schema_version": "covenant.release-consumer-smoke-result.v1",
+  "status": "passed",
+  "attestation_skipped": $SKIP_ATTESTATION,
+  "attestation_checked": $ATTESTATION_CHECKED,
+  "replacement_policy_present": $REPLACEMENT_POLICY_PRESENT,
+  "release_files": [
+    "manifest.json",
+    "SHA256SUMS",
+    "release-signature.json",
+    "covenant-release-public-key.json"
+  ],
+  "report_files": [
+    "release-verify.json",
+    "release-report.json",
+    "release-inspect.json"
+  ],
+  "checks": [
+    {"name": "required-files", "status": "passed"},
+    {"name": "checksums", "status": "passed"},
+    {"name": "release-verify", "status": "passed"},
+    {"name": "release-report", "status": "passed"},
+    {"name": "release-inspect", "status": "passed"},
+    {"name": "schema-validation", "status": "passed"},
+    {"name": "attestation", "status": "$ATTESTATION_STATUS"}
+  ]
+}
+JSON
+"$COVENANT_BIN" schema validate \
+  --schema covenant.release-consumer-smoke-result.v1 \
+  --file "$SUMMARY_JSON"
+
+echo "release_consumer_smoke=passed"
+echo "release_consumer_smoke_result=$SUMMARY_JSON"
 echo "release consumer smoke complete: outputs=$OUT_DIR"

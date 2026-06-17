@@ -50,6 +50,7 @@ const (
 	ReleaseSignatureSchemaID                  = "covenant.release-signature.v1"
 	ReleaseInspectResultSchemaID              = "covenant.release-inspect-result.v1"
 	ReleaseReportResultSchemaID               = "covenant.release-report-result.v1"
+	ReleaseConsumerSmokeResultSchemaID        = "covenant.release-consumer-smoke-result.v1"
 	ReleaseFixtureIndexSchemaID               = "covenant.release-fixture-index.v1"
 	ReleaseAttestationFixtureSchemaID         = "covenant.release-attestation-fixture.v1"
 	ReleaseReadinessSummarySchemaID           = "covenant.release-readiness-summary.v1"
@@ -118,6 +119,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.release-signature.v1.schema.json", ReleaseSignatureSchemaID),
 	requiredSchema("covenant.release-inspect-result.v1.schema.json", ReleaseInspectResultSchemaID),
 	requiredSchema("covenant.release-report-result.v1.schema.json", ReleaseReportResultSchemaID),
+	requiredSchema("covenant.release-consumer-smoke-result.v1.schema.json", ReleaseConsumerSmokeResultSchemaID),
 	requiredSchema("covenant.release-fixture-index.v1.schema.json", ReleaseFixtureIndexSchemaID),
 	requiredSchema("covenant.release-attestation-fixture.v1.schema.json", ReleaseAttestationFixtureSchemaID),
 	requiredSchema("covenant.release-readiness-summary.v1.schema.json", ReleaseReadinessSummarySchemaID),

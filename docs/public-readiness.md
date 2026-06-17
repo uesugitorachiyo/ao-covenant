@@ -42,7 +42,9 @@ using only public release assets and an installed `covenant` binary.
 The
 [Windows release consumer smoke script](../scripts/release-consumer-smoke.ps1)
 provides the same consumer-facing command path with PowerShell-native checksum
-verification.
+verification. Both scripts write `release-consumer-smoke.json` with schema
+`covenant.release-consumer-smoke-result.v1` after the public release verify,
+report, inspect, schema validation, and optional attestation checks pass.
 Maintainers should run the [release dry-run checklist](release-dry-run.md)
 before tagging or manually dispatching a public release. Use the
 [release rollback runbook](release-rollback.md) before replacing, withdrawing,
