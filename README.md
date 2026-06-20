@@ -1028,3 +1028,7 @@ test -s /tmp/ao-covenant-self-run/contract.json.sha256
 test -s /tmp/ao-covenant-dist/SHA256SUMS
 CGO_ENABLED=0 go build -o bin/covenant ./cmd/covenant
 ```
+
+## License
+
+AO Covenant is licensed under `Apache-2.0`. See `LICENSE`.
