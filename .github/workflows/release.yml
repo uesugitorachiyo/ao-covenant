@@ -150,6 +150,7 @@ jobs:
             --target windows/amd64 \
             --json > dist/release-package.json
           cp "$COVENANT_RELEASE_PUBLIC_KEY" dist/covenant-release-public-key.json
+          cp LICENSE NOTICE dist/
 
       - name: Verify signed release
         shell: bash
