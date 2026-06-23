@@ -327,6 +327,7 @@ func TestProductionReadinessOpsWorkflowVerifiesBranchProtectionDrift(t *testing.
 		"runs-on: ubuntu-latest",
 		"uses: actions/checkout@v6",
 		"GH_TOKEN: ${{ github.token }}",
+		"AO_COVENANT_BRANCH_PROTECTION_MODE: limited",
 		"scripts/verify-branch-protection.sh",
 	} {
 		requireWorkflowContains(t, workflow, want)
@@ -347,6 +348,35 @@ func TestProductionReadinessOpsWorkflowVerifiesBranchProtectionDrift(t *testing.
 		"scripts/verify-branch-protection.sh",
 	} {
 		requireWorkflowContains(t, readme, want)
+		requireWorkflowContains(t, runbook, want)
+	}
+}
+
+func TestBranchProtectionVerifierSupportsLimitedWorkflowTokenMode(t *testing.T) {
+	script := readRepoFile(t, "scripts", "verify-branch-protection.sh")
+	runbook := readRepoFile(t, "docs", "branch-protection.md")
+
+	for _, want := range []string{
+		`mode="${AO_COVENANT_BRANCH_PROTECTION_MODE:-full}"`,
+		`if [[ "$mode" == "full" ]]; then`,
+		`gh api "repos/${repository}/branches/${branch}/protection"`,
+		`elif [[ "$mode" == "limited" ]]; then`,
+		`gh api "repos/${repository}/branches/${branch}"`,
+		`unsupported AO_COVENANT_BRANCH_PROTECTION_MODE`,
+		`"mode": mode`,
+		`"branch_metadata_api_available": True`,
+		`"branch_protected": branch_info.get("protected") is True`,
+		`required_status_checks.get("enforcement_level") == "everyone"`,
+	} {
+		requireWorkflowContains(t, script, want)
+	}
+
+	for _, want := range []string{
+		"AO_COVENANT_BRANCH_PROTECTION_MODE=limited",
+		"branch metadata API",
+		"workflow `GH_TOKEN`",
+		"full mode",
+	} {
 		requireWorkflowContains(t, runbook, want)
 	}
 }
