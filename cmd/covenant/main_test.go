@@ -298,6 +298,45 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 	validateSchemaFile(t, schema.BundlePublicKeySchemaID, filepath.Join(workDir, "release", "covenant-release-public-key.json"))
 }
 
+func TestReleaseReadinessScriptAcceptsRelativeReadinessDir(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("release-readiness.sh requires a Unix shell")
+	}
+	packageDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("get working directory: %v", err)
+	}
+	repoRoot := filepath.Clean(filepath.Join(packageDir, "..", ".."))
+	relativeWorkDir := filepath.Join("tmp", "release-readiness-relative-test")
+	workDir := filepath.Join(repoRoot, relativeWorkDir)
+	t.Cleanup(func() {
+		_ = os.RemoveAll(workDir)
+	})
+
+	cmd := exec.Command(filepath.Join(repoRoot, "scripts", "release-readiness.sh"))
+	cmd.Dir = repoRoot
+	cmd.Env = append(os.Environ(),
+		"COVENANT_RELEASE_READINESS_DIR="+relativeWorkDir,
+		"COVENANT_RELEASE_VERSION=v0.1.0-relative-dir-smoke",
+		"COVENANT_RELEASE_COMMIT=relative-dir-smoke",
+		"COVENANT_RELEASE_DATE=2026-06-23T00:00:00Z",
+		"COVENANT_RELEASE_TARGET="+runtime.GOOS+"/"+runtime.GOARCH,
+	)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("release-readiness.sh failed with relative readiness dir: %v\nstdout:\n%s\nstderr:\n%s", err, stdout.String(), stderr.String())
+	}
+	if _, err := os.Stat(filepath.Join(workDir, "release-readiness-summary.json")); err != nil {
+		t.Fatalf("relative readiness dir summary missing: %v\nstdout:\n%s\nstderr:\n%s", err, stdout.String(), stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "release readiness complete") {
+		t.Fatalf("stdout = %q, want completion marker", stdout.String())
+	}
+}
+
 func validateSchemaFile(t *testing.T, schemaID string, path string) {
 	t.Helper()
 	bytes, err := os.ReadFile(path)
