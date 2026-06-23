@@ -50,8 +50,9 @@ you touched, then run the full baseline above.
 
 ## Branch And Pull Request Rules
 
-The protected `main` branch requires pull requests. Do not push directly to
-`main`.
+The protected `main` branch requires pull requests. Keep the live settings in
+sync with the [branch protection runbook](docs/branch-protection.md), and do
+not push directly to `main`.
 
 Use a feature branch and open a pull request. Pull requests must keep scope
 small enough to review, include the relevant local verification commands in the

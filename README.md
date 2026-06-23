@@ -74,6 +74,8 @@ Security model:
   schema families, compatibility expectations, and consumer validation actions.
 - [Dependency Review](docs/dependency-review.md) defines Go module and GitHub
   Actions supply-chain review expectations.
+- [Branch Protection](docs/branch-protection.md) defines the required `main`
+  branch protection settings and live verification command.
 - [Contributing](CONTRIBUTING.md) defines local setup, required checks,
   protected-branch flow, docs expectations, and schema expectations.
 - [Code of Conduct](CODE_OF_CONDUCT.md) and [Governance](GOVERNANCE.md) define
