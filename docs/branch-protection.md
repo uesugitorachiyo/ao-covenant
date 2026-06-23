@@ -47,15 +47,26 @@ jobs:
 scripts/verify-branch-protection.sh
 ```
 
-The verifier uses `gh api` to inspect live protection for `main`, confirms the
-required checks and protection toggles, and emits
-`ao.covenant.branch-protection-audit.v1` JSON.
+By default, the verifier runs in full mode. Full mode uses `gh api` to inspect
+live protection and rulesets for `main`, confirms the required checks and
+protection toggles, and emits `ao.covenant.branch-protection-audit.v1` JSON.
+Full mode requires a GitHub token that can read branch-protection and ruleset
+details.
 
 The `Production Readiness Ops` workflow in
 `.github/workflows/production-readiness-ops.yml` runs the same
 `scripts/verify-branch-protection.sh` drift check on a daily schedule and by
 manual dispatch. It has read-only repository permissions and uses the workflow
-`GH_TOKEN` only for live branch-protection inspection.
+`GH_TOKEN` in limited mode:
+
+```sh
+AO_COVENANT_BRANCH_PROTECTION_MODE=limited scripts/verify-branch-protection.sh
+```
+
+Limited mode uses the branch metadata API that is visible to the workflow `GH_TOKEN`.
+It confirms `main` is protected, verifies the required checks, and
+requires status checks to be enforced for everyone. It does not replace the
+stricter local full mode when branch-protection settings are changed.
 
 ## Local Fallback
 
