@@ -16,6 +16,14 @@ func TestCIActionsUseNode24CompatibleVersions(t *testing.T) {
 	requireWorkflowOmits(t, workflow, "uses: actions/setup-go@v5")
 }
 
+func TestCIWorkflowPinsMacOSRunner(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "ci.yml")
+
+	requireWorkflowContains(t, workflow, "name: Go ${{ matrix.os }}")
+	requireWorkflowContains(t, workflow, "os: [ubuntu-latest, macos-26, windows-latest]")
+	requireWorkflowOmits(t, workflow, "macos-latest")
+}
+
 func TestReleaseWorkflowRequiresSignedProvenanceAutomation(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
 
@@ -28,7 +36,7 @@ func TestReleaseWorkflowRequiresSignedProvenanceAutomation(t *testing.T) {
 		"uses: actions/checkout@v6",
 		"ref: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref }}",
 		"uses: actions/setup-go@v6",
-		"uses: actions/upload-artifact@v7",
+		"uses: actions/upload-artifact@v7.0.1",
 		"uses: actions/attest-build-provenance@v4",
 		"COVENANT_RELEASE_SIGNING_KEY",
 		"covenant-release-private-key.json",
@@ -275,7 +283,7 @@ func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
 		"strategy:",
 		"fail-fast: false",
 		"matrix:",
-		"os: [ubuntu-latest, macos-latest, windows-latest]",
+		"os: [ubuntu-latest, macos-26, windows-latest]",
 		"runs-on: ${{ matrix.os }}",
 		"uses: actions/checkout@v6",
 		"uses: actions/setup-go@v6",
@@ -289,7 +297,7 @@ func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
 		"if: runner.os == 'Windows'",
 		"shell: pwsh",
 		"./scripts/release-readiness.ps1",
-		"uses: actions/upload-artifact@v7",
+		"uses: actions/upload-artifact@v7.0.1",
 		"name: ao-covenant-release-readiness-summary-${{ matrix.os }}",
 		"path: ${{ runner.temp }}/covenant-release-readiness/release-readiness-summary.json",
 		"if-no-files-found: error",
@@ -307,6 +315,8 @@ func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
 		"path: ${{ runner.temp }}/covenant-release-readiness/**",
 		"path: ${{ runner.temp }}/covenant-release-readiness/artifacts/",
 		"path: ${{ runner.temp }}/covenant-release-readiness/release/",
+		"macos-latest",
+		"actions/upload-artifact@v7\n",
 	} {
 		requireWorkflowOmits(t, workflow, forbidden)
 	}

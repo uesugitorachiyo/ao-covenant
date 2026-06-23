@@ -25,8 +25,11 @@ Require these status checks before merge:
 
 - `License policy`
 - `Go ubuntu-latest`
-- `Go macos-latest`
+- `Go macos-26`
 - `Go windows-latest`
+
+The macOS Go check is pinned to an explicit image label so GitHub's moving
+`macos-latest` alias cannot silently change the required status context.
 
 These checks come from `.github/workflows/ci.yml`. `License policy` verifies
 the canonical Apache-2.0 root license, NOTICE, and package metadata. The Go
