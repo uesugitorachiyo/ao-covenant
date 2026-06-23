@@ -51,6 +51,12 @@ The verifier uses `gh api` to inspect live protection for `main`, confirms the
 required checks and protection toggles, and emits
 `ao.covenant.branch-protection-audit.v1` JSON.
 
+The `Production Readiness Ops` workflow in
+`.github/workflows/production-readiness-ops.yml` runs the same
+`scripts/verify-branch-protection.sh` drift check on a daily schedule and by
+manual dispatch. It has read-only repository permissions and uses the workflow
+`GH_TOKEN` only for live branch-protection inspection.
+
 ## Local Fallback
 
 Before pushing public changes, run:
@@ -59,7 +65,7 @@ Before pushing public changes, run:
 scripts/check-license-policy.sh
 go test -count=1 ./...
 go vet ./...
-ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml .github/workflows/release-readiness.yml
+ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml .github/workflows/release-readiness.yml .github/workflows/production-readiness-ops.yml
 git diff --check
 ```
 

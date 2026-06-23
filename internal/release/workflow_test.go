@@ -312,6 +312,45 @@ func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
 	}
 }
 
+func TestProductionReadinessOpsWorkflowVerifiesBranchProtectionDrift(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "production-readiness-ops.yml")
+	readme := readRepoFile(t, "README.md")
+	runbook := readRepoFile(t, "docs", "branch-protection.md")
+
+	for _, want := range []string{
+		"name: Production Readiness Ops",
+		"workflow_dispatch:",
+		"schedule:",
+		"cron:",
+		"contents: read",
+		"name: Branch protection drift",
+		"runs-on: ubuntu-latest",
+		"uses: actions/checkout@v6",
+		"GH_TOKEN: ${{ github.token }}",
+		"scripts/verify-branch-protection.sh",
+	} {
+		requireWorkflowContains(t, workflow, want)
+	}
+
+	for _, forbidden := range []string{
+		"contents: write",
+		"id-token: write",
+		"attestations: write",
+		"gh release",
+	} {
+		requireWorkflowOmits(t, workflow, forbidden)
+	}
+
+	for _, want := range []string{
+		"Production Readiness Ops",
+		"production-readiness-ops.yml",
+		"scripts/verify-branch-protection.sh",
+	} {
+		requireWorkflowContains(t, readme, want)
+		requireWorkflowContains(t, runbook, want)
+	}
+}
+
 func TestReleaseDocsExplainAssetReplacementGuard(t *testing.T) {
 	doc := readRepoFile(t, "docs", "release.md")
 

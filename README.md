@@ -75,7 +75,9 @@ Security model:
 - [Dependency Review](docs/dependency-review.md) defines Go module and GitHub
   Actions supply-chain review expectations.
 - [Branch Protection](docs/branch-protection.md) defines the required `main`
-  branch protection settings and live verification command.
+  branch protection settings, live verification command, and
+  [Production Readiness Ops workflow](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/production-readiness-ops.yml)
+  backed by `scripts/verify-branch-protection.sh`.
 - [Contributing](CONTRIBUTING.md) defines local setup, required checks,
   protected-branch flow, docs expectations, and schema expectations.
 - [Code of Conduct](CODE_OF_CONDUCT.md) and [Governance](GOVERNANCE.md) define
