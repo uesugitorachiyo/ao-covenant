@@ -3,6 +3,11 @@
 [![Release Readiness](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml/badge.svg)](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml)
 
 AO Covenant is a local-first orchestration kernel for evidence-bound agent work.
+In the active AO2-first stack, it is the policy and trust kernel: AO Forge asks
+for decisions, AO2 executes governed work, ao2-control-plane stores and exposes
+evidence after the fact, and AO Command presents read-only operator status. AO
+Covenant should not become the execution engine, evidence store, or operator
+dashboard.
 
 AO Covenant currently builds the contract, policy, run, and evidence spine:
 
