@@ -110,6 +110,11 @@ covenant schema catalog --json
 covenant schema export --out /tmp/ao-covenant-schemas
 ```
 
+The AO2-first policy-spine boundary must also remain available from the binary
+as schema-backed JSON. Use `covenant policy spine --json` to inspect the active
+repository scope, AO Covenant ownership, replacement targets, and non-ownership
+guardrails with schema `covenant.policy-spine-result.v1`.
+
 Local check:
 
 ```sh
@@ -156,6 +161,8 @@ It uploads only a non-sensitive `release-readiness-summary.json` artifact with
 status, release metadata, host `platform` metadata, check names, and aggregate
 counts; it does not upload the generated workspace, signing keys, bundles,
 checksums, manifest entries, or release files.
+The local gate also writes `artifacts/policy-spine.json` and validates it with
+the embedded `covenant.policy-spine-result.v1` schema before the summary passes.
 The summary is a public automation artifact using
 `covenant.release-readiness-summary.v1` and can be checked after download:
 

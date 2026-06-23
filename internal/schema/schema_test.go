@@ -2159,6 +2159,27 @@ func TestPolicyIndexResultSchemaIsPublished(t *testing.T) {
 	}
 }
 
+func TestPolicySpineResultSchemaIsPublished(t *testing.T) {
+	if !KnownSchemaID(PolicySpineResultSchemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", PolicySpineResultSchemaID)
+	}
+	found := false
+	for _, entry := range Catalog() {
+		if entry.ID == PolicySpineResultSchemaID {
+			found = true
+			if entry.FileName != "covenant.policy-spine-result.v1.schema.json" {
+				t.Fatalf("policy spine result schema file = %q", entry.FileName)
+			}
+			if entry.SchemaPath != schemaTestPath("covenant.policy-spine-result.v1.schema.json") {
+				t.Fatalf("policy spine result schema path = %q", entry.SchemaPath)
+			}
+		}
+	}
+	if !found {
+		t.Fatalf("catalog missing %s", PolicySpineResultSchemaID)
+	}
+}
+
 func TestSchemaCatalogResultSchemaIsPublished(t *testing.T) {
 	if !KnownSchemaID(SchemaCatalogResultSchemaID) {
 		t.Fatalf("KnownSchemaID(%q) = false, want true", SchemaCatalogResultSchemaID)

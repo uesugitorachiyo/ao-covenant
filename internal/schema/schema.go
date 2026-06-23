@@ -59,6 +59,7 @@ const (
 	ReleaseReplacementPreflightReportSchemaID = "covenant.release-replacement-preflight-report.v1"
 	PolicyExplainResultSchemaID               = "covenant.policy-explain-result.v1"
 	PolicyIndexResultSchemaID                 = "covenant.policy-index-result.v1"
+	PolicySpineResultSchemaID                 = "covenant.policy-spine-result.v1"
 	SchemaCatalogResultSchemaID               = "covenant.schema-catalog-result.v1"
 	SchemaExportResultSchemaID                = "covenant.schema-export-result.v1"
 	BundleInspectResultSchemaID               = "covenant.bundle-inspect-result.v1"
@@ -128,6 +129,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.release-replacement-preflight-report.v1.schema.json", ReleaseReplacementPreflightReportSchemaID),
 	requiredSchema("covenant.policy-explain-result.v1.schema.json", PolicyExplainResultSchemaID),
 	requiredSchema("covenant.policy-index-result.v1.schema.json", PolicyIndexResultSchemaID),
+	requiredSchema("covenant.policy-spine-result.v1.schema.json", PolicySpineResultSchemaID),
 	requiredSchema("covenant.schema-catalog-result.v1.schema.json", SchemaCatalogResultSchemaID),
 	requiredSchema("covenant.schema-export-result.v1.schema.json", SchemaExportResultSchemaID),
 	requiredSchema("covenant.bundle-inspect-result.v1.schema.json", BundleInspectResultSchemaID),

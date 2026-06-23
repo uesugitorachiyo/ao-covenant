@@ -83,6 +83,7 @@ save_json verify verify \
   --json
 save_json policy-explain policy explain --evidence "$evidence_path" --json
 save_json policy-index policy index --evidence "$evidence_path" --json
+save_json policy-spine policy spine --json
 
 save_json bundle-keygen bundle keygen \
   --private "$private_key" \
@@ -179,6 +180,7 @@ release_file_count="$(find "$DIST" -maxdepth 1 -type f | wc -l | tr -d '[:space:
   printf '    "verify",\n'
   printf '    "policy-explain",\n'
   printf '    "policy-index",\n'
+  printf '    "policy-spine",\n'
   printf '    "bundle-keygen",\n'
   printf '    "bundle-export",\n'
   printf '    "bundle-verify",\n'

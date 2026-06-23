@@ -443,6 +443,20 @@ go run ./cmd/covenant policy index \
   --decision allow
 ```
 
+`covenant policy spine` emits the AO2-first governance boundary as a small
+machine-readable contract. It names the active repositories, records that AO2
+and ao2-control-plane replace prior execution/control-plane ownership, and
+states what AO Covenant does not own: execution, control-plane publication,
+release orchestration, or operator dashboards. JSON output includes
+`schema_version: covenant.policy-spine-result.v1`, covered by the embedded
+public schema exported by `covenant schema export`:
+
+```sh
+go run ./cmd/covenant policy spine
+go run ./cmd/covenant policy spine --json \
+  >/tmp/ao-covenant-policy-spine.json
+```
+
 `covenant approval` manages approval tickets for declared side effects that
 strict policy would otherwise deny. Given a contract that declares the same task,
 effect, and resource, operators can create a ticket, inspect it, validate it
@@ -901,6 +915,8 @@ PowerShell `-ReadinessDir` parameter. They also accept
 `COVENANT_RELEASE_VERSION`, `COVENANT_RELEASE_COMMIT`,
 `COVENANT_RELEASE_DATE`, and `COVENANT_RELEASE_TARGET`; the PowerShell script
 exposes matching `-Version`, `-Commit`, `-Date`, and `-Target` parameters.
+The gate also writes and schema-validates `artifacts/policy-spine.json` so each
+readiness run proves the AO2-first policy-spine boundary is executable.
 
 See `docs/install.md` for Ubuntu, macOS, and Windows install and checksum
 verification steps.

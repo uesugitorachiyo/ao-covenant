@@ -239,6 +239,7 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 	}
 	for _, path := range []string{
 		filepath.Join(workDir, "artifacts", "release-package.json"),
+		filepath.Join(workDir, "artifacts", "policy-spine.json"),
 		filepath.Join(workDir, "artifacts", "release-verify.json"),
 		filepath.Join(workDir, "artifacts", "schema-validation.json"),
 		filepath.Join(workDir, "artifacts", "release-readiness-summary-validation.json"),
@@ -286,6 +287,7 @@ func TestReleaseReadinessScriptRunsSmokeGate(t *testing.T) {
 		}
 	}
 	validateSchemaFile(t, schema.ReleasePackageResultSchemaID, filepath.Join(workDir, "artifacts", "release-package.json"))
+	validateSchemaFile(t, schema.PolicySpineResultSchemaID, filepath.Join(workDir, "artifacts", "policy-spine.json"))
 	validateSchemaFile(t, schema.ReleaseVerifyResultSchemaID, filepath.Join(workDir, "artifacts", "release-verify.json"))
 	validateSchemaFile(t, schema.SchemaValidationReportSchemaID, filepath.Join(workDir, "artifacts", "schema-validation.json"))
 	validateSchemaFile(t, schema.SchemaValidationReportSchemaID, filepath.Join(workDir, "artifacts", "release-readiness-summary-validation.json"))

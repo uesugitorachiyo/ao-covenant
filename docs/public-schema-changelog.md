@@ -50,6 +50,8 @@ and run integrity:
 
 - `covenant.policy-decision.v1`
 - `covenant.policy-explain-result.v1`
+- `covenant.policy-index-result.v1`
+- `covenant.policy-spine-result.v1`
 - `covenant.approval-ticket.v1`
 - `covenant.verify-result.v1`
 - `covenant.closure-matrix.v1`
@@ -99,6 +101,20 @@ Consumers can validate a downloaded summary with:
 
 ```sh
 covenant schema validate --schema covenant.release-readiness-summary.v1 --file release-readiness-summary.json
+```
+
+## Policy Spine Result
+
+`covenant policy spine --json` publishes the AO2-first governance boundary
+using `covenant.policy-spine-result.v1`. The result is intended for automation
+that needs to confirm AO Covenant remains the policy/trust spine while
+execution, control-plane evidence, release orchestration, and operator status
+stay owned by their active repositories.
+
+Consumers can validate a captured policy-spine result with:
+
+```sh
+covenant schema validate --schema covenant.policy-spine-result.v1 --file policy-spine.json
 ```
 
 ## Release Dry-Run Artifact Audit
