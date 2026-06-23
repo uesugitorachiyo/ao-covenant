@@ -4,6 +4,10 @@ AO Covenant is a local-first orchestration kernel for evidence-bound agent work.
 It is designed to make agent activity reviewable, bounded, and verifiable. It
 does not make arbitrary agent output safe by itself, and it does not replace
 host operating system sandboxing, repository access control, or human review.
+Inside the active AO2-first stack, AO Covenant is the policy and trust boundary:
+AO2 owns governed execution, ao2-control-plane owns durable evidence observation,
+AO Forge owns factory planning and gates, and AO Command owns read-only operator
+status.
 
 Use this model with the [security policy](../SECURITY.md), the signed
 [release operations](release.md), and the install verification steps in
@@ -39,6 +43,9 @@ AO Covenant draws these trust boundaries:
   exceed the declared contract.
 - **Policy boundary:** Policy evaluation is fail-closed. Denied or undeclared
   side effects must not be treated as implicit approval.
+- **AO stack boundary:** AO Covenant decides policy and records trust evidence;
+  it does not execute AO2 work, approve control-plane publication by upload, or
+  replace AO Forge and AO Command ownership.
 - **Adapter boundary:** Process execution and file writes flow through typed
   adapters so declared side effects can be captured as evidence.
 - **Evidence boundary:** Evidence packs, bundles, reports, and release metadata
