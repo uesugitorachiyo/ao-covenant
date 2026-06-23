@@ -31,7 +31,7 @@ tmpdir = pathlib.Path(tmpdir)
 required_checks = [
     "License policy",
     "Go ubuntu-latest",
-    "Go macos-latest",
+    "Go macos-26",
     "Go windows-latest",
 ]
 
@@ -43,10 +43,34 @@ if mode == "full":
     rulesets = json.loads((tmpdir / "rulesets.json").read_text())
     required_status_checks = protection.get("required_status_checks") or {}
     observed_checks = required_status_checks.get("contexts") or []
+    ruleset_status_check_errors = []
+    allowed_contexts = set(required_checks)
+    for ruleset in rulesets:
+        if ruleset.get("enforcement") != "active" or ruleset.get("target") != "branch":
+            continue
+        conditions = ruleset.get("conditions") or {}
+        ref_name = conditions.get("ref_name") or {}
+        includes = ref_name.get("include") or []
+        excludes = ref_name.get("exclude") or []
+        if includes and "~DEFAULT_BRANCH" not in includes and branch not in includes and f"refs/heads/{branch}" not in includes:
+            continue
+        if branch in excludes or f"refs/heads/{branch}" in excludes:
+            continue
+        for rule in ruleset.get("rules") or []:
+            if rule.get("type") != "required_status_checks":
+                continue
+            parameters = rule.get("parameters") or {}
+            for check in parameters.get("required_status_checks") or []:
+                context = check.get("context")
+                if context and context not in allowed_contexts:
+                    ruleset_status_check_errors.append(
+                        f"{ruleset.get('name', '<unnamed>')}: unexpected required status check {context}"
+                    )
     checks = {
         "branch_protection_api_available": True,
         "required_status_checks_strict": required_status_checks.get("strict") is True,
         "required_status_checks_complete": False,
+        "ruleset_status_checks_current": not ruleset_status_check_errors,
         "required_pull_request_reviews_enabled": isinstance(protection.get("required_pull_request_reviews"), dict),
         "dismiss_stale_reviews_enabled": (protection.get("required_pull_request_reviews") or {}).get("dismiss_stale_reviews") is True,
         "enforce_admins_enabled": (protection.get("enforce_admins") or {}).get("enabled") is True,
@@ -78,6 +102,8 @@ for name, passed in checks.items():
         errors.append(name)
 if missing_checks:
     errors.append(f"missing required status checks: {', '.join(missing_checks)}")
+if mode == "full":
+    errors.extend(ruleset_status_check_errors)
 
 audit = {
     "schema_version": "ao.covenant.branch-protection-audit.v1",

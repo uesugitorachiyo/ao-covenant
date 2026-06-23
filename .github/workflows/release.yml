@@ -179,7 +179,7 @@ jobs:
 
       - name: Upload replacement preflight report
         if: always() && steps.replacement_preflight.conclusion != 'skipped'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: ao-covenant-${{ steps.meta.outputs.version }}-replacement-preflight-report
           path: ${{ runner.temp }}/release-replacement-preflight-report.json
@@ -203,7 +203,7 @@ jobs:
           ./scripts/release-dry-run-artifact-audit.sh
 
       - name: Upload workflow artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: ao-covenant-${{ steps.meta.outputs.version }}
           path: dist/*

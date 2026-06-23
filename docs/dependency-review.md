@@ -43,7 +43,7 @@ currently uses:
 - `actions/checkout@v6`
 - `actions/setup-go@v6`
 - `actions/attest-build-provenance@v4`
-- `actions/upload-artifact@v7`
+- `actions/upload-artifact@v7.0.1`
 
 Action updates should be reviewed like code changes. Check the upstream release
 notes, permissions requested by the action, whether the action is still

@@ -264,7 +264,7 @@ func TestBranchProtectionRunbookIsLinkedAndComplete(t *testing.T) {
 		{name: "required status checks", doc: runbook, want: "Require status checks to pass before merging"},
 		{name: "license policy check", doc: runbook, want: "`License policy`"},
 		{name: "ubuntu check", doc: runbook, want: "`Go ubuntu-latest`"},
-		{name: "macos check", doc: runbook, want: "`Go macos-latest`"},
+		{name: "macos check", doc: runbook, want: "`Go macos-26`"},
 		{name: "windows check", doc: runbook, want: "`Go windows-latest`"},
 		{name: "linear history", doc: runbook, want: "Require linear history"},
 		{name: "force pushes", doc: runbook, want: "Restrict force pushes"},
@@ -275,7 +275,7 @@ func TestBranchProtectionRunbookIsLinkedAndComplete(t *testing.T) {
 		{name: "verifier protection api", doc: verifier, want: "branches/${branch}/protection"},
 		{name: "verifier required license policy", doc: verifier, want: "License policy"},
 		{name: "verifier required ubuntu", doc: verifier, want: "Go ubuntu-latest"},
-		{name: "verifier required macos", doc: verifier, want: "Go macos-latest"},
+		{name: "verifier required macos", doc: verifier, want: "Go macos-26"},
 		{name: "verifier required windows", doc: verifier, want: "Go windows-latest"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
@@ -309,7 +309,7 @@ case "$2" in
     "contexts": [
       "License policy",
       "Go ubuntu-latest",
-      "Go macos-latest",
+      "Go macos-26",
       "Go windows-latest"
     ]
   },
@@ -360,8 +360,115 @@ esac
 		`"status": "passed"`,
 		`"License policy"`,
 		`"Go ubuntu-latest"`,
-		`"Go macos-latest"`,
+		`"Go macos-26"`,
 		`"Go windows-latest"`,
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("verifier output missing %q\n%s", want, output)
+		}
+	}
+}
+
+func TestBranchProtectionVerifierRejectsRulesetStatusCheckDrift(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	absoluteRepoRoot, err := filepath.Abs(repoRoot)
+	if err != nil {
+		t.Fatalf("resolve repo root: %v", err)
+	}
+	tempDir := t.TempDir()
+	fakeGH := filepath.Join(tempDir, "gh")
+	if err := os.WriteFile(fakeGH, []byte(`#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$1" != "api" ]]; then
+  echo "unexpected gh command: $*" >&2
+  exit 2
+fi
+
+case "$2" in
+  repos/*/branches/*/protection)
+    cat <<'JSON'
+{
+  "required_status_checks": {
+    "strict": true,
+    "contexts": [
+      "License policy",
+      "Go ubuntu-latest",
+      "Go macos-26",
+      "Go windows-latest"
+    ]
+  },
+  "required_pull_request_reviews": {
+    "dismiss_stale_reviews": true
+  },
+  "enforce_admins": {
+    "enabled": true
+  },
+  "required_linear_history": {
+    "enabled": true
+  },
+  "allow_force_pushes": {
+    "enabled": false
+  },
+  "allow_deletions": {
+    "enabled": false
+  }
+}
+JSON
+    ;;
+  repos/*/rulesets)
+    cat <<'JSON'
+[
+  {
+    "name": "main requires CI",
+    "enforcement": "active",
+    "target": "branch",
+    "conditions": {
+      "ref_name": {
+        "include": ["~DEFAULT_BRANCH"]
+      }
+    },
+    "rules": [
+      {
+        "type": "required_status_checks",
+        "parameters": {
+          "required_status_checks": [
+            {"context": "Go ubuntu-latest"},
+            {"context": "Go macos-latest"},
+            {"context": "Go windows-latest"}
+          ]
+        }
+      }
+    ]
+  }
+]
+JSON
+    ;;
+  *)
+    echo "unexpected gh api path: $2" >&2
+    exit 2
+    ;;
+esac
+`), 0755); err != nil {
+		t.Fatalf("write fake gh: %v", err)
+	}
+
+	cmd := exec.Command("bash", filepath.Join(absoluteRepoRoot, "scripts", "verify-branch-protection.sh"))
+	cmd.Dir = absoluteRepoRoot
+	cmd.Env = append(os.Environ(),
+		"PATH="+tempDir+string(os.PathListSeparator)+os.Getenv("PATH"),
+		"AO_COVENANT_GITHUB_REPOSITORY=uesugitorachiyo/ao-covenant",
+		"AO_COVENANT_BRANCH_PROTECTION_BRANCH=main",
+	)
+	out, err := cmd.CombinedOutput()
+	if err == nil {
+		t.Fatalf("verify branch protection passed with stale ruleset check:\n%s", out)
+	}
+	output := string(out)
+	for _, want := range []string{
+		`"status": "blocked"`,
+		"ruleset_status_checks_current",
+		"Go macos-latest",
 	} {
 		if !strings.Contains(output, want) {
 			t.Fatalf("verifier output missing %q\n%s", want, output)
@@ -865,7 +972,7 @@ func TestDependencyReviewDocumentationIsLinkedAndComplete(t *testing.T) {
 		{name: "github action checkout", doc: dependencyReview, want: "`actions/checkout@v6`"},
 		{name: "github action setup go", doc: dependencyReview, want: "`actions/setup-go@v6`"},
 		{name: "github action attestation", doc: dependencyReview, want: "`actions/attest-build-provenance@v4`"},
-		{name: "github action upload artifact", doc: dependencyReview, want: "`actions/upload-artifact@v7`"},
+		{name: "github action upload artifact", doc: dependencyReview, want: "`actions/upload-artifact@v7.0.1`"},
 		{name: "permissions contents read", doc: dependencyReview, want: "`contents: read`"},
 		{name: "permissions id token", doc: dependencyReview, want: "`id-token: write`"},
 		{name: "permissions attestations", doc: dependencyReview, want: "`attestations: write`"},
