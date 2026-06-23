@@ -3,6 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 READINESS_DIR="${COVENANT_RELEASE_READINESS_DIR:-"$ROOT/.covenant/release-readiness"}"
+if [[ "$READINESS_DIR" != /* ]]; then
+  READINESS_DIR="$ROOT/$READINESS_DIR"
+fi
 VERSION="${COVENANT_RELEASE_VERSION:-v0.1.0-readiness}"
 if [[ -n "${COVENANT_RELEASE_COMMIT:-}" ]]; then
   COMMIT="$COVENANT_RELEASE_COMMIT"
