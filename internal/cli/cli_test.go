@@ -1755,6 +1755,7 @@ func TestSchemaBackedJSONOutputsUseValidatedWriter(t *testing.T) {
 		{"schema validate single json", "printSingleSchemaValidationReport", "writeSchemaValidationJSON(stdout, outPath, report)", 1},
 		{"policy explain json", "runPolicyExplain", "writeSchemaJSON(stdout, schema.PolicyExplainResultSchemaID, report)", 1},
 		{"policy index json", "runPolicyIndex", "writeSchemaJSON(stdout, schema.PolicyIndexResultSchemaID, report)", 1},
+		{"policy spine json", "runPolicySpine", "writeSchemaJSON(stdout, schema.PolicySpineResultSchemaID, report)", 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -5496,6 +5497,67 @@ func TestPolicyIndexCommandFiltersJSONByApprovalTicket(t *testing.T) {
 	decision := decoded.PolicyDecisions[0]
 	if decision.DecisionID != "policy-scripted_change-1" || decision.Decision != "allow" || decision.ApprovalTicketID == "" {
 		t.Fatalf("decision = %+v, want approved allow decision", decision)
+	}
+}
+
+func TestPolicySpineCommandPrintsAO2FirstGovernanceJSON(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	code := Run([]string{
+		"covenant",
+		"policy",
+		"spine",
+		"--json",
+	}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("exit code = %d, stderr = %q", code, stderr.String())
+	}
+	var decoded struct {
+		SchemaVersion string `json:"schema_version"`
+		Stack         string `json:"stack"`
+		Status        string `json:"status"`
+		Scope         struct {
+			ActiveRepositories []string `json:"active_repositories"`
+			ReplacedBy         []string `json:"replaced_by"`
+		} `json:"scope"`
+		Responsibilities []struct {
+			Name  string   `json:"name"`
+			Owner string   `json:"owner"`
+			Gates []string `json:"gates"`
+		} `json:"responsibilities"`
+		OutOfBounds []string `json:"out_of_bounds"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &decoded); err != nil {
+		t.Fatalf("decode policy spine json: %v; stdout = %q", err, stdout.String())
+	}
+	if decoded.SchemaVersion != schema.PolicySpineResultSchemaID {
+		t.Fatalf("schema_version = %q, want %q", decoded.SchemaVersion, schema.PolicySpineResultSchemaID)
+	}
+	if err := schema.ValidateBytes(schema.PolicySpineResultSchemaID, stdout.Bytes()); err != nil {
+		t.Fatalf("policy spine result did not match published schema: %v\njson:\n%s", err, stdout.String())
+	}
+	if decoded.Stack != "ao2-first" || decoded.Status != "ready" {
+		t.Fatalf("stack/status = %q/%q, want ao2-first/ready", decoded.Stack, decoded.Status)
+	}
+	for _, want := range []string{"ao2", "ao2-control-plane", "ao-foundry", "ao-forge", "ao-command", "ao-covenant"} {
+		if !containsString(decoded.Scope.ActiveRepositories, want) {
+			t.Fatalf("active repositories = %#v, missing %q", decoded.Scope.ActiveRepositories, want)
+		}
+	}
+	if !containsString(decoded.Scope.ReplacedBy, "ao2") || !containsString(decoded.Scope.ReplacedBy, "ao2-control-plane") {
+		t.Fatalf("replaced_by = %#v, want ao2 and ao2-control-plane", decoded.Scope.ReplacedBy)
+	}
+	for _, forbidden := range []string{"ao-operator", "ao-runtime", "ao-control-plane", "ao-conductor", "agy-swarms"} {
+		if strings.Contains(stdout.String(), forbidden) {
+			t.Fatalf("policy spine output contains out-of-scope repository %q:\n%s", forbidden, stdout.String())
+		}
+	}
+	if len(decoded.Responsibilities) < 4 {
+		t.Fatalf("responsibilities len = %d, want policy spine coverage", len(decoded.Responsibilities))
+	}
+	if len(decoded.OutOfBounds) == 0 {
+		t.Fatalf("out_of_bounds is empty; want explicit non-ownership guardrails")
 	}
 }
 
@@ -10193,6 +10255,10 @@ func TestReleaseReadinessWorkflowValidatesPublicArtifacts(t *testing.T) {
 		"--evidence", runResult.EvidencePackPath,
 		"--json",
 	)
+	runJSON("policy-spine",
+		"covenant", "policy", "spine",
+		"--json",
+	)
 
 	keygenJSON := runJSON("bundle-keygen",
 		"covenant", "bundle", "keygen",
@@ -10295,6 +10361,7 @@ func TestReleaseReadinessWorkflowValidatesPublicArtifacts(t *testing.T) {
 		"artifacts/verify.json",
 		"artifacts/policy-explain.json",
 		"artifacts/policy-index.json",
+		"artifacts/policy-spine.json",
 		"artifacts/bundle-keygen.json",
 		"artifacts/bundle-export.json",
 		"artifacts/bundle-verify.json",
@@ -11922,6 +11989,15 @@ func lintResultCodes(result contract.LintResult) []string {
 		codes = append(codes, diagnostic.Code)
 	}
 	return codes
+}
+
+func containsString(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
 }
 
 func validCLIContractJSON() string {

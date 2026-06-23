@@ -1371,6 +1371,8 @@ func runPolicy(args []string, stdout io.Writer, stderr io.Writer) int {
 		return runPolicyExplain(args[1:], stdout, stderr)
 	case "index":
 		return runPolicyIndex(args[1:], stdout, stderr)
+	case "spine":
+		return runPolicySpine(args[1:], stdout, stderr)
 	default:
 		fmt.Fprintf(stderr, "unknown policy command %q\n", args[0])
 		printPolicyUsage(stderr)
@@ -2570,6 +2572,33 @@ func readPolicyIndexDecisions(evidencePath string, bundlePath string, publicKeyP
 	return report.PolicyDecisions, nil
 }
 
+func runPolicySpine(args []string, stdout io.Writer, stderr io.Writer) int {
+	flags := flag.NewFlagSet("policy spine", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	jsonOutput := flags.Bool("json", false, "emit JSON")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	report := policy.AO2FirstSpine(schema.PolicySpineResultSchemaID)
+	if *jsonOutput {
+		if err := writeSchemaJSON(stdout, schema.PolicySpineResultSchemaID, report); err != nil {
+			fmt.Fprintf(stderr, "write policy spine: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+	fmt.Fprintf(stdout, "stack=%s\n", report.Stack)
+	fmt.Fprintf(stdout, "status=%s\n", report.Status)
+	fmt.Fprintf(stdout, "active_repositories=%s\n", strings.Join(report.Scope.ActiveRepositories, ","))
+	for _, responsibility := range report.Responsibilities {
+		fmt.Fprintf(stdout, "responsibility=%s owner=%s gates=%s\n", responsibility.Name, responsibility.Owner, strings.Join(responsibility.Gates, ";"))
+	}
+	for _, boundary := range report.OutOfBounds {
+		fmt.Fprintf(stdout, "out_of_bounds=%s\n", boundary)
+	}
+	return 0
+}
+
 func runApprovalCreate(args []string, stdout io.Writer, stderr io.Writer) int {
 	flags := flag.NewFlagSet("approval create", flag.ContinueOnError)
 	flags.SetOutput(stderr)
@@ -3366,7 +3395,7 @@ func printApprovalRevocationsUsage(stderr io.Writer) {
 
 func printPolicyUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: covenant policy <command>")
-	fmt.Fprintln(stderr, "commands: explain, index")
+	fmt.Fprintln(stderr, "commands: explain, index, spine")
 }
 
 func printSchemaUsage(stderr io.Writer) {

@@ -196,6 +196,7 @@ Save-Json -Name "run" -Arguments @(
 Save-Json -Name "verify" -Arguments @("verify", "--ledger", $LedgerPath, "--evidence", $EvidencePath, "--json")
 Save-Json -Name "policy-explain" -Arguments @("policy", "explain", "--evidence", $EvidencePath, "--json")
 Save-Json -Name "policy-index" -Arguments @("policy", "index", "--evidence", $EvidencePath, "--json")
+Save-Json -Name "policy-spine" -Arguments @("policy", "spine", "--json")
 
 Save-Json -Name "bundle-keygen" -Arguments @("bundle", "keygen", "--private", $PrivateKey, "--public", $PublicKey, "--json")
 Save-Json -Name "bundle-export" -Arguments @(
@@ -289,6 +290,7 @@ $SummaryObject = [ordered]@{
         "verify",
         "policy-explain",
         "policy-index",
+        "policy-spine",
         "bundle-keygen",
         "bundle-export",
         "bundle-verify",
