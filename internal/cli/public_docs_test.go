@@ -232,6 +232,143 @@ func TestPublicReadinessIndexIsLinkedAndComplete(t *testing.T) {
 	}
 }
 
+func TestBranchProtectionRunbookIsLinkedAndComplete(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	readText := func(path ...string) string {
+		t.Helper()
+		bytes, err := os.ReadFile(filepath.Join(append([]string{repoRoot}, path...)...))
+		if err != nil {
+			t.Fatalf("read %s: %v", filepath.Join(path...), err)
+		}
+		return string(bytes)
+	}
+
+	readme := readText("README.md")
+	contributing := readText("CONTRIBUTING.md")
+	readiness := readText("docs", "public-readiness.md")
+	runbook := readText("docs", "branch-protection.md")
+	verifier := readText("scripts", "verify-branch-protection.sh")
+
+	for _, check := range []struct {
+		name string
+		doc  string
+		want string
+	}{
+		{name: "README link", doc: readme, want: "[Branch Protection](docs/branch-protection.md)"},
+		{name: "contributing link", doc: contributing, want: "[branch protection runbook](docs/branch-protection.md)"},
+		{name: "public readiness link", doc: readiness, want: "[branch protection runbook](branch-protection.md)"},
+		{name: "runbook title", doc: runbook, want: "# AO Covenant Branch Protection"},
+		{name: "main branch", doc: runbook, want: "`main`"},
+		{name: "require pull request", doc: runbook, want: "Require a pull request before merging"},
+		{name: "dismiss stale reviews", doc: runbook, want: "Dismiss stale pull request approvals"},
+		{name: "required status checks", doc: runbook, want: "Require status checks to pass before merging"},
+		{name: "license policy check", doc: runbook, want: "`License policy`"},
+		{name: "ubuntu check", doc: runbook, want: "`Go ubuntu-latest`"},
+		{name: "macos check", doc: runbook, want: "`Go macos-latest`"},
+		{name: "windows check", doc: runbook, want: "`Go windows-latest`"},
+		{name: "linear history", doc: runbook, want: "Require linear history"},
+		{name: "force pushes", doc: runbook, want: "Restrict force pushes"},
+		{name: "deletions", doc: runbook, want: "Do not allow deletions"},
+		{name: "verifier command", doc: runbook, want: "scripts/verify-branch-protection.sh"},
+		{name: "release readiness note", doc: runbook, want: "`Release Readiness` is a scheduled/manual smoke gate"},
+		{name: "verifier schema", doc: verifier, want: "ao.covenant.branch-protection-audit.v1"},
+		{name: "verifier protection api", doc: verifier, want: "branches/${branch}/protection"},
+		{name: "verifier required license policy", doc: verifier, want: "License policy"},
+		{name: "verifier required ubuntu", doc: verifier, want: "Go ubuntu-latest"},
+		{name: "verifier required macos", doc: verifier, want: "Go macos-latest"},
+		{name: "verifier required windows", doc: verifier, want: "Go windows-latest"},
+	} {
+		if !strings.Contains(check.doc, check.want) {
+			t.Fatalf("%s missing %q", check.name, check.want)
+		}
+	}
+}
+
+func TestBranchProtectionVerifierRunsAgainstFakeGitHubAPI(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	absoluteRepoRoot, err := filepath.Abs(repoRoot)
+	if err != nil {
+		t.Fatalf("resolve repo root: %v", err)
+	}
+	tempDir := t.TempDir()
+	fakeGH := filepath.Join(tempDir, "gh")
+	if err := os.WriteFile(fakeGH, []byte(`#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$1" != "api" ]]; then
+  echo "unexpected gh command: $*" >&2
+  exit 2
+fi
+
+case "$2" in
+  repos/*/branches/*/protection)
+    cat <<'JSON'
+{
+  "required_status_checks": {
+    "strict": true,
+    "contexts": [
+      "License policy",
+      "Go ubuntu-latest",
+      "Go macos-latest",
+      "Go windows-latest"
+    ]
+  },
+  "required_pull_request_reviews": {
+    "dismiss_stale_reviews": true
+  },
+  "enforce_admins": {
+    "enabled": true
+  },
+  "required_linear_history": {
+    "enabled": true
+  },
+  "allow_force_pushes": {
+    "enabled": false
+  },
+  "allow_deletions": {
+    "enabled": false
+  }
+}
+JSON
+    ;;
+  repos/*/rulesets)
+    printf '[]\n'
+    ;;
+  *)
+    echo "unexpected gh api path: $2" >&2
+    exit 2
+    ;;
+esac
+`), 0755); err != nil {
+		t.Fatalf("write fake gh: %v", err)
+	}
+
+	cmd := exec.Command("bash", filepath.Join(absoluteRepoRoot, "scripts", "verify-branch-protection.sh"))
+	cmd.Dir = absoluteRepoRoot
+	cmd.Env = append(os.Environ(),
+		"PATH="+tempDir+string(os.PathListSeparator)+os.Getenv("PATH"),
+		"AO_COVENANT_GITHUB_REPOSITORY=uesugitorachiyo/ao-covenant",
+		"AO_COVENANT_BRANCH_PROTECTION_BRANCH=main",
+	)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("verify branch protection failed: %v\n%s", err, out)
+	}
+	output := string(out)
+	for _, want := range []string{
+		`"schema_version": "ao.covenant.branch-protection-audit.v1"`,
+		`"status": "passed"`,
+		`"License policy"`,
+		`"Go ubuntu-latest"`,
+		`"Go macos-latest"`,
+		`"Go windows-latest"`,
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("verifier output missing %q\n%s", want, output)
+		}
+	}
+}
+
 func TestReleaseAttestationCoverageMapIsLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {

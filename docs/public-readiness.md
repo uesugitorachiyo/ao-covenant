@@ -179,6 +179,13 @@ The [dependency review guide](dependency-review.md) defines Go module and
 GitHub Actions supply-chain review expectations before dependency, workflow, or
 permission changes are merged.
 
+The [branch protection runbook](branch-protection.md) defines the required
+`main` protection settings and the read-only live verifier:
+
+```sh
+scripts/verify-branch-protection.sh
+```
+
 Local check:
 
 ```sh
