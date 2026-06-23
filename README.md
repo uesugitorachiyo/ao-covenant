@@ -9,6 +9,14 @@ evidence after the fact, and AO Command presents read-only operator status. AO
 Covenant should not become the execution engine, evidence store, or operator
 dashboard.
 
+## AO Stack Architecture
+
+This repository is part of the AO agent orchestration stack. Start with the
+central architecture guide at
+[uesugitorachiyo/ao-architecture](https://github.com/uesugitorachiyo/ao-architecture);
+the AO Covenant-specific architecture page is
+[ao-covenant](https://github.com/uesugitorachiyo/ao-architecture/tree/main/ao-covenant).
+
 AO Covenant currently builds the contract, policy, run, and evidence spine:
 
 - public schema artifacts under `schemas/`
