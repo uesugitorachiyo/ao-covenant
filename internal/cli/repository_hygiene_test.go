@@ -86,3 +86,16 @@ func TestTrackedRepositoryFilesDoNotContainLocalSecretsOrMachinePaths(t *testing
 		}
 	}
 }
+
+func TestPublicRepoPolicyScannerPasses(t *testing.T) {
+	repoRoot := filepath.Join("..", "..")
+	cmd := exec.Command("bash", "scripts/check-public-repo-policy.sh")
+	cmd.Dir = repoRoot
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("public repo policy scanner failed: %v\n%s", err, output)
+	}
+	if !strings.Contains(string(output), "public repo policy check passed") {
+		t.Fatalf("public repo policy scanner output missing pass status:\n%s", output)
+	}
+}

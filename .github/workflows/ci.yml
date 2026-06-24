@@ -21,6 +21,9 @@ jobs:
       - name: Check license policy
         run: scripts/check-license-policy.sh
 
+      - name: Check public repo policy
+        run: scripts/check-public-repo-policy.sh
+
   test:
     name: Go ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

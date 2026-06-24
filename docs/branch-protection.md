@@ -77,6 +77,7 @@ Before pushing public changes, run:
 
 ```sh
 scripts/check-license-policy.sh
+scripts/check-public-repo-policy.sh
 go test -count=1 ./...
 go vet ./...
 ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml .github/workflows/release-readiness.yml .github/workflows/production-readiness-ops.yml

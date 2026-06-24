@@ -174,7 +174,8 @@ covenant schema validate --schema covenant.release-readiness-summary.v1 --file r
 
 The repository must not publish generated local AO Covenant artifacts, private
 key files, PEM private-key blocks, or machine-specific home paths. Ignore rules
-and tracked-file scans enforce that boundary.
+and tracked-file scans enforce that boundary. `scripts/check-public-repo-policy.sh`
+runs the tracked-file policy scan directly in the `License policy` CI gate.
 The [dependency review guide](dependency-review.md) defines Go module and
 GitHub Actions supply-chain review expectations before dependency, workflow, or
 permission changes are merged.
@@ -189,6 +190,7 @@ scripts/verify-branch-protection.sh
 Local check:
 
 ```sh
+scripts/check-public-repo-policy.sh
 go test -count=1 ./internal/cli -run 'TestRepositoryIgnoreRulesCoverSensitiveLocalArtifacts|TestTrackedRepositoryFilesDoNotContainLocalSecretsOrMachinePaths'
 ```
 
@@ -197,9 +199,11 @@ go test -count=1 ./internal/cli -run 'TestRepositoryIgnoreRulesCoverSensitiveLoc
 Run the full local baseline before opening a public-facing PR:
 
 ```sh
+scripts/check-license-policy.sh
+scripts/check-public-repo-policy.sh
 go test -count=1 ./...
 go vet ./...
-ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml .github/workflows/release-readiness.yml
+ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts path }' .github/workflows/ci.yml .github/workflows/release.yml .github/workflows/release-readiness.yml .github/workflows/production-readiness-ops.yml
 git diff --check
 ```
 

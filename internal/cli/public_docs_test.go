@@ -224,6 +224,7 @@ func TestPublicReadinessIndexIsLinkedAndComplete(t *testing.T) {
 		{name: "release readiness command", doc: index, want: "./scripts/release-readiness.sh"},
 		{name: "release readiness workflow", doc: index, want: "`Release Readiness` GitHub Actions workflow"},
 		{name: "release readiness read-only permissions", doc: index, want: "read-only repository permissions"},
+		{name: "public repo policy script", doc: index, want: "scripts/check-public-repo-policy.sh"},
 		{name: "hygiene test command", doc: index, want: "TestTrackedRepositoryFilesDoNotContainLocalSecretsOrMachinePaths"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
@@ -263,6 +264,7 @@ func TestBranchProtectionRunbookIsLinkedAndComplete(t *testing.T) {
 		{name: "dismiss stale reviews", doc: runbook, want: "Dismiss stale pull request approvals"},
 		{name: "required status checks", doc: runbook, want: "Require status checks to pass before merging"},
 		{name: "license policy check", doc: runbook, want: "`License policy`"},
+		{name: "public repo policy script", doc: runbook, want: "scripts/check-public-repo-policy.sh"},
 		{name: "ubuntu check", doc: runbook, want: "`Go ubuntu-latest`"},
 		{name: "macos check", doc: runbook, want: "`Go macos-26`"},
 		{name: "windows check", doc: runbook, want: "`Go windows-latest`"},
