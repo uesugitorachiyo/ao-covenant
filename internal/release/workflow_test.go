@@ -16,6 +16,15 @@ func TestCIActionsUseNode24CompatibleVersions(t *testing.T) {
 	requireWorkflowOmits(t, workflow, "uses: actions/setup-go@v5")
 }
 
+func TestCIWorkflowRunsRepositoryPolicyScanners(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "ci.yml")
+
+	requireWorkflowContains(t, workflow, "name: License policy")
+	requireWorkflowContains(t, workflow, "scripts/check-license-policy.sh")
+	requireWorkflowContains(t, workflow, "scripts/check-public-repo-policy.sh")
+	requireWorkflowOrder(t, workflow, "scripts/check-license-policy.sh", "scripts/check-public-repo-policy.sh")
+}
+
 func TestCIWorkflowPinsMacOSRunner(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "ci.yml")
 

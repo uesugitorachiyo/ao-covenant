@@ -118,6 +118,7 @@ Run the repository hygiene guard when changing ignore rules, fixtures, release
 docs, or generated artifacts:
 
 ```sh
+scripts/check-public-repo-policy.sh
 go test -count=1 ./internal/cli -run 'TestRepositoryIgnoreRulesCoverSensitiveLocalArtifacts|TestTrackedRepositoryFilesDoNotContainLocalSecretsOrMachinePaths'
 ```
 
