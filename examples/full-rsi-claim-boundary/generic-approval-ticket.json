@@ -1,0 +1,10 @@
+{
+  "schema_version": "covenant.approval-ticket.v1",
+  "ticket_id": "ticket-full-rsi-generic",
+  "task_id": "publish_rsi_claim",
+  "effect_type": "claim.publish",
+  "resource": "full-autonomous-self-mutating-rsi",
+  "approved": true,
+  "reason": "operator approves stronger RSI claim",
+  "operator_id": "ao-operator"
+}
