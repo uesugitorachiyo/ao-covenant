@@ -121,12 +121,24 @@ AO Covenant treats public RSI wording as a policy-controlled claim. Contracts
 can declare `claim.publish` side effects, and the resource
 `full-autonomous-self-mutating-rsi` is fail-closed by default. A matching
 approval ticket is only sufficient when its reason names mutation authority evidence, rollback evidence, and live self-change evidence.
+The mutation authority portion is represented by the public
+`covenant.live-self-change-authority.v1` packet schema. The fixture
+`examples/full-rsi-claim-boundary/live-self-change-authority.packet.json`
+shows the required repository, branch, allowed write surface, approval identity,
+expiry, exact digest, rollback evidence, live self-change evidence, and observer
+readback fields.
 
 Without those evidence classes, operators should keep the wording at
 `claim_level=bounded_governed_rsi` instead of claiming
 `claim_level=full_autonomous_self_mutating_rsi`.
 The policy spine exposes this boundary through the `rsi-claim-boundary`
 responsibility.
+
+Consumers can validate the authority packet with:
+
+```sh
+covenant schema validate --schema covenant.live-self-change-authority.v1 --file examples/full-rsi-claim-boundary/live-self-change-authority.packet.json
+```
 
 Local check:
 

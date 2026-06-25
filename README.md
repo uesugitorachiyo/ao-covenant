@@ -411,7 +411,12 @@ resource is listed in `workspace.reads`, and denies `network.request` or
 Published claims are modeled as `claim.publish` side effects. The special
 resource `full-autonomous-self-mutating-rsi` is denied unless the matching
 approved ticket reason names mutation authority evidence, rollback evidence, and
-live self-change evidence. Covenant-owned claim-level vocabulary keeps
+live self-change evidence. Mutation authority for that stronger claim is
+represented by the public `covenant.live-self-change-authority.v1` packet schema,
+which names repository, branch, allowed write surface, approval identity,
+approval ticket, expiry, exact digest, rollback evidence, live self-change
+evidence, observer readback, and the claim-publish resource. Covenant-owned
+claim-level vocabulary keeps
 `claim_level=bounded_governed_rsi` separate from
 `claim_level=full_autonomous_self_mutating_rsi` until the stronger evidence
 exists. Every decision is emitted as a `policy_decided` event and recorded in
@@ -421,7 +426,8 @@ The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
 still denied, retained rollback rehearsal evidence without mutation authority
 and live self-change evidence is still denied, and an evidence-specific approval
-records an allowed policy decision. `claim.publish` has no default execution adapter, so the
+records an allowed policy decision tied to
+`live-self-change-authority.packet.json`. `claim.publish` has no default execution adapter, so the
 evidence-approved fixture is intended to prove the policy decision rather than
 actually publish the claim:
 
@@ -446,6 +452,9 @@ go run ./cmd/covenant run \
   --workspace examples/full-rsi-claim-boundary \
   --out /tmp/ao-covenant-runs \
   --run-id full-rsi-evidence
+go run ./cmd/covenant schema validate \
+  --schema covenant.live-self-change-authority.v1 \
+  --file examples/full-rsi-claim-boundary/live-self-change-authority.packet.json
 go run ./cmd/covenant policy index --json \
   --evidence /tmp/ao-covenant-runs/full-rsi-evidence/evidence-pack.json \
   --effect claim.publish \

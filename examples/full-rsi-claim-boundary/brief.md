@@ -7,6 +7,13 @@ This fixture demonstrates that AO Covenant keeps the public claim
 explicitly names mutation authority evidence, rollback evidence, and live
 self-change evidence.
 
+The `live-self-change-authority.packet.json` fixture is a schema-backed example
+of the mutation authority packet required before the stronger claim can be
+considered. It is validated against `covenant.live-self-change-authority.v1` and
+names repository, branch, allowed write surface, approval identity, expiry,
+exact digest, rollback evidence, live self-change evidence, and observer
+readback.
+
 Retained rollback rehearsal evidence alone is intentionally insufficient. The
 `rollback-retained.contract.json` fixture models the AO2, ao2-control-plane, AO
 Command, and AO Forge retained rollback proof path while still denying

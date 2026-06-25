@@ -11813,6 +11813,7 @@ func TestFullRSIClaimBoundaryExamplesDocumentPolicyDecisions(t *testing.T) {
 	fixtureDir := filepath.Join("..", "..", "examples", "full-rsi-claim-boundary")
 	for _, required := range []string{
 		"brief.md",
+		"live-self-change-authority.packet.json",
 		"denied.contract.json",
 		"generic-approval.contract.json",
 		"rollback-retained.contract.json",
@@ -11823,6 +11824,28 @@ func TestFullRSIClaimBoundaryExamplesDocumentPolicyDecisions(t *testing.T) {
 	} {
 		if _, err := os.Stat(filepath.Join(fixtureDir, required)); err != nil {
 			t.Fatalf("full RSI claim boundary fixture %s missing: %v", required, err)
+		}
+	}
+	authorityPacket := filepath.Join(fixtureDir, "live-self-change-authority.packet.json")
+	var validateStdout bytes.Buffer
+	var validateStderr bytes.Buffer
+	validateCode := Run([]string{
+		"covenant",
+		"schema",
+		"validate",
+		"--schema", "covenant.live-self-change-authority.v1",
+		"--file", authorityPacket,
+		"--json",
+	}, &validateStdout, &validateStderr)
+	if validateCode != 0 {
+		t.Fatalf("authority packet schema validation exit=%d stderr=%s stdout=%s", validateCode, validateStderr.String(), validateStdout.String())
+	}
+	for _, want := range []string{
+		`"schema_id": "covenant.live-self-change-authority.v1"`,
+		`"valid": true`,
+	} {
+		if !strings.Contains(validateStdout.String(), want) {
+			t.Fatalf("authority packet validation stdout missing %q:\n%s", want, validateStdout.String())
 		}
 	}
 

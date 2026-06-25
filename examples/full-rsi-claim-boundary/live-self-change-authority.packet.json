@@ -1,0 +1,43 @@
+{
+  "schema_version": "covenant.live-self-change-authority.v1",
+  "authority_id": "authority-full-rsi-live-self-change",
+  "claim_level": "full_autonomous_self_mutating_rsi",
+  "repository": "ao2",
+  "branch": "codex/live-self-change-rehearsal",
+  "allowed_write_surface": [
+    "scripts/rsi-claim-readiness-audit.sh",
+    "tests/test_ao2_rsi_claim_readiness.py"
+  ],
+  "change_class": "verification_path",
+  "approval_identity": "ao-operator",
+  "approval_ticket_id": "ticket-full-rsi-evidence",
+  "expires_at_utc": "2026-06-30T00:00:00Z",
+  "exact_digest": {
+    "algorithm": "sha256",
+    "value": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "covers": [
+      "proposed-self-change.patch",
+      "rollback-self-change.patch"
+    ]
+  },
+  "rollback_evidence": {
+    "status": "passed",
+    "evidence_paths": [
+      "../ao2/target/rsi-self-change-dry-run/latest/summary.json"
+    ]
+  },
+  "live_self_change_evidence": {
+    "status": "passed",
+    "evidence_paths": [
+      "../ao2/target/rsi-live-self-change/latest/summary.json"
+    ]
+  },
+  "observer_readback": {
+    "status": "passed",
+    "observer": "ao2-control-plane",
+    "evidence_paths": [
+      "../ao2-control-plane/target/ao2-rsi-live-self-change-readback/summary.json"
+    ]
+  },
+  "claim_publish_resource": "full-autonomous-self-mutating-rsi"
+}

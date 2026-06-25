@@ -2201,6 +2201,39 @@ func TestSchemaCatalogResultSchemaIsPublished(t *testing.T) {
 	}
 }
 
+func TestLiveSelfChangeAuthoritySchemaIsPublished(t *testing.T) {
+	if !KnownSchemaID(LiveSelfChangeAuthoritySchemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", LiveSelfChangeAuthoritySchemaID)
+	}
+	parsed := readSchema(t, "covenant.live-self-change-authority.v1.schema.json")
+	if property(t, parsed, "schema_version")["const"] != LiveSelfChangeAuthoritySchemaID {
+		t.Fatalf("schema_version const = %v, want %q", property(t, parsed, "schema_version")["const"], LiveSelfChangeAuthoritySchemaID)
+	}
+	requireRequired(t, parsed,
+		"schema_version",
+		"authority_id",
+		"claim_level",
+		"repository",
+		"branch",
+		"allowed_write_surface",
+		"change_class",
+		"approval_identity",
+		"approval_ticket_id",
+		"expires_at_utc",
+		"exact_digest",
+		"rollback_evidence",
+		"live_self_change_evidence",
+		"observer_readback",
+		"claim_publish_resource",
+	)
+	if property(t, parsed, "claim_level")["const"] != "full_autonomous_self_mutating_rsi" {
+		t.Fatalf("claim_level const = %v, want full autonomous RSI claim", property(t, parsed, "claim_level")["const"])
+	}
+	if property(t, parsed, "claim_publish_resource")["const"] != "full-autonomous-self-mutating-rsi" {
+		t.Fatalf("claim_publish_resource const = %v, want full-autonomous-self-mutating-rsi", property(t, parsed, "claim_publish_resource")["const"])
+	}
+}
+
 func TestSchemaExportResultSchemaIsPublished(t *testing.T) {
 	if !KnownSchemaID(SchemaExportResultSchemaID) {
 		t.Fatalf("KnownSchemaID(%q) = false, want true", SchemaExportResultSchemaID)
