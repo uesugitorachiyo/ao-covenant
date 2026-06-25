@@ -52,6 +52,7 @@ and run integrity:
 - `covenant.policy-explain-result.v1`
 - `covenant.policy-index-result.v1`
 - `covenant.policy-spine-result.v1`
+- `covenant.live-self-change-authority.v1`
 - `covenant.approval-ticket.v1`
 - `covenant.verify-result.v1`
 - `covenant.closure-matrix.v1`

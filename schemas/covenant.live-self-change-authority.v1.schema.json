@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.live-self-change-authority.v1",
+  "title": "AO Covenant Live Self-Change Authority v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "authority_id",
+    "claim_level",
+    "repository",
+    "branch",
+    "allowed_write_surface",
+    "change_class",
+    "approval_identity",
+    "approval_ticket_id",
+    "expires_at_utc",
+    "exact_digest",
+    "rollback_evidence",
+    "live_self_change_evidence",
+    "observer_readback",
+    "claim_publish_resource"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.live-self-change-authority.v1" },
+    "authority_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9][a-z0-9_-]*$"
+    },
+    "claim_level": { "const": "full_autonomous_self_mutating_rsi" },
+    "repository": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "branch": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\.\\.)(?!.*//)[A-Za-z0-9._/-]+$"
+    },
+    "allowed_write_surface": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(?!/)(?![A-Za-z]:)(?!\\.\\.($|/))(?!.*(^|/)\\.\\.(/|$)).+$"
+      }
+    },
+    "change_class": {
+      "type": "string",
+      "enum": ["planning_path", "execution_path", "policy_path", "verification_path"]
+    },
+    "approval_identity": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9][a-z0-9_-]*$"
+    },
+    "approval_ticket_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9][a-z0-9_-]*$"
+    },
+    "expires_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "exact_digest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "value", "covers"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "value": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "covers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "rollback_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence_paths"],
+      "properties": {
+        "status": { "const": "passed" },
+        "evidence_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "live_self_change_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence_paths"],
+      "properties": {
+        "status": { "const": "passed" },
+        "evidence_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "observer_readback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "observer", "evidence_paths"],
+      "properties": {
+        "status": { "const": "passed" },
+        "observer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "claim_publish_resource": { "const": "full-autonomous-self-mutating-rsi" }
+  }
+}

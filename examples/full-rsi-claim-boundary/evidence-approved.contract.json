@@ -4,7 +4,8 @@
   "workspace": {
     "root": ".",
     "reads": [
-      "brief.md"
+      "brief.md",
+      "live-self-change-authority.packet.json"
     ],
     "writes": []
   },
@@ -31,6 +32,10 @@
           "resource": "brief.md"
         },
         {
+          "type": "file.read",
+          "resource": "live-self-change-authority.packet.json"
+        },
+        {
           "type": "claim.publish",
           "resource": "full-autonomous-self-mutating-rsi"
         }
@@ -48,7 +53,7 @@
       "effect_type": "claim.publish",
       "resource": "full-autonomous-self-mutating-rsi",
       "approved": true,
-      "reason": "mutation authority evidence, rollback evidence, and live self-change evidence verified by AO Covenant",
+      "reason": "mutation authority evidence packet covenant.live-self-change-authority.v1, rollback evidence, and live self-change evidence verified by AO Covenant",
       "operator_id": "ao-operator"
     }
   ],
