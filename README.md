@@ -461,6 +461,27 @@ go run ./cmd/covenant policy index --json \
   --resource full-autonomous-self-mutating-rsi
 ```
 
+`covenant policy claim-publish-gate` reads AO2's
+`ao2.rsi-claim-readiness-audit.v1` summary and
+`ao2.rsi-live-self-change-readback-evidence-index.v1` summary, then emits
+Covenant-owned claim-publication authority for the stronger RSI claim. Current
+retained readback evidence remains a denial: the gate reports
+`publish_authority=false`, `decision=deny`, and blockers such as
+`covenant_claim_publish_approval` and `rehearsal_not_claim_publish_evidence`.
+JSON output includes `schema_version:
+covenant.rsi-claim-publish-gate.v1`, covered by the embedded public schema
+exported by `covenant schema export`:
+
+```sh
+go run ./cmd/covenant policy claim-publish-gate --json \
+  --claim-readiness /tmp/ao2-rsi-claim-readiness/summary.json \
+  --readback-index /tmp/ao2-rsi-live-self-change-readback-index/summary.json \
+  >/tmp/ao-covenant-rsi-claim-publish-gate.json
+go run ./cmd/covenant schema validate \
+  --schema covenant.rsi-claim-publish-gate.v1 \
+  --file /tmp/ao-covenant-rsi-claim-publish-gate.json
+```
+
 `covenant policy explain` reads an existing evidence pack, validates its schema,
 and prints every recorded allow/deny decision with a human-readable summary. For
 denied decisions it also prints the operator action required to make the request

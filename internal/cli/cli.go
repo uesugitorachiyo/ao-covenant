@@ -1373,6 +1373,8 @@ func runPolicy(args []string, stdout io.Writer, stderr io.Writer) int {
 		return runPolicyIndex(args[1:], stdout, stderr)
 	case "spine":
 		return runPolicySpine(args[1:], stdout, stderr)
+	case "claim-publish-gate":
+		return runPolicyClaimPublishGate(args[1:], stdout, stderr)
 	default:
 		fmt.Fprintf(stderr, "unknown policy command %q\n", args[0])
 		printPolicyUsage(stderr)
@@ -2599,6 +2601,67 @@ func runPolicySpine(args []string, stdout io.Writer, stderr io.Writer) int {
 	return 0
 }
 
+func runPolicyClaimPublishGate(args []string, stdout io.Writer, stderr io.Writer) int {
+	flags := flag.NewFlagSet("policy claim-publish-gate", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	claimReadinessPath := flags.String("claim-readiness", "", "path to AO2 RSI claim-readiness summary JSON")
+	readbackIndexPath := flags.String("readback-index", "", "path to AO2 live self-change readback index summary JSON")
+	jsonOutput := flags.Bool("json", false, "emit JSON")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	if *claimReadinessPath == "" {
+		fmt.Fprintln(stderr, "--claim-readiness is required")
+		return 2
+	}
+	if *readbackIndexPath == "" {
+		fmt.Fprintln(stderr, "--readback-index is required")
+		return 2
+	}
+	claimReadiness, err := readJSONObjectFile(*claimReadinessPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "read claim readiness: %v\n", err)
+		return 1
+	}
+	readbackIndex, err := readJSONObjectFile(*readbackIndexPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "read readback index: %v\n", err)
+		return 1
+	}
+	report := policy.EvaluateRSIClaimPublishGate(policy.ClaimPublishGateInput{
+		ClaimReadiness: claimReadiness,
+		ReadbackIndex:  readbackIndex,
+	})
+	if *jsonOutput {
+		if err := writeSchemaJSON(stdout, schema.RSIClaimPublishGateSchemaID, report); err != nil {
+			fmt.Fprintf(stderr, "write policy claim-publish gate: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+	fmt.Fprintf(stdout, "status=%s\n", report.Status)
+	fmt.Fprintf(stdout, "decision=%s\n", report.Decision)
+	fmt.Fprintf(stdout, "publish_authority=%t\n", report.PublishAuthority)
+	fmt.Fprintf(stdout, "claim_level=%s\n", report.ClaimLevel)
+	fmt.Fprintf(stdout, "claim_publish_resource=%s\n", report.ClaimPublishResource)
+	for _, blocker := range report.Blockers {
+		fmt.Fprintf(stdout, "blocker=%s evidence_state=%s required_evidence=%s\n", blocker.ID, blocker.EvidenceState, blocker.RequiredEvidence)
+	}
+	return 0
+}
+
+func readJSONObjectFile(path string) (map[string]any, error) {
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var decoded map[string]any
+	if err := json.Unmarshal(bytes, &decoded); err != nil {
+		return nil, err
+	}
+	return decoded, nil
+}
+
 func runApprovalCreate(args []string, stdout io.Writer, stderr io.Writer) int {
 	flags := flag.NewFlagSet("approval create", flag.ContinueOnError)
 	flags.SetOutput(stderr)
@@ -3395,7 +3458,7 @@ func printApprovalRevocationsUsage(stderr io.Writer) {
 
 func printPolicyUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: covenant policy <command>")
-	fmt.Fprintln(stderr, "commands: explain, index, spine")
+	fmt.Fprintln(stderr, "commands: explain, index, spine, claim-publish-gate")
 }
 
 func printSchemaUsage(stderr io.Writer) {

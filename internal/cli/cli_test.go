@@ -5561,6 +5561,175 @@ func TestPolicySpineCommandPrintsAO2FirstGovernanceJSON(t *testing.T) {
 	}
 }
 
+func TestPolicyClaimPublishGateDeniesFullRSIFromAO2RetainedReadbackEvidence(t *testing.T) {
+	dir := t.TempDir()
+	claimReadinessPath := filepath.Join(dir, "claim-readiness.json")
+	readbackIndexPath := filepath.Join(dir, "readback-index.json")
+	writeJSONFileForTest(t, claimReadinessPath, map[string]any{
+		"schema_version": "ao2.rsi-claim-readiness-audit.v1",
+		"status":         "claim_boundary_enforced",
+		"claims": map[string]any{
+			"full_autonomous_self_mutating_rsi": map[string]any{
+				"decision":       "denied",
+				"evidence_state": "missing_required_evidence",
+				"partial_evidence": map[string]any{
+					"live_self_change_readback_index": map[string]any{
+						"evidence_state":                       "present",
+						"schema_version":                       "ao2.rsi-live-self-change-readback-evidence-index.v1",
+						"status":                               "passed",
+						"control_plane_readback_status":        "passed",
+						"retained_claim_level_evidence_status": "present",
+						"claim_publish_approved":               false,
+					},
+				},
+				"blockers": []map[string]any{
+					{
+						"id":                "covenant_claim_publish_approval",
+						"evidence_state":    "missing",
+						"required_evidence": "Covenant approval to publish the full autonomous self-mutating RSI claim",
+					},
+				},
+			},
+		},
+	})
+	writeJSONFileForTest(t, readbackIndexPath, map[string]any{
+		"schema_version": "ao2.rsi-live-self-change-readback-evidence-index.v1",
+		"status":         "passed",
+		"retained_claim_level_evidence": map[string]any{
+			"status":         "present",
+			"schema_version": "ao2.cp-ao2-rsi-live-self-change-rehearsal-readback.v1",
+		},
+		"sources": map[string]any{
+			"control_plane_readback": map[string]any{
+				"status": "passed",
+			},
+		},
+		"full_claim_boundary": map[string]any{
+			"decision": "denied",
+			"remaining_blockers": []string{
+				"covenant_claim_publish_approval",
+				"rehearsal_not_claim_publish_evidence",
+			},
+		},
+		"trust_boundary": map[string]any{
+			"local_only":                      true,
+			"uses_network":                    false,
+			"stores_credentials":              false,
+			"requires_provider_api_key":       false,
+			"mutates_repositories":            false,
+			"mutates_control_plane_artifacts": false,
+			"publishes_claims":                false,
+			"approves_rsi_claims":             false,
+		},
+	})
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	code := Run([]string{
+		"covenant",
+		"policy",
+		"claim-publish-gate",
+		"--json",
+		"--claim-readiness", claimReadinessPath,
+		"--readback-index", readbackIndexPath,
+	}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("exit code = %d, stderr = %q", code, stderr.String())
+	}
+	var decoded struct {
+		SchemaVersion        string `json:"schema_version"`
+		ClaimLevel           string `json:"claim_level"`
+		ClaimPublishResource string `json:"claim_publish_resource"`
+		Status               string `json:"status"`
+		Decision             string `json:"decision"`
+		PublishAuthority     bool   `json:"publish_authority"`
+		BlockerCount         int    `json:"blocker_count"`
+		Blockers             []struct {
+			ID string `json:"id"`
+		} `json:"blockers"`
+		ObservedEvidence struct {
+			ClaimReadiness struct {
+				Status               string `json:"status"`
+				FullClaimDecision    string `json:"full_claim_decision"`
+				ClaimPublishApproved bool   `json:"claim_publish_approved"`
+			} `json:"claim_readiness"`
+			LiveSelfChangeReadbackIndex struct {
+				Status                           string `json:"status"`
+				ControlPlaneReadbackStatus       string `json:"control_plane_readback_status"`
+				RetainedClaimLevelEvidenceStatus string `json:"retained_claim_level_evidence_status"`
+			} `json:"live_self_change_readback_index"`
+		} `json:"observed_evidence"`
+		TrustBoundary struct {
+			LocalOnly           bool `json:"local_only"`
+			UsesNetwork         bool `json:"uses_network"`
+			MutatesRepositories bool `json:"mutates_repositories"`
+			PublishesClaims     bool `json:"publishes_claims"`
+			ApprovesRSIClaims   bool `json:"approves_rsi_claims"`
+			StoresCredentials   bool `json:"stores_credentials"`
+		} `json:"trust_boundary"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &decoded); err != nil {
+		t.Fatalf("decode policy claim-publish gate json: %v; stdout = %q", err, stdout.String())
+	}
+	if decoded.SchemaVersion != "covenant.rsi-claim-publish-gate.v1" {
+		t.Fatalf("schema_version = %q, want covenant.rsi-claim-publish-gate.v1", decoded.SchemaVersion)
+	}
+	if err := schema.ValidateBytes("covenant.rsi-claim-publish-gate.v1", stdout.Bytes()); err != nil {
+		t.Fatalf("policy claim-publish gate result did not match published schema: %v\njson:\n%s", err, stdout.String())
+	}
+	if decoded.ClaimLevel != "full_autonomous_self_mutating_rsi" || decoded.ClaimPublishResource != "full-autonomous-self-mutating-rsi" {
+		t.Fatalf("claim target = %q/%q", decoded.ClaimLevel, decoded.ClaimPublishResource)
+	}
+	if decoded.Status != "denied" || decoded.Decision != "deny" || decoded.PublishAuthority {
+		t.Fatalf("gate decision = status %q decision %q publish_authority %t, want denied deny false", decoded.Status, decoded.Decision, decoded.PublishAuthority)
+	}
+	if decoded.BlockerCount < 2 || !claimGateHasBlocker(decoded.Blockers, "covenant_claim_publish_approval") || !claimGateHasBlocker(decoded.Blockers, "rehearsal_not_claim_publish_evidence") {
+		t.Fatalf("blockers = %+v, want covenant approval and rehearsal boundary blockers", decoded.Blockers)
+	}
+	if decoded.ObservedEvidence.ClaimReadiness.Status != "claim_boundary_enforced" ||
+		decoded.ObservedEvidence.ClaimReadiness.FullClaimDecision != "denied" ||
+		decoded.ObservedEvidence.ClaimReadiness.ClaimPublishApproved {
+		t.Fatalf("claim readiness observation = %+v", decoded.ObservedEvidence.ClaimReadiness)
+	}
+	if decoded.ObservedEvidence.LiveSelfChangeReadbackIndex.Status != "passed" ||
+		decoded.ObservedEvidence.LiveSelfChangeReadbackIndex.ControlPlaneReadbackStatus != "passed" ||
+		decoded.ObservedEvidence.LiveSelfChangeReadbackIndex.RetainedClaimLevelEvidenceStatus != "present" {
+		t.Fatalf("readback index observation = %+v", decoded.ObservedEvidence.LiveSelfChangeReadbackIndex)
+	}
+	if !decoded.TrustBoundary.LocalOnly ||
+		decoded.TrustBoundary.UsesNetwork ||
+		decoded.TrustBoundary.MutatesRepositories ||
+		decoded.TrustBoundary.PublishesClaims ||
+		decoded.TrustBoundary.ApprovesRSIClaims ||
+		decoded.TrustBoundary.StoresCredentials {
+		t.Fatalf("trust boundary = %+v, want local read-only non-publishing gate", decoded.TrustBoundary)
+	}
+}
+
+func writeJSONFileForTest(t *testing.T, path string, value any) {
+	t.Helper()
+	data, err := json.MarshalIndent(value, "", "  ")
+	if err != nil {
+		t.Fatalf("marshal json fixture: %v", err)
+	}
+	data = append(data, '\n')
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatalf("write json fixture: %v", err)
+	}
+}
+
+func claimGateHasBlocker(blockers []struct {
+	ID string `json:"id"`
+}, id string) bool {
+	for _, blocker := range blockers {
+		if blocker.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
 func TestPolicyIndexCommandFiltersBundleTextOutput(t *testing.T) {
 	dir := t.TempDir()
 	t.Chdir(dir)
