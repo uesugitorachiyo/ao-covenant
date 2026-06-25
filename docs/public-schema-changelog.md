@@ -52,6 +52,7 @@ and run integrity:
 - `covenant.policy-explain-result.v1`
 - `covenant.policy-index-result.v1`
 - `covenant.policy-spine-result.v1`
+- `covenant.rsi-claim-publish-gate.v1`
 - `covenant.live-self-change-authority.v1`
 - `covenant.approval-ticket.v1`
 - `covenant.verify-result.v1`
@@ -116,6 +117,22 @@ Consumers can validate a captured policy-spine result with:
 
 ```sh
 covenant schema validate --schema covenant.policy-spine-result.v1 --file policy-spine.json
+```
+
+## RSI Claim Publish Gate
+
+`covenant policy claim-publish-gate --json` publishes a non-mutating
+Covenant decision over AO2 RSI claim-readiness and live self-change readback
+index summaries using `covenant.rsi-claim-publish-gate.v1`. The result is
+intended for automation that needs to confirm whether the stronger
+`full_autonomous_self_mutating_rsi` claim has Covenant publication authority.
+For retained rehearsal/readback evidence, the expected decision remains denied
+with `publish_authority=false`.
+
+Consumers can validate a captured gate result with:
+
+```sh
+covenant schema validate --schema covenant.rsi-claim-publish-gate.v1 --file rsi-claim-publish-gate.json
 ```
 
 ## Release Dry-Run Artifact Audit

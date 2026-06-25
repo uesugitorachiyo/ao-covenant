@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.rsi-claim-publish-gate.v1",
+  "title": "AO Covenant RSI Claim Publish Gate v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "claim_level",
+    "claim_publish_resource",
+    "status",
+    "decision",
+    "publish_authority",
+    "reason",
+    "blocker_count",
+    "blockers",
+    "observed_evidence",
+    "trust_boundary"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.rsi-claim-publish-gate.v1" },
+    "claim_level": { "const": "full_autonomous_self_mutating_rsi" },
+    "claim_publish_resource": { "const": "full-autonomous-self-mutating-rsi" },
+    "status": { "enum": ["approved", "denied"] },
+    "decision": { "enum": ["allow", "deny"] },
+    "publish_authority": { "type": "boolean" },
+    "reason": { "type": "string", "minLength": 1 },
+    "blocker_count": { "type": "integer", "minimum": 0 },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "evidence_state", "required_evidence"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9][a-z0-9_-]*$"
+          },
+          "evidence_state": {
+            "type": "string",
+            "enum": ["missing", "blocking", "invalid"]
+          },
+          "required_evidence": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "observed_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_readiness", "live_self_change_readback_index"],
+      "properties": {
+        "claim_readiness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["claim_publish_approved"],
+          "properties": {
+            "schema_version": { "type": "string" },
+            "status": { "type": "string" },
+            "full_claim_decision": { "type": "string" },
+            "claim_publish_approved": { "type": "boolean" }
+          }
+        },
+        "live_self_change_readback_index": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "schema_version": { "type": "string" },
+            "status": { "type": "string" },
+            "control_plane_readback_status": { "type": "string" },
+            "retained_claim_level_evidence_status": { "type": "string" },
+            "full_claim_boundary_decision": { "type": "string" }
+          }
+        }
+      }
+    },
+    "trust_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "local_only",
+        "uses_network",
+        "mutates_repositories",
+        "publishes_claims",
+        "approves_rsi_claims",
+        "stores_credentials"
+      ],
+      "properties": {
+        "local_only": { "const": true },
+        "uses_network": { "const": false },
+        "mutates_repositories": { "const": false },
+        "publishes_claims": { "const": false },
+        "approves_rsi_claims": { "const": false },
+        "stores_credentials": { "const": false }
+      }
+    }
+  }
+}
