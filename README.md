@@ -411,10 +411,11 @@ resource is listed in `workspace.reads`, and denies `network.request` or
 Published claims are modeled as `claim.publish` side effects. The special
 resource `full-autonomous-self-mutating-rsi` is denied unless the matching
 approved ticket reason names mutation authority evidence, rollback evidence, and
-live self-change evidence. This keeps bounded governed RSI wording separate
-from a full autonomous RSI claim until the stronger evidence exists. Every
-decision is emitted as a `policy_decided` event and recorded in the evidence
-pack under `policy_decisions`.
+live self-change evidence. Covenant-owned claim-level vocabulary keeps
+`claim_level=bounded_governed_rsi` separate from
+`claim_level=full_autonomous_self_mutating_rsi` until the stronger evidence
+exists. Every decision is emitted as a `policy_decided` event and recorded in
+the evidence pack under `policy_decisions`.
 
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is

@@ -11835,21 +11835,21 @@ func TestFullRSIClaimBoundaryExamplesDocumentPolicyDecisions(t *testing.T) {
 			name:         "denied-without-approval",
 			contractFile: "denied.contract.json",
 			wantDecision: "deny",
-			wantReason:   []string{"full autonomous self-mutating RSI", "mutation authority", "rollback", "live self-change"},
+			wantReason:   []string{"claim_level=full_autonomous_self_mutating_rsi", "claim_level=bounded_governed_rsi", "mutation authority", "rollback", "live self-change"},
 		},
 		{
 			name:                 "denied-with-generic-approval",
 			contractFile:         "generic-approval.contract.json",
 			wantDecision:         "deny",
 			wantApprovalTicketID: "ticket-full-rsi-generic",
-			wantReason:           []string{"approval ticket", "missing", "mutation authority", "rollback", "live self-change"},
+			wantReason:           []string{"approval ticket", "missing", "claim_level=full_autonomous_self_mutating_rsi", "claim_level=bounded_governed_rsi", "mutation authority", "rollback", "live self-change"},
 		},
 		{
 			name:                 "allowed-with-evidence-approval",
 			contractFile:         "evidence-approved.contract.json",
 			wantDecision:         "allow",
 			wantApprovalTicketID: "ticket-full-rsi-evidence",
-			wantReason:           []string{"approved full RSI claim evidence"},
+			wantReason:           []string{"approved full RSI claim evidence", "claim_level=full_autonomous_self_mutating_rsi"},
 		},
 	}
 

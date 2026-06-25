@@ -221,7 +221,7 @@ func TestEvaluateTaskDeniesFullRSIClaimWithoutEvidenceApproval(t *testing.T) {
 	if decision.Decision != DecisionDeny {
 		t.Fatalf("decision = %q, want deny", decision.Decision)
 	}
-	if !containsAll(decision.Reason, []string{"full autonomous self-mutating RSI", "mutation authority", "rollback", "live self-change"}) {
+	if !containsAll(decision.Reason, []string{"full_autonomous_self_mutating_rsi", "bounded_governed_rsi", "mutation authority", "rollback", "live self-change"}) {
 		t.Fatalf("reason = %q, want full RSI evidence requirements", decision.Reason)
 	}
 }
@@ -256,7 +256,7 @@ func TestEvaluateTaskDeniesFullRSIClaimWithGenericApproval(t *testing.T) {
 	if decision.ApprovalTicketID != "ticket_full_rsi" {
 		t.Fatalf("approval ticket id = %q, want ticket_full_rsi", decision.ApprovalTicketID)
 	}
-	if !containsAll(decision.Reason, []string{"approval ticket", "missing", "mutation authority", "rollback", "live self-change"}) {
+	if !containsAll(decision.Reason, []string{"approval ticket", "missing", "full_autonomous_self_mutating_rsi", "bounded_governed_rsi", "mutation authority", "rollback", "live self-change"}) {
 		t.Fatalf("reason = %q, want missing full RSI evidence requirements", decision.Reason)
 	}
 }
@@ -291,7 +291,7 @@ func TestEvaluateTaskAllowsFullRSIClaimWithEvidenceApproval(t *testing.T) {
 	if decision.ApprovalTicketID != "ticket_full_rsi" {
 		t.Fatalf("approval ticket id = %q, want ticket_full_rsi", decision.ApprovalTicketID)
 	}
-	if !strings.Contains(decision.Reason, "approved full RSI claim evidence") {
+	if !containsAll(decision.Reason, []string{"approved full RSI claim evidence", "full_autonomous_self_mutating_rsi"}) {
 		t.Fatalf("reason = %q, want full RSI approval reason", decision.Reason)
 	}
 }
@@ -308,7 +308,7 @@ func TestAO2FirstSpineIncludesRSIClaimBoundaryGate(t *testing.T) {
 		if responsibility.Owner != "ao-covenant" {
 			t.Fatalf("owner = %q, want ao-covenant", responsibility.Owner)
 		}
-		for _, want := range []string{"claim.publish side-effect policy", "mutation authority evidence", "rollback evidence", "live self-change evidence"} {
+		for _, want := range []string{"claim.publish side-effect policy", "bounded_governed_rsi claim level", "full_autonomous_self_mutating_rsi claim level", "mutation authority evidence", "rollback evidence", "live self-change evidence"} {
 			if !containsString(responsibility.Gates, want) {
 				t.Fatalf("rsi claim boundary gates = %#v, missing %q", responsibility.Gates, want)
 			}
@@ -368,16 +368,16 @@ func TestExplainDecisionDeniesFullRSIClaimWithEvidenceRequirements(t *testing.T)
 		EffectType: "claim.publish",
 		Resource:   "full-autonomous-self-mutating-rsi",
 		Decision:   DecisionDeny,
-		Reason:     "full autonomous self-mutating RSI claim requires mutation authority, rollback, and live self-change evidence",
+		Reason:     "claim_level=full_autonomous_self_mutating_rsi is denied; downgrade to claim_level=bounded_governed_rsi until mutation authority, rollback, and live self-change evidence exist",
 	})
 
 	if explanation.Summary != "denied claim.publish on full-autonomous-self-mutating-rsi" {
 		t.Fatalf("summary = %q", explanation.Summary)
 	}
-	if explanation.OperatorAction != "attach an approved full-RSI evidence ticket or downgrade the claim to bounded governed RSI" {
+	if explanation.OperatorAction != "attach an approved full-RSI evidence ticket or downgrade to claim_level=bounded_governed_rsi" {
 		t.Fatalf("operator action = %q", explanation.OperatorAction)
 	}
-	if !containsAll(explanation.Detail, []string{"claim.publish", "full-autonomous-self-mutating-rsi", "mutation authority", "rollback", "live self-change"}) {
+	if !containsAll(explanation.Detail, []string{"claim.publish", "full-autonomous-self-mutating-rsi", "claim_level=full_autonomous_self_mutating_rsi", "claim_level=bounded_governed_rsi", "mutation authority", "rollback", "live self-change"}) {
 		t.Fatalf("detail = %q, want full RSI evidence requirements", explanation.Detail)
 	}
 }

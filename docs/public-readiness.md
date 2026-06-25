@@ -122,8 +122,9 @@ can declare `claim.publish` side effects, and the resource
 `full-autonomous-self-mutating-rsi` is fail-closed by default. A matching
 approval ticket is only sufficient when its reason names mutation authority evidence, rollback evidence, and live self-change evidence.
 
-Without those evidence classes, operators should keep the wording at bounded
-governed RSI evidence instead of claiming full autonomous self-mutating RSI.
+Without those evidence classes, operators should keep the wording at
+`claim_level=bounded_governed_rsi` instead of claiming
+`claim_level=full_autonomous_self_mutating_rsi`.
 The policy spine exposes this boundary through the `rsi-claim-boundary`
 responsibility.
 
