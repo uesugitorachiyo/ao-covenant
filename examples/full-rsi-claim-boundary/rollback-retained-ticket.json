@@ -1,0 +1,10 @@
+{
+  "schema_version": "covenant.approval-ticket.v1",
+  "ticket_id": "ticket-full-rsi-rollback-retained",
+  "task_id": "publish_rsi_claim",
+  "effect_type": "claim.publish",
+  "resource": "full-autonomous-self-mutating-rsi",
+  "approved": true,
+  "reason": "retained rollback rehearsal evidence from AO2, ao2-control-plane, AO Command manifest validation, and AO Forge GoalRun proof only; no write-authority proof and no executed live self-modification proof",
+  "operator_id": "ao-operator"
+}

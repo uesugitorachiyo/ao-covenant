@@ -1,0 +1,60 @@
+{
+  "schema_version": "covenant.contract.v1",
+  "objective": "Attempt to publish a full autonomous self-mutating RSI claim with retained rollback rehearsal evidence but without the other required evidence classes.",
+  "workspace": {
+    "root": ".",
+    "reads": [
+      "brief.md"
+    ],
+    "writes": []
+  },
+  "obligations": [
+    {
+      "id": "obl_rsi_claim_boundary",
+      "text": "Do not publish full autonomous self-mutating RSI when retained rollback rehearsal evidence exists without mutation authority and live self-change evidence.",
+      "required": true
+    }
+  ],
+  "tasks": [
+    {
+      "id": "publish_rsi_claim",
+      "kind": "scripted",
+      "adapter": "process",
+      "depends_on": [],
+      "obligations": [
+        "obl_rsi_claim_boundary"
+      ],
+      "timeout_seconds": 60,
+      "declared_side_effects": [
+        {
+          "type": "file.read",
+          "resource": "brief.md"
+        },
+        {
+          "type": "claim.publish",
+          "resource": "full-autonomous-self-mutating-rsi"
+        }
+      ]
+    }
+  ],
+  "policy": {
+    "mode": "strict"
+  },
+  "approvals": [
+    {
+      "schema_version": "covenant.approval-ticket.v1",
+      "ticket_id": "ticket-full-rsi-rollback-retained",
+      "task_id": "publish_rsi_claim",
+      "effect_type": "claim.publish",
+      "resource": "full-autonomous-self-mutating-rsi",
+      "approved": true,
+      "reason": "retained rollback rehearsal evidence from AO2, ao2-control-plane, AO Command manifest validation, and AO Forge GoalRun proof only; no write-authority proof and no executed live self-modification proof",
+      "operator_id": "ao-operator"
+    }
+  ],
+  "evaluator": {
+    "required_obligations": [
+      "obl_rsi_claim_boundary"
+    ]
+  }
+}

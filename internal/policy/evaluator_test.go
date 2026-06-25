@@ -261,6 +261,41 @@ func TestEvaluateTaskDeniesFullRSIClaimWithGenericApproval(t *testing.T) {
 	}
 }
 
+func TestEvaluateTaskDeniesFullRSIClaimWithRetainedRollbackOnly(t *testing.T) {
+	decisions := EvaluateTask(Input{
+		Mode:   "strict",
+		TaskID: "publish_rsi_claim",
+		Actions: []ActionRef{
+			{Type: "claim.publish", Resource: "full-autonomous-self-mutating-rsi"},
+		},
+		Approvals: []ApprovalTicket{
+			{
+				SchemaVersion: ApprovalTicketSchemaVersion,
+				TicketID:      "ticket_full_rsi_rollback",
+				TaskID:        "publish_rsi_claim",
+				EffectType:    "claim.publish",
+				Resource:      "full-autonomous-self-mutating-rsi",
+				Approved:      true,
+				Reason:        "retained rollback rehearsal evidence from AO2 and AO Forge only",
+			},
+		},
+	})
+
+	if len(decisions) != 1 {
+		t.Fatalf("decisions len = %d, want 1", len(decisions))
+	}
+	decision := decisions[0]
+	if decision.Decision != DecisionDeny {
+		t.Fatalf("decision = %q, want deny", decision.Decision)
+	}
+	if decision.ApprovalTicketID != "ticket_full_rsi_rollback" {
+		t.Fatalf("approval ticket id = %q, want ticket_full_rsi_rollback", decision.ApprovalTicketID)
+	}
+	if !containsAll(decision.Reason, []string{"retained rollback rehearsal", "insufficient", "full_autonomous_self_mutating_rsi", "bounded_governed_rsi", "mutation authority", "live self-change"}) {
+		t.Fatalf("reason = %q, want retained rollback to be insufficient without remaining full RSI evidence", decision.Reason)
+	}
+}
+
 func TestEvaluateTaskAllowsFullRSIClaimWithEvidenceApproval(t *testing.T) {
 	decisions := EvaluateTask(Input{
 		Mode:   "strict",

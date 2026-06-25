@@ -419,8 +419,9 @@ the evidence pack under `policy_decisions`.
 
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
-still denied, and an evidence-specific approval records an allowed policy
-decision. `claim.publish` has no default execution adapter, so the
+still denied, retained rollback rehearsal evidence without mutation authority
+and live self-change evidence is still denied, and an evidence-specific approval
+records an allowed policy decision. `claim.publish` has no default execution adapter, so the
 evidence-approved fixture is intended to prove the policy decision rather than
 actually publish the claim:
 
@@ -435,6 +436,11 @@ go run ./cmd/covenant run \
   --workspace examples/full-rsi-claim-boundary \
   --out /tmp/ao-covenant-runs \
   --run-id full-rsi-generic
+go run ./cmd/covenant run \
+  --contract examples/full-rsi-claim-boundary/rollback-retained.contract.json \
+  --workspace examples/full-rsi-claim-boundary \
+  --out /tmp/ao-covenant-runs \
+  --run-id full-rsi-rollback-retained
 go run ./cmd/covenant run \
   --contract examples/full-rsi-claim-boundary/evidence-approved.contract.json \
   --workspace examples/full-rsi-claim-boundary \
