@@ -54,6 +54,8 @@ func AO2FirstSpine(schemaVersion string) SpineResult {
 				Owner: "ao-covenant",
 				Gates: []string{
 					"claim.publish side-effect policy",
+					"bounded_governed_rsi claim level",
+					"full_autonomous_self_mutating_rsi claim level",
 					"mutation authority evidence",
 					"rollback evidence",
 					"live self-change evidence",

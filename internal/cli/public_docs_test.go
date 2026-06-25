@@ -224,6 +224,8 @@ func TestPublicReadinessIndexIsLinkedAndComplete(t *testing.T) {
 		{name: "RSI claim policy section", doc: index, want: "## RSI Claim Boundary"},
 		{name: "claim publish effect", doc: index, want: "`claim.publish`"},
 		{name: "full RSI resource", doc: index, want: "`full-autonomous-self-mutating-rsi`"},
+		{name: "bounded governed RSI claim level", doc: index, want: "`claim_level=bounded_governed_rsi`"},
+		{name: "full autonomous RSI claim level", doc: index, want: "`claim_level=full_autonomous_self_mutating_rsi`"},
 		{name: "mutation authority evidence", doc: index, want: "mutation authority evidence"},
 		{name: "rollback evidence", doc: index, want: "rollback evidence"},
 		{name: "live self-change evidence", doc: index, want: "live self-change evidence"},

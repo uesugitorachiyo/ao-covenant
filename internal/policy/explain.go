@@ -67,7 +67,7 @@ func operatorActionForDeny(decision Decision) string {
 		return "attach an approved ticket matching task, effect, and resource"
 	case "claim.publish":
 		if decision.Resource == "full-autonomous-self-mutating-rsi" {
-			return "attach an approved full-RSI evidence ticket or downgrade the claim to bounded governed RSI"
+			return "attach an approved full-RSI evidence ticket or downgrade to claim_level=bounded_governed_rsi"
 		}
 		return "attach an approved ticket matching task, effect, and resource"
 	default:

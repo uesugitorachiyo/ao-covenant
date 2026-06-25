@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	ClaimLevelBoundedGovernedRSI            = "bounded_governed_rsi"
+	ClaimLevelFullAutonomousSelfMutatingRSI = "full_autonomous_self_mutating_rsi"
+)
+
 func EvaluateTask(input Input) []Decision {
 	decisions := make([]Decision, 0, len(input.Actions))
 	for index, action := range input.Actions {
@@ -82,15 +87,15 @@ func evaluateClaimPublish(input Input, action ActionRef, resource string) (strin
 		return DecisionDeny, "claim.publish requires an approved ticket", ""
 	}
 	if ticketStatus != ticketStatusValid {
-		return DecisionDeny, "full autonomous self-mutating RSI claim requires mutation authority, rollback, and live self-change evidence", ""
+		return DecisionDeny, fmt.Sprintf("claim_level=%s is denied; downgrade to claim_level=%s until mutation authority, rollback, and live self-change evidence exist", ClaimLevelFullAutonomousSelfMutatingRSI, ClaimLevelBoundedGovernedRSI), ""
 	}
 	if input.RevokedApprovalTicketIDs[ticket.TicketID] {
 		return DecisionDeny, fmt.Sprintf("approval ticket %q is revoked", ticket.TicketID), ticket.TicketID
 	}
 	if !fullRSIEvidenceReason(ticket.Reason) {
-		return DecisionDeny, fmt.Sprintf("approval ticket %q is missing mutation authority, rollback, and live self-change evidence", ticket.TicketID), ticket.TicketID
+		return DecisionDeny, fmt.Sprintf("approval ticket %q is missing evidence for claim_level=%s; downgrade to claim_level=%s until mutation authority, rollback, and live self-change evidence exist", ticket.TicketID, ClaimLevelFullAutonomousSelfMutatingRSI, ClaimLevelBoundedGovernedRSI), ticket.TicketID
 	}
-	return DecisionAllow, "approved full RSI claim evidence", ticket.TicketID
+	return DecisionAllow, fmt.Sprintf("approved full RSI claim evidence for claim_level=%s", ClaimLevelFullAutonomousSelfMutatingRSI), ticket.TicketID
 }
 
 func fullRSIEvidenceReason(reason string) bool {
