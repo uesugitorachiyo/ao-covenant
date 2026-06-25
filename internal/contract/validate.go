@@ -24,6 +24,7 @@ var allowedSideEffectTypes = map[string]bool{
 	"file.read":       true,
 	"process.spawn":   true,
 	"network.request": true,
+	"claim.publish":   true,
 }
 
 func Validate(c Contract) error {

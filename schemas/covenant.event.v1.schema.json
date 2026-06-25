@@ -56,7 +56,7 @@
       "pattern": "^policy-[a-z0-9_-]+-[0-9]+$"
     },
     "decision": { "enum": ["allow", "deny"] },
-    "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+    "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request", "claim.publish"] },
     "resource": { "type": "string", "minLength": 1 },
     "approval_ticket_id": {
       "type": "string",

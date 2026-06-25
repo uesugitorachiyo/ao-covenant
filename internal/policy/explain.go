@@ -65,6 +65,11 @@ func operatorActionForDeny(decision Decision) string {
 		return "add the resource to workspace.reads or remove the task side effect"
 	case "network.request", "process.spawn":
 		return "attach an approved ticket matching task, effect, and resource"
+	case "claim.publish":
+		if decision.Resource == "full-autonomous-self-mutating-rsi" {
+			return "attach an approved full-RSI evidence ticket or downgrade the claim to bounded governed RSI"
+		}
+		return "attach an approved ticket matching task, effect, and resource"
 	default:
 		return "use a supported side effect type or remove the task side effect"
 	}

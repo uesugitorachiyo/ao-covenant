@@ -54,6 +54,8 @@ func (a defaultActionAdapter) ExecuteAction(ctx context.Context, req ActionReque
 		return a.executeProcess(ctx, req)
 	case "network.request":
 		return ActionResult{}, fmt.Errorf("no default adapter for %s", req.Action.Type)
+	case "claim.publish":
+		return ActionResult{}, fmt.Errorf("no default adapter for %s", req.Action.Type)
 	default:
 		return ActionResult{}, fmt.Errorf("unsupported side effect type %q", req.Action.Type)
 	}

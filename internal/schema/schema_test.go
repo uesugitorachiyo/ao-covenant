@@ -2733,7 +2733,7 @@ func TestApprovalTicketSchemaDefinesStrictApprovalSurface(t *testing.T) {
 		t.Fatalf("expires_at format = %v, want date-time", property(t, parsed, "expires_at")["format"])
 	}
 	effectType := property(t, parsed, "effect_type")
-	requireEnum(t, effectType, "file.write", "file.read", "process.spawn", "network.request")
+	requireEnum(t, effectType, "file.write", "file.read", "process.spawn", "network.request", "claim.publish")
 }
 
 func TestApprovalRevocationsSchemaDefinesStrictRevocationSurface(t *testing.T) {
@@ -3778,7 +3778,7 @@ func TestPolicyDecisionSchemaDefinesStrictDecisionSurface(t *testing.T) {
 	requirePattern(t, property(t, parsed, "task_id"))
 	requirePattern(t, property(t, parsed, "resource"))
 	effectType := property(t, parsed, "effect_type")
-	requireEnum(t, effectType, "file.write", "file.read", "process.spawn", "network.request")
+	requireEnum(t, effectType, "file.write", "file.read", "process.spawn", "network.request", "claim.publish")
 	decision := property(t, parsed, "decision")
 	requireEnum(t, decision, "allow", "deny")
 }

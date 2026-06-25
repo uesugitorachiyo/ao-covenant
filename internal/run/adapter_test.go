@@ -149,6 +149,29 @@ func TestDefaultActionAdapterRejectsProcessWhenNotAllowlisted(t *testing.T) {
 	}
 }
 
+func TestDefaultActionAdapterRejectsClaimPublishWithoutAdapter(t *testing.T) {
+	adapter := defaultActionAdapter{}
+
+	_, err := adapter.ExecuteAction(context.Background(), ActionRequest{
+		WorkspaceRoot: t.TempDir(),
+		Task: contract.Task{
+			ID: "publish_rsi_claim",
+		},
+		Action: contract.ActionRef{
+			Type:     "claim.publish",
+			Resource: "full-autonomous-self-mutating-rsi",
+		},
+		ActionIndex: 0,
+	})
+
+	if err == nil {
+		t.Fatalf("ExecuteAction error = nil, want fail-closed error")
+	}
+	if !strings.Contains(err.Error(), "no default adapter for claim.publish") {
+		t.Fatalf("ExecuteAction error = %v, want no claim adapter error", err)
+	}
+}
+
 func TestDefaultActionAdapterRunsAllowlistedProcessAndCapturesOutput(t *testing.T) {
 	workspace := t.TempDir()
 	adapter := defaultActionAdapter{processAllowlist: []string{"go version"}}
