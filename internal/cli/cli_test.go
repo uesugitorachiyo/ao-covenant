@@ -11809,6 +11809,121 @@ func writeDeniedProcessEvidence(t *testing.T) {
 	}
 }
 
+func TestFullRSIClaimBoundaryExamplesDocumentPolicyDecisions(t *testing.T) {
+	fixtureDir := filepath.Join("..", "..", "examples", "full-rsi-claim-boundary")
+	for _, required := range []string{
+		"brief.md",
+		"denied.contract.json",
+		"generic-approval.contract.json",
+		"evidence-approved.contract.json",
+		"generic-approval-ticket.json",
+		"evidence-approval-ticket.json",
+	} {
+		if _, err := os.Stat(filepath.Join(fixtureDir, required)); err != nil {
+			t.Fatalf("full RSI claim boundary fixture %s missing: %v", required, err)
+		}
+	}
+
+	tests := []struct {
+		name                 string
+		contractFile         string
+		wantDecision         string
+		wantApprovalTicketID string
+		wantReason           []string
+	}{
+		{
+			name:         "denied-without-approval",
+			contractFile: "denied.contract.json",
+			wantDecision: "deny",
+			wantReason:   []string{"full autonomous self-mutating RSI", "mutation authority", "rollback", "live self-change"},
+		},
+		{
+			name:                 "denied-with-generic-approval",
+			contractFile:         "generic-approval.contract.json",
+			wantDecision:         "deny",
+			wantApprovalTicketID: "ticket-full-rsi-generic",
+			wantReason:           []string{"approval ticket", "missing", "mutation authority", "rollback", "live self-change"},
+		},
+		{
+			name:                 "allowed-with-evidence-approval",
+			contractFile:         "evidence-approved.contract.json",
+			wantDecision:         "allow",
+			wantApprovalTicketID: "ticket-full-rsi-evidence",
+			wantReason:           []string{"approved full RSI claim evidence"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			runID := "full-rsi-" + tt.name
+			outDir := filepath.Join(t.TempDir(), "runs")
+			var stdout bytes.Buffer
+			var stderr bytes.Buffer
+			code := Run([]string{
+				"covenant",
+				"run",
+				"--contract", filepath.Join(fixtureDir, tt.contractFile),
+				"--workspace", fixtureDir,
+				"--out", outDir,
+				"--run-id", runID,
+				"--json",
+			}, &stdout, &stderr)
+			if code == 2 {
+				t.Fatalf("run exit code = %d, want executable fixture; stderr = %q", code, stderr.String())
+			}
+
+			decision := fullRSIClaimPolicyDecision(t, filepath.Join(outDir, runID, "evidence-pack.json"))
+			if decision.Decision != tt.wantDecision {
+				t.Fatalf("decision = %q, want %q; stderr = %q", decision.Decision, tt.wantDecision, stderr.String())
+			}
+			if decision.ApprovalTicketID != tt.wantApprovalTicketID {
+				t.Fatalf("approval_ticket_id = %q, want %q", decision.ApprovalTicketID, tt.wantApprovalTicketID)
+			}
+			if !containsAllSubstrings(decision.Reason, tt.wantReason) {
+				t.Fatalf("reason = %q, want tokens %v", decision.Reason, tt.wantReason)
+			}
+		})
+	}
+}
+
+type testPolicyDecision struct {
+	Decision         string `json:"decision"`
+	EffectType       string `json:"effect_type"`
+	Resource         string `json:"resource"`
+	Reason           string `json:"reason"`
+	ApprovalTicketID string `json:"approval_ticket_id"`
+}
+
+func fullRSIClaimPolicyDecision(t *testing.T, evidencePath string) testPolicyDecision {
+	t.Helper()
+	bytes, err := os.ReadFile(evidencePath)
+	if err != nil {
+		t.Fatalf("read evidence pack: %v", err)
+	}
+	var decoded struct {
+		PolicyDecisions []testPolicyDecision `json:"policy_decisions"`
+	}
+	if err := json.Unmarshal(bytes, &decoded); err != nil {
+		t.Fatalf("decode evidence pack: %v", err)
+	}
+	for _, decision := range decoded.PolicyDecisions {
+		if decision.EffectType == "claim.publish" && decision.Resource == "full-autonomous-self-mutating-rsi" {
+			return decision
+		}
+	}
+	t.Fatalf("evidence pack %s did not contain full RSI claim policy decision", evidencePath)
+	return testPolicyDecision{}
+}
+
+func containsAllSubstrings(value string, substrings []string) bool {
+	for _, substring := range substrings {
+		if !strings.Contains(value, substring) {
+			return false
+		}
+	}
+	return true
+}
+
 func writeApprovedProcessEvidence(t *testing.T) {
 	t.Helper()
 	mustWriteTestFile(t, "examples/risky-change/brief.md", "Create demo-output/report.txt")

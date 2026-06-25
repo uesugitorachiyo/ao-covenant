@@ -416,6 +416,35 @@ from a full autonomous RSI claim until the stronger evidence exists. Every
 decision is emitted as a `policy_decided` event and recorded in the evidence
 pack under `policy_decisions`.
 
+The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
+claim boundary through the CLI: no approval is denied, a generic approval is
+still denied, and an evidence-specific approval records an allowed policy
+decision. `claim.publish` has no default execution adapter, so the
+evidence-approved fixture is intended to prove the policy decision rather than
+actually publish the claim:
+
+```sh
+go run ./cmd/covenant run \
+  --contract examples/full-rsi-claim-boundary/denied.contract.json \
+  --workspace examples/full-rsi-claim-boundary \
+  --out /tmp/ao-covenant-runs \
+  --run-id full-rsi-denied
+go run ./cmd/covenant run \
+  --contract examples/full-rsi-claim-boundary/generic-approval.contract.json \
+  --workspace examples/full-rsi-claim-boundary \
+  --out /tmp/ao-covenant-runs \
+  --run-id full-rsi-generic
+go run ./cmd/covenant run \
+  --contract examples/full-rsi-claim-boundary/evidence-approved.contract.json \
+  --workspace examples/full-rsi-claim-boundary \
+  --out /tmp/ao-covenant-runs \
+  --run-id full-rsi-evidence
+go run ./cmd/covenant policy index --json \
+  --evidence /tmp/ao-covenant-runs/full-rsi-evidence/evidence-pack.json \
+  --effect claim.publish \
+  --resource full-autonomous-self-mutating-rsi
+```
+
 `covenant policy explain` reads an existing evidence pack, validates its schema,
 and prints every recorded allow/deny decision with a human-readable summary. For
 denied decisions it also prints the operator action required to make the request
