@@ -11815,8 +11815,10 @@ func TestFullRSIClaimBoundaryExamplesDocumentPolicyDecisions(t *testing.T) {
 		"brief.md",
 		"denied.contract.json",
 		"generic-approval.contract.json",
+		"rollback-retained.contract.json",
 		"evidence-approved.contract.json",
 		"generic-approval-ticket.json",
+		"rollback-retained-ticket.json",
 		"evidence-approval-ticket.json",
 	} {
 		if _, err := os.Stat(filepath.Join(fixtureDir, required)); err != nil {
@@ -11843,6 +11845,13 @@ func TestFullRSIClaimBoundaryExamplesDocumentPolicyDecisions(t *testing.T) {
 			wantDecision:         "deny",
 			wantApprovalTicketID: "ticket-full-rsi-generic",
 			wantReason:           []string{"approval ticket", "missing", "claim_level=full_autonomous_self_mutating_rsi", "claim_level=bounded_governed_rsi", "mutation authority", "rollback", "live self-change"},
+		},
+		{
+			name:                 "denied-with-retained-rollback-rehearsal",
+			contractFile:         "rollback-retained.contract.json",
+			wantDecision:         "deny",
+			wantApprovalTicketID: "ticket-full-rsi-rollback-retained",
+			wantReason:           []string{"approval ticket", "retained rollback rehearsal", "insufficient", "claim_level=full_autonomous_self_mutating_rsi", "claim_level=bounded_governed_rsi", "mutation authority", "live self-change"},
 		},
 		{
 			name:                 "allowed-with-evidence-approval",

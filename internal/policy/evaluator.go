@@ -93,7 +93,7 @@ func evaluateClaimPublish(input Input, action ActionRef, resource string) (strin
 		return DecisionDeny, fmt.Sprintf("approval ticket %q is revoked", ticket.TicketID), ticket.TicketID
 	}
 	if !fullRSIEvidenceReason(ticket.Reason) {
-		return DecisionDeny, fmt.Sprintf("approval ticket %q is missing evidence for claim_level=%s; downgrade to claim_level=%s until mutation authority, rollback, and live self-change evidence exist", ticket.TicketID, ClaimLevelFullAutonomousSelfMutatingRSI, ClaimLevelBoundedGovernedRSI), ticket.TicketID
+		return DecisionDeny, fullRSIMissingEvidenceReason(ticket), ticket.TicketID
 	}
 	return DecisionAllow, fmt.Sprintf("approved full RSI claim evidence for claim_level=%s", ClaimLevelFullAutonomousSelfMutatingRSI), ticket.TicketID
 }
@@ -106,6 +106,16 @@ func fullRSIEvidenceReason(reason string) bool {
 		}
 	}
 	return true
+}
+
+func fullRSIMissingEvidenceReason(ticket ApprovalTicket) string {
+	normalized := strings.ToLower(ticket.Reason)
+	if strings.Contains(normalized, "rollback") &&
+		!strings.Contains(normalized, "mutation authority") &&
+		!strings.Contains(normalized, "live self-change") {
+		return fmt.Sprintf("approval ticket %q includes retained rollback rehearsal evidence, but retained rollback rehearsal alone is insufficient for claim_level=%s; downgrade to claim_level=%s until mutation authority and live self-change evidence also exist", ticket.TicketID, ClaimLevelFullAutonomousSelfMutatingRSI, ClaimLevelBoundedGovernedRSI)
+	}
+	return fmt.Sprintf("approval ticket %q is missing evidence for claim_level=%s; downgrade to claim_level=%s until mutation authority, rollback, and live self-change evidence exist", ticket.TicketID, ClaimLevelFullAutonomousSelfMutatingRSI, ClaimLevelBoundedGovernedRSI)
 }
 
 type ticketStatus string
