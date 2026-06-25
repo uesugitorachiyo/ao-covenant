@@ -16,7 +16,7 @@
         "properties": {
           "decision_id": { "type": "string", "minLength": 1 },
           "task_id": { "type": "string", "minLength": 1 },
-          "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+          "effect_type": { "enum": ["file.write", "file.read", "process.spawn", "network.request", "claim.publish"] },
           "resource": { "type": "string", "minLength": 1 },
           "decision": { "enum": ["allow", "deny"] },
           "reason": { "type": "string", "minLength": 1 },

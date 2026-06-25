@@ -25,7 +25,7 @@
         "additionalProperties": false,
         "required": ["type", "resource"],
         "properties": {
-          "type": { "enum": ["file.write", "file.read", "process.spawn", "network.request"] },
+          "type": { "enum": ["file.write", "file.read", "process.spawn", "network.request", "claim.publish"] },
           "resource": { "$ref": "#/$defs/workspace_path" }
         }
       }

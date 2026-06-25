@@ -115,6 +115,18 @@ as schema-backed JSON. Use `covenant policy spine --json` to inspect the active
 repository scope, AO Covenant ownership, replacement targets, and non-ownership
 guardrails with schema `covenant.policy-spine-result.v1`.
 
+## RSI Claim Boundary
+
+AO Covenant treats public RSI wording as a policy-controlled claim. Contracts
+can declare `claim.publish` side effects, and the resource
+`full-autonomous-self-mutating-rsi` is fail-closed by default. A matching
+approval ticket is only sufficient when its reason names mutation authority evidence, rollback evidence, and live self-change evidence.
+
+Without those evidence classes, operators should keep the wording at bounded
+governed RSI evidence instead of claiming full autonomous self-mutating RSI.
+The policy spine exposes this boundary through the `rsi-claim-boundary`
+responsibility.
+
 Local check:
 
 ```sh

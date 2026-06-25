@@ -50,6 +50,16 @@ func AO2FirstSpine(schemaVersion string) SpineResult {
 				},
 			},
 			{
+				Name:  "rsi-claim-boundary",
+				Owner: "ao-covenant",
+				Gates: []string{
+					"claim.publish side-effect policy",
+					"mutation authority evidence",
+					"rollback evidence",
+					"live self-change evidence",
+				},
+			},
+			{
 				Name:  "execution",
 				Owner: "ao2",
 				Gates: []string{

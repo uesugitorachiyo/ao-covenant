@@ -205,6 +205,120 @@ func TestEvaluateTaskDeniesRevokedApprovalTicket(t *testing.T) {
 	}
 }
 
+func TestEvaluateTaskDeniesFullRSIClaimWithoutEvidenceApproval(t *testing.T) {
+	decisions := EvaluateTask(Input{
+		Mode:   "strict",
+		TaskID: "publish_rsi_claim",
+		Actions: []ActionRef{
+			{Type: "claim.publish", Resource: "full-autonomous-self-mutating-rsi"},
+		},
+	})
+
+	if len(decisions) != 1 {
+		t.Fatalf("decisions len = %d, want 1", len(decisions))
+	}
+	decision := decisions[0]
+	if decision.Decision != DecisionDeny {
+		t.Fatalf("decision = %q, want deny", decision.Decision)
+	}
+	if !containsAll(decision.Reason, []string{"full autonomous self-mutating RSI", "mutation authority", "rollback", "live self-change"}) {
+		t.Fatalf("reason = %q, want full RSI evidence requirements", decision.Reason)
+	}
+}
+
+func TestEvaluateTaskDeniesFullRSIClaimWithGenericApproval(t *testing.T) {
+	decisions := EvaluateTask(Input{
+		Mode:   "strict",
+		TaskID: "publish_rsi_claim",
+		Actions: []ActionRef{
+			{Type: "claim.publish", Resource: "full-autonomous-self-mutating-rsi"},
+		},
+		Approvals: []ApprovalTicket{
+			{
+				SchemaVersion: ApprovalTicketSchemaVersion,
+				TicketID:      "ticket_full_rsi",
+				TaskID:        "publish_rsi_claim",
+				EffectType:    "claim.publish",
+				Resource:      "full-autonomous-self-mutating-rsi",
+				Approved:      true,
+				Reason:        "operator approves stronger RSI claim",
+			},
+		},
+	})
+
+	if len(decisions) != 1 {
+		t.Fatalf("decisions len = %d, want 1", len(decisions))
+	}
+	decision := decisions[0]
+	if decision.Decision != DecisionDeny {
+		t.Fatalf("decision = %q, want deny", decision.Decision)
+	}
+	if decision.ApprovalTicketID != "ticket_full_rsi" {
+		t.Fatalf("approval ticket id = %q, want ticket_full_rsi", decision.ApprovalTicketID)
+	}
+	if !containsAll(decision.Reason, []string{"approval ticket", "missing", "mutation authority", "rollback", "live self-change"}) {
+		t.Fatalf("reason = %q, want missing full RSI evidence requirements", decision.Reason)
+	}
+}
+
+func TestEvaluateTaskAllowsFullRSIClaimWithEvidenceApproval(t *testing.T) {
+	decisions := EvaluateTask(Input{
+		Mode:   "strict",
+		TaskID: "publish_rsi_claim",
+		Actions: []ActionRef{
+			{Type: "claim.publish", Resource: "full-autonomous-self-mutating-rsi"},
+		},
+		Approvals: []ApprovalTicket{
+			{
+				SchemaVersion: ApprovalTicketSchemaVersion,
+				TicketID:      "ticket_full_rsi",
+				TaskID:        "publish_rsi_claim",
+				EffectType:    "claim.publish",
+				Resource:      "full-autonomous-self-mutating-rsi",
+				Approved:      true,
+				Reason:        "mutation authority evidence, rollback evidence, and live self-change evidence verified by AO Covenant",
+			},
+		},
+	})
+
+	if len(decisions) != 1 {
+		t.Fatalf("decisions len = %d, want 1", len(decisions))
+	}
+	decision := decisions[0]
+	if decision.Decision != DecisionAllow {
+		t.Fatalf("decision = %q, want allow: %+v", decision.Decision, decision)
+	}
+	if decision.ApprovalTicketID != "ticket_full_rsi" {
+		t.Fatalf("approval ticket id = %q, want ticket_full_rsi", decision.ApprovalTicketID)
+	}
+	if !strings.Contains(decision.Reason, "approved full RSI claim evidence") {
+		t.Fatalf("reason = %q, want full RSI approval reason", decision.Reason)
+	}
+}
+
+func TestAO2FirstSpineIncludesRSIClaimBoundaryGate(t *testing.T) {
+	spine := AO2FirstSpine("covenant.policy-spine-result.v1")
+
+	found := false
+	for _, responsibility := range spine.Responsibilities {
+		if responsibility.Name != "rsi-claim-boundary" {
+			continue
+		}
+		found = true
+		if responsibility.Owner != "ao-covenant" {
+			t.Fatalf("owner = %q, want ao-covenant", responsibility.Owner)
+		}
+		for _, want := range []string{"claim.publish side-effect policy", "mutation authority evidence", "rollback evidence", "live self-change evidence"} {
+			if !containsString(responsibility.Gates, want) {
+				t.Fatalf("rsi claim boundary gates = %#v, missing %q", responsibility.Gates, want)
+			}
+		}
+	}
+	if !found {
+		t.Fatalf("policy spine missing rsi-claim-boundary responsibility: %+v", spine.Responsibilities)
+	}
+}
+
 func TestExplainDecisionAllowsDeclaredWorkspaceWrite(t *testing.T) {
 	explanation := ExplainDecision(Decision{
 		DecisionID: "policy-scripted_change-1",
@@ -244,6 +358,27 @@ func TestExplainDecisionDeniesProcessWithoutTicket(t *testing.T) {
 	}
 	if !containsAll(explanation.Detail, []string{"spawn_tool", "process.spawn", "make-test", "process.spawn requires an approved ticket"}) {
 		t.Fatalf("detail = %q, want task, effect, resource, and reason", explanation.Detail)
+	}
+}
+
+func TestExplainDecisionDeniesFullRSIClaimWithEvidenceRequirements(t *testing.T) {
+	explanation := ExplainDecision(Decision{
+		DecisionID: "policy-publish_rsi_claim-1",
+		TaskID:     "publish_rsi_claim",
+		EffectType: "claim.publish",
+		Resource:   "full-autonomous-self-mutating-rsi",
+		Decision:   DecisionDeny,
+		Reason:     "full autonomous self-mutating RSI claim requires mutation authority, rollback, and live self-change evidence",
+	})
+
+	if explanation.Summary != "denied claim.publish on full-autonomous-self-mutating-rsi" {
+		t.Fatalf("summary = %q", explanation.Summary)
+	}
+	if explanation.OperatorAction != "attach an approved full-RSI evidence ticket or downgrade the claim to bounded governed RSI" {
+		t.Fatalf("operator action = %q", explanation.OperatorAction)
+	}
+	if !containsAll(explanation.Detail, []string{"claim.publish", "full-autonomous-self-mutating-rsi", "mutation authority", "rollback", "live self-change"}) {
+		t.Fatalf("detail = %q, want full RSI evidence requirements", explanation.Detail)
 	}
 }
 
@@ -321,4 +456,13 @@ func containsAll(value string, needles []string) bool {
 		}
 	}
 	return true
+}
+
+func containsString(values []string, needle string) bool {
+	for _, value := range values {
+		if value == needle {
+			return true
+		}
+	}
+	return false
 }

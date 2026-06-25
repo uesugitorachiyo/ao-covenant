@@ -407,7 +407,12 @@ human-readable evidence summary to the immutable event stream.
 Strict policy mode allows declared `file.write` effects only when the resource is
 listed in `workspace.writes`, allows declared `file.read` effects only when the
 resource is listed in `workspace.reads`, and denies `network.request` or
-`process.spawn` unless the contract includes a matching approved ticket. Every
+`process.spawn` unless the contract includes a matching approved ticket.
+Published claims are modeled as `claim.publish` side effects. The special
+resource `full-autonomous-self-mutating-rsi` is denied unless the matching
+approved ticket reason names mutation authority evidence, rollback evidence, and
+live self-change evidence. This keeps bounded governed RSI wording separate
+from a full autonomous RSI claim until the stronger evidence exists. Every
 decision is emitted as a `policy_decided` event and recorded in the evidence
 pack under `policy_decisions`.
 

@@ -57,9 +57,50 @@ func evaluateAction(input Input, action ActionRef) (string, string, string) {
 			return DecisionDeny, fmt.Sprintf("approval ticket %q has invalid expires_at %q", ticket.TicketID, ticket.ExpiresAt), ""
 		}
 		return DecisionDeny, action.Type + " requires an approved ticket", ""
+	case "claim.publish":
+		return evaluateClaimPublish(input, action, resource)
 	default:
 		return DecisionDeny, "unknown side effect type", ""
 	}
+}
+
+func evaluateClaimPublish(input Input, action ActionRef, resource string) (string, string, string) {
+	ticket, ticketStatus := matchingApprovedTicket(input.Approvals, input.TaskID, action.Type, resource, evaluationTime(input))
+	if ticketStatus == ticketStatusExpired {
+		return DecisionDeny, fmt.Sprintf("approval ticket %q expired at %s", ticket.TicketID, ticket.ExpiresAt), ""
+	}
+	if ticketStatus == ticketStatusInvalidExpiration {
+		return DecisionDeny, fmt.Sprintf("approval ticket %q has invalid expires_at %q", ticket.TicketID, ticket.ExpiresAt), ""
+	}
+	if resource != "full-autonomous-self-mutating-rsi" {
+		if ticketStatus == ticketStatusValid {
+			if input.RevokedApprovalTicketIDs[ticket.TicketID] {
+				return DecisionDeny, fmt.Sprintf("approval ticket %q is revoked", ticket.TicketID), ticket.TicketID
+			}
+			return DecisionAllow, "approved claim publication", ticket.TicketID
+		}
+		return DecisionDeny, "claim.publish requires an approved ticket", ""
+	}
+	if ticketStatus != ticketStatusValid {
+		return DecisionDeny, "full autonomous self-mutating RSI claim requires mutation authority, rollback, and live self-change evidence", ""
+	}
+	if input.RevokedApprovalTicketIDs[ticket.TicketID] {
+		return DecisionDeny, fmt.Sprintf("approval ticket %q is revoked", ticket.TicketID), ticket.TicketID
+	}
+	if !fullRSIEvidenceReason(ticket.Reason) {
+		return DecisionDeny, fmt.Sprintf("approval ticket %q is missing mutation authority, rollback, and live self-change evidence", ticket.TicketID), ticket.TicketID
+	}
+	return DecisionAllow, "approved full RSI claim evidence", ticket.TicketID
+}
+
+func fullRSIEvidenceReason(reason string) bool {
+	normalized := strings.ToLower(reason)
+	for _, required := range []string{"mutation authority", "rollback", "live self-change"} {
+		if !strings.Contains(normalized, required) {
+			return false
+		}
+	}
+	return true
 }
 
 type ticketStatus string
