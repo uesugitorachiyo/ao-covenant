@@ -28,6 +28,7 @@ const (
 	PolicyDecisionSchemaID                    = "covenant.policy-decision.v1"
 	ApprovalTicketSchemaID                    = "covenant.approval-ticket.v1"
 	LiveDocsApprovalTicketSchemaID            = "covenant.live-docs-approval-ticket.v1"
+	MutationClassAuthorityTicketSchemaID      = "covenant.mutation-class-authority-ticket.v1"
 	LiveSelfChangeAuthoritySchemaID           = "covenant.live-self-change-authority.v1"
 	LiveMutationAuthoritySchemaID             = "covenant.live-mutation-authority.v1"
 	ApprovalRevocationsSchemaID               = "covenant.approval-revocations.v1"
@@ -102,6 +103,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.policy-decision.v1.schema.json", PolicyDecisionSchemaID),
 	requiredSchema("covenant.approval-ticket.v1.schema.json", ApprovalTicketSchemaID),
 	requiredSchema("covenant.live-docs-approval-ticket.v1.schema.json", LiveDocsApprovalTicketSchemaID),
+	requiredSchema("covenant.mutation-class-authority-ticket.v1.schema.json", MutationClassAuthorityTicketSchemaID),
 	requiredSchema("covenant.live-self-change-authority.v1.schema.json", LiveSelfChangeAuthoritySchemaID),
 	requiredSchema("covenant.live-mutation-authority.v1.schema.json", LiveMutationAuthoritySchemaID),
 	requiredSchema("covenant.approval-revocations.v1.schema.json", ApprovalRevocationsSchemaID),

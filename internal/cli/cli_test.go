@@ -112,6 +112,80 @@ func TestLiveDocsApprovalValidateFailsClosed(t *testing.T) {
 	}
 }
 
+func TestMutationClassAuthorityValidateAcceptsExactTicket(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{
+		"covenant", "approval", "mutation-class", "validate",
+		"--request", filepath.Join("..", "..", "examples", "mutation-class-authority", "request-docs-multi.json"),
+		"--ticket", filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-approved-docs-multi.json"),
+	}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("Run returned %d, want 0; stdout=%s stderr=%s", code, stdout.String(), stderr.String())
+	}
+	for _, want := range []string{
+		"valid=true",
+		"ticket_id=mutation-class-docs-multi-ticket",
+		"request_id=docs-multi-authority-request",
+		"mutation_class=docs_only_multi_file",
+		"safe_to_request=true",
+		"safe_to_execute=false",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("stdout missing %q: %s", want, stdout.String())
+		}
+	}
+}
+
+func TestMutationClassAuthorityValidateFailsClosed(t *testing.T) {
+	cases := []struct {
+		name       string
+		ticketPath string
+		wantError  string
+	}{
+		{
+			name:       "broadened_path_scope",
+			ticketPath: filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-broadened-path-scope.json"),
+			wantError:  "ticket path scope is broader than request",
+		},
+		{
+			name:       "stale_digest",
+			ticketPath: filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-stale-digest.json"),
+			wantError:  "scope_digest does not match approved_scope",
+		},
+		{
+			name:       "wrong_class",
+			ticketPath: filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-wrong-class.json"),
+			wantError:  "ticket mutation_class does not match request",
+		},
+		{
+			name:       "consumed",
+			ticketPath: filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-consumed.json"),
+			wantError:  "authority ticket has already been consumed",
+		},
+		{
+			name:       "missing_rollback",
+			ticketPath: filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-missing-rollback.json"),
+			wantError:  "rollback",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			code := Run([]string{
+				"covenant", "approval", "mutation-class", "validate",
+				"--request", filepath.Join("..", "..", "examples", "mutation-class-authority", "request-docs-multi.json"),
+				"--ticket", tc.ticketPath,
+			}, &stdout, &stderr)
+			if code == 0 {
+				t.Fatalf("Run returned success; stdout=%s", stdout.String())
+			}
+			if !strings.Contains(stderr.String(), tc.wantError) {
+				t.Fatalf("stderr missing %q: %s", tc.wantError, stderr.String())
+			}
+		})
+	}
+}
+
 func TestREADMEOutputSidecarGuaranteesStayAlignedWithHelperCoverage(t *testing.T) {
 	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
 	if err != nil {

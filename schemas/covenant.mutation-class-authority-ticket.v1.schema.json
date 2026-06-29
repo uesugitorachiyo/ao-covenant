@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.mutation-class-authority-ticket.v1",
+  "title": "AO Covenant Mutation-Class Authority Ticket v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ticket_id",
+    "request_id",
+    "approval_state",
+    "approver_identity",
+    "issued_at",
+    "expires_at",
+    "consumed",
+    "mutation_class",
+    "approved_scope",
+    "scope_digest",
+    "authority_boundaries",
+    "operator_note"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.mutation-class-authority-ticket.v1" },
+    "ticket_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "approval_state": {
+      "enum": ["pending", "approved", "denied"]
+    },
+    "approver_identity": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "consumed": { "type": "boolean" },
+    "mutation_class": { "$ref": "#/$defs/mutation_class" },
+    "approved_scope": { "$ref": "#/$defs/approved_scope" },
+    "scope_digest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "value", "covers"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "value": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "covers": {
+          "type": "array",
+          "minItems": 1,
+          "contains": { "const": "approved_scope" },
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "authority_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exact_scope",
+        "class_bound",
+        "digest_bound",
+        "single_use",
+        "live_mutation_grant",
+        "provider_calls_allowed",
+        "release_or_publish_allowed"
+      ],
+      "properties": {
+        "exact_scope": { "const": true },
+        "class_bound": { "const": true },
+        "digest_bound": { "const": true },
+        "single_use": { "const": true },
+        "live_mutation_grant": { "const": false },
+        "provider_calls_allowed": { "const": false },
+        "release_or_publish_allowed": { "const": false }
+      }
+    },
+    "operator_note": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "mutation_class": {
+      "enum": [
+        "docs_only_single_file",
+        "docs_only_multi_file",
+        "docs_config_only",
+        "test_only",
+        "low_risk_code",
+        "multi_repo_low_risk",
+        "complex_repo_mutation"
+      ]
+    },
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "remote", "target_branch"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+        "remote": { "type": "string", "pattern": "^uesugitorachiyo/[a-z0-9][a-z0-9_-]*$" },
+        "target_branch": { "const": "main" }
+      }
+    },
+    "branch_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branch_prefix",
+        "requires_isolated_branch",
+        "requires_clean_worktree",
+        "requires_pr",
+        "allows_direct_main"
+      ],
+      "properties": {
+        "branch_prefix": {
+          "type": "string",
+          "pattern": "^codex/[A-Za-z0-9._/-]+$"
+        },
+        "requires_isolated_branch": { "const": true },
+        "requires_clean_worktree": { "const": true },
+        "requires_pr": { "const": true },
+        "allows_direct_main": { "const": false }
+      }
+    },
+    "path_scope": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._*{}!/-]+$"
+      }
+    },
+    "rollback_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "artifact_paths", "digest"],
+      "properties": {
+        "status": { "enum": ["planned", "rehearsed", "passed"] },
+        "artifact_paths": { "$ref": "#/$defs/path_scope" },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "approved_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "branch_policy",
+        "mutation_class",
+        "allowed_paths",
+        "forbidden_paths",
+        "max_changed_files",
+        "required_gates",
+        "rollback_required",
+        "rollback_scope",
+        "rollback_evidence",
+        "authority_boundary"
+      ],
+      "properties": {
+        "repo": { "$ref": "#/$defs/repo" },
+        "branch_policy": { "$ref": "#/$defs/branch_policy" },
+        "mutation_class": { "$ref": "#/$defs/mutation_class" },
+        "allowed_paths": { "$ref": "#/$defs/path_scope" },
+        "forbidden_paths": { "$ref": "#/$defs/path_scope" },
+        "max_changed_files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 25
+        },
+        "required_gates": { "$ref": "#/$defs/path_scope" },
+        "rollback_required": { "const": true },
+        "rollback_scope": { "$ref": "#/$defs/path_scope" },
+        "rollback_evidence": { "$ref": "#/$defs/rollback_evidence" },
+        "authority_boundary": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        }
+      }
+    }
+  }
+}

@@ -228,6 +228,12 @@ go run ./cmd/covenant schema validate \
 	--file /tmp/ao-covenant-contract.json \
 	--json \
 	--out /tmp/ao-covenant-schema-validation.json
+go run ./cmd/covenant schema validate \
+  --schema covenant.mutation-class-authority-ticket.v1 \
+  --file examples/mutation-class-authority/ticket-approved-docs-multi.json
+go run ./cmd/covenant approval mutation-class validate \
+  --request examples/mutation-class-authority/request-docs-multi.json \
+  --ticket examples/mutation-class-authority/ticket-approved-docs-multi.json
 ```
 
 `covenant compile` accepts a brief inside the current workspace and records that
@@ -450,6 +456,19 @@ when Foundry, Forge, AO2, Sentinel, Promoter, rollback, worktree, and Command
 evidence also match. Covenant does not grant broad live mutation authority,
 provider access, releases, direct-main mutation, or fully unsupervised complex
 repository mutation through this ticket.
+
+Class-specific live mutation authority uses
+`covenant.mutation-class-authority-ticket.v1` and
+`covenant approval mutation-class validate --request <json> --ticket <json>`.
+These tickets are exact-scope, expiring, digest-bound, class-bound, and
+single-use. Validation recomputes the SHA-256 digest over `approved_scope`,
+requires the ticket class to match the request class, requires rollback scope
+and rollback evidence, and rejects consumed tickets. Broadened path scope,
+stale digest, wrong class, consumed ticket, and missing rollback fixtures live
+in `examples/mutation-class-authority/`. A valid ticket only proves that one
+class-specific authority request has Covenant approval evidence; it still does
+not schedule, execute, promote, publish, call providers, allow direct-main
+mutation, or approve fully unsupervised complex repository mutation.
 
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
