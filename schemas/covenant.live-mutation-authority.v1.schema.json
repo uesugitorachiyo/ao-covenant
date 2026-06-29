@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.live-mutation-authority.v1",
+  "title": "AO Covenant Live Mutation Authority v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "authority_id",
+    "mode",
+    "status",
+    "scope",
+    "repository",
+    "branch_isolation",
+    "allowed_path_class",
+    "rollback_plan",
+    "pr_lifecycle",
+    "operator_kill_switch",
+    "approval",
+    "exact_digest",
+    "evidence",
+    "authority_boundaries"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.live-mutation-authority.v1" },
+    "authority_id": {
+      "type": "string",
+      "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9][a-z0-9_-]*$"
+    },
+    "mode": { "const": "dry_run_only" },
+    "status": { "enum": ["ready", "blocked", "denied"] },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["change_class", "objective", "non_goals"],
+      "properties": {
+        "change_class": { "enum": ["docs_only", "fixture_only", "test_only"] },
+        "objective": { "type": "string", "minLength": 1 },
+        "non_goals": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "remote", "target_branch"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "remote": {
+          "type": "string",
+          "pattern": "^uesugitorachiyo/[a-z0-9][a-z0-9_-]*$"
+        },
+        "target_branch": { "const": "main" }
+      }
+    },
+    "branch_isolation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "branch", "worktree_clean", "reuse_allowed"],
+      "properties": {
+        "required": { "const": true },
+        "branch": {
+          "type": "string",
+          "pattern": "^codex/[A-Za-z0-9._-]+$"
+        },
+        "worktree_clean": { "const": true },
+        "reuse_allowed": { "const": false }
+      }
+    },
+    "allowed_path_class": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["class", "paths"],
+      "properties": {
+        "class": { "enum": ["docs", "examples", "tests"] },
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(docs|examples|tests)/[A-Za-z0-9._/-]+$"
+          }
+        }
+      }
+    },
+    "rollback_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "status", "artifact_paths"],
+      "properties": {
+        "required": { "const": true },
+        "status": { "enum": ["rehearsed", "pending"] },
+        "artifact_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(docs|examples|tests|target)/[A-Za-z0-9._/-]+$"
+          }
+        }
+      }
+    },
+    "pr_lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "one_branch_only", "checks_required", "merge_without_green_checks_allowed"],
+      "properties": {
+        "required": { "const": true },
+        "one_branch_only": { "const": true },
+        "checks_required": { "const": true },
+        "merge_without_green_checks_allowed": { "const": false }
+      }
+    },
+    "operator_kill_switch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "status", "evidence_paths"],
+      "properties": {
+        "required": { "const": true },
+        "status": { "enum": ["available", "blocked"] },
+        "evidence_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(docs|examples|tests|target)/[A-Za-z0-9._/-]+$"
+          }
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approver", "ticket_id", "expires_at_utc"],
+      "properties": {
+        "approver": {
+          "type": "string",
+          "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9][a-z0-9_-]*$"
+        },
+        "ticket_id": {
+          "type": "string",
+          "pattern": "^(?!con$|prn$|aux$|nul$|com[1-9]$|lpt[1-9]$)[a-z0-9][a-z0-9_-]*$"
+        },
+        "expires_at_utc": { "type": "string", "format": "date-time" }
+      }
+    },
+    "exact_digest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "value", "covers"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "value": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "covers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "path", "schema_version", "status", "sha256"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "path": {
+            "type": "string",
+            "pattern": "^(docs|examples|tests|target)/[A-Za-z0-9._/-]+$"
+          },
+          "schema_version": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["ready", "passed", "blocked"] },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "authority_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dry_run_only",
+        "live_mutation_allowed",
+        "provider_calls_allowed",
+        "release_or_publish_allowed"
+      ],
+      "properties": {
+        "dry_run_only": { "const": true },
+        "live_mutation_allowed": { "const": false },
+        "provider_calls_allowed": { "const": false },
+        "release_or_publish_allowed": { "const": false }
+      }
+    }
+  }
+}

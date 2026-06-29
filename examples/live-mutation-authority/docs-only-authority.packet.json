@@ -1,0 +1,86 @@
+{
+  "schema_version": "covenant.live-mutation-authority.v1",
+  "authority_id": "authority-docs-only-live-mutation-dry-run",
+  "mode": "dry_run_only",
+  "status": "ready",
+  "scope": {
+    "change_class": "docs_only",
+    "objective": "Prepare a governed docs-only mutation class for future live-mutation rehearsal.",
+    "non_goals": [
+      "Do not apply live repository mutation from this packet.",
+      "Do not call providers, publish releases, upload artifacts, or bypass PR checks."
+    ]
+  },
+  "repository": {
+    "id": "ao-foundry",
+    "remote": "uesugitorachiyo/ao-foundry",
+    "target_branch": "main"
+  },
+  "branch_isolation": {
+    "required": true,
+    "branch": "codex/docs-only-live-mutation-rehearsal",
+    "worktree_clean": true,
+    "reuse_allowed": false
+  },
+  "allowed_path_class": {
+    "class": "docs",
+    "paths": [
+      "docs/operations/OVERNIGHT-REFRACTOR-REHEARSAL-RUNBOOK.md"
+    ]
+  },
+  "rollback_plan": {
+    "required": true,
+    "status": "rehearsed",
+    "artifact_paths": [
+      "target/live-mutation-rollback-rehearsal/rollback.patch"
+    ]
+  },
+  "pr_lifecycle": {
+    "required": true,
+    "one_branch_only": true,
+    "checks_required": true,
+    "merge_without_green_checks_allowed": false
+  },
+  "operator_kill_switch": {
+    "required": true,
+    "status": "available",
+    "evidence_paths": [
+      "target/live-mutation-kill-switch/STOP"
+    ]
+  },
+  "approval": {
+    "approver": "ao-operator",
+    "ticket_id": "ticket-docs-only-live-mutation-dry-run",
+    "expires_at_utc": "2026-06-30T00:00:00Z"
+  },
+  "exact_digest": {
+    "algorithm": "sha256",
+    "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "covers": [
+      "target/live-mutation-dry-run/proposed.patch",
+      "target/live-mutation-rollback-rehearsal/rollback.patch"
+    ]
+  },
+  "evidence": [
+    {
+      "name": "foundry_request_packet",
+      "path": "target/live-mutation-dry-run/foundry-request.json",
+      "schema_version": "ao.foundry.live-mutation-request.v0.1",
+      "status": "ready",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    {
+      "name": "rollback_rehearsal",
+      "path": "target/live-mutation-rollback-rehearsal/summary.json",
+      "schema_version": "ao.foundry.live-mutation-rollback-rehearsal.v0.1",
+      "status": "passed",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  ],
+  "authority_boundaries": {
+    "dry_run_only": true,
+    "live_mutation_allowed": false,
+    "provider_calls_allowed": false,
+    "release_or_publish_allowed": false
+  }
+}

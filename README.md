@@ -422,6 +422,16 @@ claim-level vocabulary keeps
 exists. Every decision is emitted as a `policy_decided` event and recorded in
 the evidence pack under `policy_decisions`.
 
+Governed live repository mutation uses a separate dry-run authority packet:
+`covenant.live-mutation-authority.v1`. It is not a grant to mutate. The packet
+requires scope, repository, allowed path class, clean isolated branch/worktree,
+rollback plan, PR lifecycle, operator kill-switch evidence, approval identity,
+exact digest, and source evidence. The public fixture in
+`examples/live-mutation-authority/docs-only-authority.packet.json` models a
+docs-only mutation class with `mode=dry_run_only`,
+`live_mutation_allowed=false`, `provider_calls_allowed=false`, and
+`release_or_publish_allowed=false`.
+
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
 still denied, retained rollback rehearsal evidence without mutation authority
