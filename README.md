@@ -437,8 +437,19 @@ validator: `covenant approval live-docs validate --request <json> --ticket
 <json>`. The validator accepts only
 `covenant.live-docs-approval-ticket.v1` tickets that are approved, unexpired,
 unconsumed, tied to a non-empty approver identity, and exact-scope matched to
-the Foundry approval request. Pending, denied, stale, or mismatched-scope
-tickets fail closed. Public fixtures live in `examples/live-docs-approval/`.
+the Foundry approval request. The match covers request id, repository, branch
+prefix, docs-only allowlist, forbidden paths, maximum changed-file count,
+rollback plan reference, kill-switch reference, Sentinel hold reference, Command
+readback reference, and ticket digest binding. Pending, denied, stale, expired,
+consumed, missing-approver, wrong-request, or mismatched-scope tickets fail
+closed. Public fixtures live in `examples/live-docs-approval/`.
+
+That validator narrows authority; it does not create a standing permission. A
+passing docs-only ticket can support the first docs-only PR rehearsal gate only
+when Foundry, Forge, AO2, Sentinel, Promoter, rollback, worktree, and Command
+evidence also match. Covenant does not grant broad live mutation authority,
+provider access, releases, direct-main mutation, or fully unsupervised complex
+repository mutation through this ticket.
 
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
