@@ -3,6 +3,8 @@ package cli
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -1349,6 +1351,8 @@ func runApproval(args []string, stdout io.Writer, stderr io.Writer) int {
 		return runApprovalInspect(args[1:], stdout, stderr)
 	case "live-docs":
 		return runApprovalLiveDocs(args[1:], stdout, stderr)
+	case "mutation-class":
+		return runApprovalMutationClass(args[1:], stdout, stderr)
 	case "validate":
 		return runApprovalValidate(args[1:], stdout, stderr)
 	case "attach":
@@ -1416,6 +1420,16 @@ type liveDocsApprovalValidateResult struct {
 	TicketID      string `json:"ticket_id"`
 	RequestID     string `json:"request_id"`
 	ApprovalState string `json:"approval_state"`
+	SafeToExecute bool   `json:"safe_to_execute"`
+}
+
+type mutationClassAuthorityValidateResult struct {
+	SchemaVersion string `json:"schema_version"`
+	Valid         bool   `json:"valid"`
+	TicketID      string `json:"ticket_id"`
+	RequestID     string `json:"request_id"`
+	MutationClass string `json:"mutation_class"`
+	SafeToRequest bool   `json:"safe_to_request"`
 	SafeToExecute bool   `json:"safe_to_execute"`
 }
 
@@ -2830,6 +2844,92 @@ func runApprovalLiveDocs(args []string, stdout io.Writer, stderr io.Writer) int 
 	}
 }
 
+func runApprovalMutationClass(args []string, stdout io.Writer, stderr io.Writer) int {
+	if len(args) < 1 {
+		printApprovalMutationClassUsage(stderr)
+		return 2
+	}
+	switch args[0] {
+	case "validate":
+		return runApprovalMutationClassValidate(args[1:], stdout, stderr)
+	default:
+		fmt.Fprintf(stderr, "unknown approval mutation-class command %q\n", args[0])
+		printApprovalMutationClassUsage(stderr)
+		return 2
+	}
+}
+
+func runApprovalMutationClassValidate(args []string, stdout io.Writer, stderr io.Writer) int {
+	flags := flag.NewFlagSet("approval mutation-class validate", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	requestPath := flags.String("request", "", "path to Foundry mutation-class authority request JSON")
+	ticketPath := flags.String("ticket", "", "path to Covenant mutation-class authority ticket JSON")
+	jsonOutput := flags.Bool("json", false, "emit JSON")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	if *requestPath == "" {
+		fmt.Fprintln(stderr, "--request is required")
+		return 2
+	}
+	if *ticketPath == "" {
+		fmt.Fprintln(stderr, "--ticket is required")
+		return 2
+	}
+	request, err := readJSONObjectFile(*requestPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "read mutation-class authority request: %v\n", err)
+		return 1
+	}
+	ticketBytes, err := os.ReadFile(*ticketPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "read mutation-class authority ticket: %v\n", err)
+		return 1
+	}
+	if err := schema.ValidateBytes(schema.MutationClassAuthorityTicketSchemaID, ticketBytes); err != nil {
+		fmt.Fprintf(stderr, "validate mutation-class authority ticket schema: %v\n", err)
+		return 1
+	}
+	var ticket map[string]any
+	if err := json.Unmarshal(ticketBytes, &ticket); err != nil {
+		fmt.Fprintf(stderr, "decode mutation-class authority ticket: %v\n", err)
+		return 1
+	}
+	if err := validateMutationClassAuthorityTicket(request, ticket, time.Now().UTC()); err != nil {
+		fmt.Fprintf(stderr, "validate mutation-class authority ticket: %v\n", err)
+		return 1
+	}
+	result := mutationClassAuthorityValidateResult{
+		SchemaVersion: schema.ApprovalValidateResultSchemaID,
+		Valid:         true,
+		TicketID:      stringField(ticket, "ticket_id"),
+		RequestID:     stringField(ticket, "request_id"),
+		MutationClass: stringField(ticket, "mutation_class"),
+		SafeToRequest: boolField(request, "safe_to_request"),
+		SafeToExecute: false,
+	}
+	if *jsonOutput {
+		jsonResult := approvalValidateResult{
+			SchemaVersion: schema.ApprovalValidateResultSchemaID,
+			Valid:         true,
+			TicketID:      result.TicketID,
+			ContractPath:  *requestPath,
+		}
+		if err := writeSchemaJSON(stdout, schema.ApprovalValidateResultSchemaID, jsonResult); err != nil {
+			fmt.Fprintf(stderr, "write mutation-class authority validate result: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+	fmt.Fprintln(stdout, "valid=true")
+	fmt.Fprintf(stdout, "ticket_id=%s\n", result.TicketID)
+	fmt.Fprintf(stdout, "request_id=%s\n", result.RequestID)
+	fmt.Fprintf(stdout, "mutation_class=%s\n", result.MutationClass)
+	fmt.Fprintf(stdout, "safe_to_request=%t\n", result.SafeToRequest)
+	fmt.Fprintf(stdout, "safe_to_execute=%t\n", result.SafeToExecute)
+	return 0
+}
+
 func runApprovalLiveDocsValidate(args []string, stdout io.Writer, stderr io.Writer) int {
 	flags := flag.NewFlagSet("approval live-docs validate", flag.ContinueOnError)
 	flags.SetOutput(stderr)
@@ -2941,6 +3041,136 @@ func validateLiveDocsApprovalTicket(request map[string]any, ticket map[string]an
 		}
 	}
 	return nil
+}
+
+func validateMutationClassAuthorityTicket(request map[string]any, ticket map[string]any, now time.Time) error {
+	if stringField(request, "schema_version") != "ao.foundry.mutation-class-authority-request.v0.1" {
+		return fmt.Errorf("request schema_version must be ao.foundry.mutation-class-authority-request.v0.1")
+	}
+	if stringField(request, "status") != "pending_covenant_authority" {
+		return fmt.Errorf("request status must be pending_covenant_authority")
+	}
+	requestClass := stringField(request, "mutation_class")
+	if !validMutationClass(requestClass) {
+		return fmt.Errorf("request mutation_class is not supported")
+	}
+	if boolField(request, "safe_to_request") != true || boolField(request, "safe_to_execute") != false {
+		return fmt.Errorf("request must be safe_to_request=true and safe_to_execute=false")
+	}
+	if stringField(ticket, "request_id") != stringField(request, "request_id") {
+		return fmt.Errorf("ticket request_id does not match request")
+	}
+	if stringField(ticket, "approval_state") != "approved" {
+		return fmt.Errorf("approval_state must be approved")
+	}
+	if stringField(ticket, "approver_identity") == "" {
+		return fmt.Errorf("approver_identity is required")
+	}
+	if boolField(ticket, "consumed") {
+		return fmt.Errorf("authority ticket has already been consumed")
+	}
+	expiresAt, err := time.Parse(time.RFC3339, stringField(ticket, "expires_at"))
+	if err != nil {
+		return fmt.Errorf("authority ticket expires_at must be RFC3339: %w", err)
+	}
+	if !expiresAt.After(now) {
+		return fmt.Errorf("authority ticket expired")
+	}
+	if stringField(ticket, "mutation_class") != requestClass {
+		return fmt.Errorf("ticket mutation_class does not match request")
+	}
+	ticketScope, ok := ticket["approved_scope"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("approved_scope is required")
+	}
+	if stringField(ticketScope, "mutation_class") != requestClass {
+		return fmt.Errorf("ticket mutation_class does not match request")
+	}
+	if !jsonEquivalent(ticketScope["allowed_paths"], request["allowed_paths"]) {
+		return fmt.Errorf("ticket path scope is broader than request")
+	}
+	for _, field := range []string{"repo", "branch_policy", "forbidden_paths", "max_changed_files", "required_gates", "authority_boundary"} {
+		if !jsonEquivalent(ticketScope[field], request[field]) {
+			return fmt.Errorf("ticket scope does not exactly match request")
+		}
+	}
+	if boolField(request, "rollback_required") != true || boolField(ticketScope, "rollback_required") != true {
+		return fmt.Errorf("rollback is required for mutation-class authority tickets")
+	}
+	for _, field := range []string{"rollback_scope", "rollback_evidence"} {
+		if !jsonEquivalent(ticketScope[field], request[field]) {
+			return fmt.Errorf("ticket rollback scope does not exactly match request")
+		}
+	}
+	digest, ok := ticket["scope_digest"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("scope_digest is required")
+	}
+	if stringField(digest, "algorithm") != "sha256" {
+		return fmt.Errorf("scope_digest algorithm must be sha256")
+	}
+	if !stringArrayContains(digest["covers"], "approved_scope") {
+		return fmt.Errorf("scope_digest must cover approved_scope")
+	}
+	expected, err := digestApprovedScope(ticketScope)
+	if err != nil {
+		return err
+	}
+	if stringField(digest, "value") != expected {
+		return fmt.Errorf("scope_digest does not match approved_scope")
+	}
+	boundaries, ok := ticket["authority_boundaries"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("authority_boundaries are required")
+	}
+	for _, field := range []string{"exact_scope", "class_bound", "digest_bound", "single_use"} {
+		if !boolField(boundaries, field) {
+			return fmt.Errorf("authority boundary %s must be true", field)
+		}
+	}
+	for _, field := range []string{"live_mutation_grant", "provider_calls_allowed", "release_or_publish_allowed"} {
+		if boolField(boundaries, field) {
+			return fmt.Errorf("authority boundary %s must be false", field)
+		}
+	}
+	return nil
+}
+
+func validMutationClass(value string) bool {
+	switch value {
+	case "docs_only_single_file",
+		"docs_only_multi_file",
+		"docs_config_only",
+		"test_only",
+		"low_risk_code",
+		"multi_repo_low_risk",
+		"complex_repo_mutation":
+		return true
+	default:
+		return false
+	}
+}
+
+func digestApprovedScope(scope map[string]any) (string, error) {
+	bytes, err := json.Marshal(scope)
+	if err != nil {
+		return "", fmt.Errorf("encode approved_scope for digest: %w", err)
+	}
+	sum := sha256.Sum256(bytes)
+	return hex.EncodeToString(sum[:]), nil
+}
+
+func stringArrayContains(value any, want string) bool {
+	values, ok := value.([]any)
+	if !ok {
+		return false
+	}
+	for _, raw := range values {
+		if raw == want {
+			return true
+		}
+	}
+	return false
 }
 
 func stringField(document map[string]any, key string) string {
@@ -3604,11 +3834,16 @@ func printUsage(stderr io.Writer) {
 
 func printApprovalUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: covenant approval <command>")
-	fmt.Fprintln(stderr, "commands: create, inspect, live-docs, validate, attach, revoke, revocations")
+	fmt.Fprintln(stderr, "commands: create, inspect, live-docs, mutation-class, validate, attach, revoke, revocations")
 }
 
 func printApprovalLiveDocsUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: covenant approval live-docs <command>")
+	fmt.Fprintln(stderr, "commands: validate")
+}
+
+func printApprovalMutationClassUsage(stderr io.Writer) {
+	fmt.Fprintln(stderr, "usage: covenant approval mutation-class <command>")
 	fmt.Fprintln(stderr, "commands: validate")
 }
 

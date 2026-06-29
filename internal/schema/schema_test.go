@@ -143,6 +143,26 @@ func TestLiveMutationAuthoritySchemaValidatesDryRunFixture(t *testing.T) {
 	}
 }
 
+func TestMutationClassAuthorityTicketSchemaValidatesFixtures(t *testing.T) {
+	if !KnownSchemaID(MutationClassAuthorityTicketSchemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", MutationClassAuthorityTicketSchemaID)
+	}
+	valid, err := os.ReadFile(filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-approved-docs-multi.json"))
+	if err != nil {
+		t.Fatalf("read valid mutation-class authority ticket fixture: %v", err)
+	}
+	if err := ValidateBytes(MutationClassAuthorityTicketSchemaID, valid); err != nil {
+		t.Fatalf("valid mutation-class authority ticket fixture failed schema: %v", err)
+	}
+	invalid, err := os.ReadFile(filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-missing-rollback.json"))
+	if err != nil {
+		t.Fatalf("read invalid mutation-class authority ticket fixture: %v", err)
+	}
+	if err := ValidateBytes(MutationClassAuthorityTicketSchemaID, invalid); err == nil {
+		t.Fatalf("missing rollback mutation-class authority ticket unexpectedly passed schema")
+	}
+}
+
 func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	required, ok := RequiredSchemaByID(VersionResultSchemaID)
 	if !ok {

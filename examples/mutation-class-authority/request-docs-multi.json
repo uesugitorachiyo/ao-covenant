@@ -1,0 +1,54 @@
+{
+  "schema_version": "ao.foundry.mutation-class-authority-request.v0.1",
+  "request_id": "docs-multi-authority-request",
+  "status": "pending_covenant_authority",
+  "mutation_class": "docs_only_multi_file",
+  "safe_to_request": true,
+  "safe_to_execute": false,
+  "repo": {
+    "id": "ao-atlas",
+    "remote": "uesugitorachiyo/ao-atlas",
+    "target_branch": "main"
+  },
+  "branch_policy": {
+    "branch_prefix": "codex/docs-multi-",
+    "requires_isolated_branch": true,
+    "requires_clean_worktree": true,
+    "requires_pr": true,
+    "allows_direct_main": false
+  },
+  "allowed_paths": [
+    "README.md",
+    "docs/sdd/AO-ATLAS-WORKGRAPH.md"
+  ],
+  "forbidden_paths": [
+    ".github/**",
+    "cmd/**",
+    "internal/**",
+    "schemas/**",
+    "scripts/**",
+    "examples/**"
+  ],
+  "max_changed_files": 2,
+  "required_gates": [
+    "atlas_classification",
+    "foundry_class_gate",
+    "sentinel_no_hold",
+    "promoter_ready",
+    "command_readback",
+    "ci_passed"
+  ],
+  "rollback_required": true,
+  "rollback_scope": [
+    "README.md",
+    "docs/sdd/AO-ATLAS-WORKGRAPH.md"
+  ],
+  "rollback_evidence": {
+    "status": "rehearsed",
+    "artifact_paths": [
+      "examples/mutation-class-authority/rollback-docs-multi.patch"
+    ],
+    "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "authority_boundary": "class_ticket_only"
+}
