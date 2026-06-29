@@ -432,6 +432,14 @@ docs-only mutation class with `mode=dry_run_only`,
 `live_mutation_allowed=false`, `provider_calls_allowed=false`, and
 `release_or_publish_allowed=false`.
 
+The first docs-only live mutation class also has a separate approval ticket
+validator: `covenant approval live-docs validate --request <json> --ticket
+<json>`. The validator accepts only
+`covenant.live-docs-approval-ticket.v1` tickets that are approved, unexpired,
+unconsumed, tied to a non-empty approver identity, and exact-scope matched to
+the Foundry approval request. Pending, denied, stale, or mismatched-scope
+tickets fail closed. Public fixtures live in `examples/live-docs-approval/`.
+
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
 still denied, retained rollback rehearsal evidence without mutation authority

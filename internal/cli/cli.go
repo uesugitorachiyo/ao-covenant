@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/uesugitorachiyo/ao-covenant/internal/approval"
 	"github.com/uesugitorachiyo/ao-covenant/internal/buildinfo"
@@ -1346,6 +1347,8 @@ func runApproval(args []string, stdout io.Writer, stderr io.Writer) int {
 		return runApprovalCreate(args[1:], stdout, stderr)
 	case "inspect":
 		return runApprovalInspect(args[1:], stdout, stderr)
+	case "live-docs":
+		return runApprovalLiveDocs(args[1:], stdout, stderr)
 	case "validate":
 		return runApprovalValidate(args[1:], stdout, stderr)
 	case "attach":
@@ -1405,6 +1408,15 @@ type approvalValidateResult struct {
 	Valid         bool   `json:"valid"`
 	TicketID      string `json:"ticket_id"`
 	ContractPath  string `json:"contract_path,omitempty"`
+}
+
+type liveDocsApprovalValidateResult struct {
+	SchemaVersion string `json:"schema_version"`
+	Valid         bool   `json:"valid"`
+	TicketID      string `json:"ticket_id"`
+	RequestID     string `json:"request_id"`
+	ApprovalState string `json:"approval_state"`
+	SafeToExecute bool   `json:"safe_to_execute"`
 }
 
 type approvalAttachResult struct {
@@ -2803,6 +2815,150 @@ func runApprovalValidate(args []string, stdout io.Writer, stderr io.Writer) int 
 	return 0
 }
 
+func runApprovalLiveDocs(args []string, stdout io.Writer, stderr io.Writer) int {
+	if len(args) < 1 {
+		printApprovalLiveDocsUsage(stderr)
+		return 2
+	}
+	switch args[0] {
+	case "validate":
+		return runApprovalLiveDocsValidate(args[1:], stdout, stderr)
+	default:
+		fmt.Fprintf(stderr, "unknown approval live-docs command %q\n", args[0])
+		printApprovalLiveDocsUsage(stderr)
+		return 2
+	}
+}
+
+func runApprovalLiveDocsValidate(args []string, stdout io.Writer, stderr io.Writer) int {
+	flags := flag.NewFlagSet("approval live-docs validate", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	requestPath := flags.String("request", "", "path to Foundry live docs approval request JSON")
+	ticketPath := flags.String("ticket", "", "path to Covenant live docs approval ticket JSON")
+	jsonOutput := flags.Bool("json", false, "emit JSON")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	if *requestPath == "" {
+		fmt.Fprintln(stderr, "--request is required")
+		return 2
+	}
+	if *ticketPath == "" {
+		fmt.Fprintln(stderr, "--ticket is required")
+		return 2
+	}
+	request, err := readJSONObjectFile(*requestPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "read approval request: %v\n", err)
+		return 1
+	}
+	ticketBytes, err := os.ReadFile(*ticketPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "read approval ticket: %v\n", err)
+		return 1
+	}
+	if err := schema.ValidateBytes(schema.LiveDocsApprovalTicketSchemaID, ticketBytes); err != nil {
+		fmt.Fprintf(stderr, "validate approval ticket schema: %v\n", err)
+		return 1
+	}
+	var ticket map[string]any
+	if err := json.Unmarshal(ticketBytes, &ticket); err != nil {
+		fmt.Fprintf(stderr, "decode approval ticket: %v\n", err)
+		return 1
+	}
+	if err := validateLiveDocsApprovalTicket(request, ticket, time.Now().UTC()); err != nil {
+		fmt.Fprintf(stderr, "validate live docs approval ticket: %v\n", err)
+		return 1
+	}
+	result := liveDocsApprovalValidateResult{
+		SchemaVersion: schema.ApprovalValidateResultSchemaID,
+		Valid:         true,
+		TicketID:      stringField(ticket, "ticket_id"),
+		RequestID:     stringField(ticket, "request_id"),
+		ApprovalState: stringField(ticket, "approval_state"),
+		SafeToExecute: true,
+	}
+	if *jsonOutput {
+		jsonResult := approvalValidateResult{
+			SchemaVersion: schema.ApprovalValidateResultSchemaID,
+			Valid:         true,
+			TicketID:      result.TicketID,
+			ContractPath:  *requestPath,
+		}
+		if err := writeSchemaJSON(stdout, schema.ApprovalValidateResultSchemaID, jsonResult); err != nil {
+			fmt.Fprintf(stderr, "write approval validate result: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+	fmt.Fprintln(stdout, "valid=true")
+	fmt.Fprintf(stdout, "ticket_id=%s\n", result.TicketID)
+	fmt.Fprintf(stdout, "request_id=%s\n", result.RequestID)
+	fmt.Fprintf(stdout, "approval_state=%s\n", result.ApprovalState)
+	fmt.Fprintf(stdout, "safe_to_execute=%t\n", result.SafeToExecute)
+	return 0
+}
+
+func validateLiveDocsApprovalTicket(request map[string]any, ticket map[string]any, now time.Time) error {
+	if stringField(request, "schema_version") != "ao.foundry.live-mutation-approval-request.v0.1" {
+		return fmt.Errorf("request schema_version must be ao.foundry.live-mutation-approval-request.v0.1")
+	}
+	if stringField(request, "status") != "pending_operator_approval" {
+		return fmt.Errorf("request status must be pending_operator_approval")
+	}
+	if stringField(request, "first_live_class") != "docs_only" || boolField(request, "safe_to_request") != true || boolField(request, "safe_to_execute") != false {
+		return fmt.Errorf("request must be safe_to_request=true, safe_to_execute=false, first_live_class=docs_only")
+	}
+	if stringField(ticket, "request_id") != stringField(request, "request_id") {
+		return fmt.Errorf("ticket request_id does not match request")
+	}
+	if stringField(ticket, "approval_state") != "approved" {
+		return fmt.Errorf("approval_state must be approved")
+	}
+	if stringField(ticket, "approver_identity") == "" {
+		return fmt.Errorf("approver_identity is required")
+	}
+	if boolField(ticket, "consumed") {
+		return fmt.Errorf("approval ticket has already been consumed")
+	}
+	expiresAt, err := time.Parse(time.RFC3339, stringField(ticket, "expires_at"))
+	if err != nil {
+		return fmt.Errorf("approval ticket expires_at must be RFC3339: %w", err)
+	}
+	if !expiresAt.After(now) {
+		return fmt.Errorf("approval ticket expired")
+	}
+	if stringField(ticket, "foundry_required_ticket_schema") != "ao.covenant.live-docs-approval-ticket.v0.1" {
+		return fmt.Errorf("foundry_required_ticket_schema does not match request expectation")
+	}
+	ticketScope, ok := ticket["approved_scope"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("approved_scope is required")
+	}
+	for _, field := range []string{"repo", "branch_policy", "docs_only_path_allowlist", "forbidden_paths", "max_changed_files"} {
+		if !jsonEquivalent(ticketScope[field], request[field]) {
+			return fmt.Errorf("ticket scope does not exactly match request")
+		}
+	}
+	return nil
+}
+
+func stringField(document map[string]any, key string) string {
+	value, _ := document[key].(string)
+	return value
+}
+
+func boolField(document map[string]any, key string) bool {
+	value, _ := document[key].(bool)
+	return value
+}
+
+func jsonEquivalent(left any, right any) bool {
+	leftBytes, leftErr := json.Marshal(left)
+	rightBytes, rightErr := json.Marshal(right)
+	return leftErr == nil && rightErr == nil && string(leftBytes) == string(rightBytes)
+}
+
 func runApprovalAttach(args []string, stdout io.Writer, stderr io.Writer) int {
 	flags := flag.NewFlagSet("approval attach", flag.ContinueOnError)
 	flags.SetOutput(stderr)
@@ -3448,7 +3604,12 @@ func printUsage(stderr io.Writer) {
 
 func printApprovalUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: covenant approval <command>")
-	fmt.Fprintln(stderr, "commands: create, inspect, validate, attach, revoke, revocations")
+	fmt.Fprintln(stderr, "commands: create, inspect, live-docs, validate, attach, revoke, revocations")
+}
+
+func printApprovalLiveDocsUsage(stderr io.Writer) {
+	fmt.Fprintln(stderr, "usage: covenant approval live-docs <command>")
+	fmt.Fprintln(stderr, "commands: validate")
 }
 
 func printApprovalRevocationsUsage(stderr io.Writer) {

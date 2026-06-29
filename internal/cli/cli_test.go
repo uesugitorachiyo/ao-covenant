@@ -45,6 +45,73 @@ func TestRunRejectsMissingCommand(t *testing.T) {
 	}
 }
 
+func TestLiveDocsApprovalValidateAcceptsExactApprovedTicket(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{
+		"covenant", "approval", "live-docs", "validate",
+		"--request", filepath.Join("..", "..", "examples", "live-docs-approval", "request.json"),
+		"--ticket", filepath.Join("..", "..", "examples", "live-docs-approval", "ticket-approved.json"),
+	}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("Run returned %d, want 0; stdout=%s stderr=%s", code, stdout.String(), stderr.String())
+	}
+	for _, want := range []string{
+		"valid=true",
+		"approval_state=approved",
+		"safe_to_execute=true",
+		"ticket_id=live-docs-approval-ticket",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("stdout missing %q: %s", want, stdout.String())
+		}
+	}
+}
+
+func TestLiveDocsApprovalValidateFailsClosed(t *testing.T) {
+	cases := []struct {
+		name       string
+		ticketPath string
+		wantError  string
+	}{
+		{
+			name:       "pending",
+			ticketPath: filepath.Join("..", "..", "examples", "live-docs-approval", "ticket-pending.json"),
+			wantError:  "approval_state must be approved",
+		},
+		{
+			name:       "denied",
+			ticketPath: filepath.Join("..", "..", "examples", "live-docs-approval", "ticket-denied.json"),
+			wantError:  "approval_state must be approved",
+		},
+		{
+			name:       "stale",
+			ticketPath: filepath.Join("..", "..", "examples", "live-docs-approval", "ticket-stale.json"),
+			wantError:  "approval ticket expired",
+		},
+		{
+			name:       "mismatched_scope",
+			ticketPath: filepath.Join("..", "..", "examples", "live-docs-approval", "ticket-mismatched-scope.json"),
+			wantError:  "ticket scope does not exactly match request",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			code := Run([]string{
+				"covenant", "approval", "live-docs", "validate",
+				"--request", filepath.Join("..", "..", "examples", "live-docs-approval", "request.json"),
+				"--ticket", tc.ticketPath,
+			}, &stdout, &stderr)
+			if code == 0 {
+				t.Fatalf("Run returned success; stdout=%s", stdout.String())
+			}
+			if !strings.Contains(stderr.String(), tc.wantError) {
+				t.Fatalf("stderr missing %q: %s", tc.wantError, stderr.String())
+			}
+		})
+	}
+}
+
 func TestREADMEOutputSidecarGuaranteesStayAlignedWithHelperCoverage(t *testing.T) {
 	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
 	if err != nil {

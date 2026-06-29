@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.live-docs-approval-ticket.v1",
+  "title": "AO Covenant Live Docs Approval Ticket v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ticket_id",
+    "request_id",
+    "foundry_required_ticket_schema",
+    "approval_state",
+    "approver_identity",
+    "issued_at",
+    "expires_at",
+    "consumed",
+    "approved_scope",
+    "scope_digest",
+    "operator_note"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.live-docs-approval-ticket.v1" },
+    "ticket_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "foundry_required_ticket_schema": {
+      "const": "ao.covenant.live-docs-approval-ticket.v0.1"
+    },
+    "approval_state": {
+      "enum": ["pending", "approved", "denied"]
+    },
+    "approver_identity": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "consumed": { "type": "boolean" },
+    "approved_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "branch_policy",
+        "docs_only_path_allowlist",
+        "forbidden_paths",
+        "max_changed_files"
+      ],
+      "properties": {
+        "repo": { "$ref": "#/$defs/repo" },
+        "branch_policy": { "$ref": "#/$defs/branch_policy" },
+        "docs_only_path_allowlist": { "$ref": "#/$defs/docs_only_path_allowlist" },
+        "forbidden_paths": { "$ref": "#/$defs/forbidden_paths" },
+        "max_changed_files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        }
+      }
+    },
+    "scope_digest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "value", "covers"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "value": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "covers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "operator_note": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "remote", "target_branch"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+        "remote": { "type": "string", "pattern": "^uesugitorachiyo/[a-z0-9][a-z0-9_-]*$" },
+        "target_branch": { "const": "main" }
+      }
+    },
+    "branch_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branch_prefix",
+        "requires_isolated_branch",
+        "requires_clean_worktree",
+        "requires_pr",
+        "allows_direct_main"
+      ],
+      "properties": {
+        "branch_prefix": { "const": "codex/live-docs-" },
+        "requires_isolated_branch": { "const": true },
+        "requires_clean_worktree": { "const": true },
+        "requires_pr": { "const": true },
+        "allows_direct_main": { "const": false }
+      }
+    },
+    "docs_only_path_allowlist": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^docs/[A-Za-z0-9._/-]+\\.md$"
+      }
+    },
+    "forbidden_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._*{}!/-]+$"
+      }
+    }
+  }
+}
