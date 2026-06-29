@@ -123,6 +123,26 @@ func TestReleaseReplacementPreflightReportSchemaValidatesPublishedArtifact(t *te
 	}
 }
 
+func TestLiveMutationAuthoritySchemaValidatesDryRunFixture(t *testing.T) {
+	if !KnownSchemaID(LiveMutationAuthoritySchemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", LiveMutationAuthoritySchemaID)
+	}
+	valid, err := os.ReadFile(filepath.Join("..", "..", "examples", "live-mutation-authority", "docs-only-authority.packet.json"))
+	if err != nil {
+		t.Fatalf("read valid live mutation authority fixture: %v", err)
+	}
+	if err := ValidateBytes(LiveMutationAuthoritySchemaID, valid); err != nil {
+		t.Fatalf("valid live mutation authority fixture failed schema: %v", err)
+	}
+	invalid, err := os.ReadFile(filepath.Join("..", "..", "examples", "live-mutation-authority", "forbidden-missing-rollback.packet.json"))
+	if err != nil {
+		t.Fatalf("read invalid live mutation authority fixture: %v", err)
+	}
+	if err := ValidateBytes(LiveMutationAuthoritySchemaID, invalid); err == nil {
+		t.Fatalf("invalid live mutation authority fixture unexpectedly passed schema")
+	}
+}
+
 func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	required, ok := RequiredSchemaByID(VersionResultSchemaID)
 	if !ok {
