@@ -234,6 +234,12 @@ go run ./cmd/covenant schema validate \
 go run ./cmd/covenant approval mutation-class validate \
   --request examples/mutation-class-authority/request-docs-multi.json \
   --ticket examples/mutation-class-authority/ticket-approved-docs-multi.json
+go run ./cmd/covenant schema validate \
+  --schema covenant.mutation-class-authority-ticket.v1 \
+  --file examples/mutation-class-authority/ticket-approved-test-only.json
+go run ./cmd/covenant approval mutation-class validate \
+  --request examples/mutation-class-authority/request-test-only.json \
+  --ticket examples/mutation-class-authority/ticket-approved-test-only.json
 ```
 
 `covenant compile` accepts a brief inside the current workspace and records that
@@ -465,7 +471,9 @@ single-use. Validation recomputes the SHA-256 digest over `approved_scope`,
 requires the ticket class to match the request class, requires rollback scope
 and rollback evidence, and rejects consumed tickets. Broadened path scope,
 stale digest, wrong class, consumed ticket, and missing rollback fixtures live
-in `examples/mutation-class-authority/`. A valid ticket only proves that one
+in `examples/mutation-class-authority/`. The `test_only` approved fixture is
+bounded to one test file and keeps `safe_to_execute=false`, so it proves ticket
+shape without granting live test mutation. A valid ticket only proves that one
 class-specific authority request has Covenant approval evidence; it still does
 not schedule, execute, promote, publish, call providers, allow direct-main
 mutation, or approve fully unsupervised complex repository mutation.

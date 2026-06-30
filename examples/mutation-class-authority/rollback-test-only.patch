@@ -1,0 +1,7 @@
+diff --git a/internal/atlas/atlas_test.go b/internal/atlas/atlas_test.go
+index 1111111..2222222 100644
+--- a/internal/atlas/atlas_test.go
++++ b/internal/atlas/atlas_test.go
+@@ -1,2 +1 @@
+ package atlas
+-// test-only rehearsal fixture line
