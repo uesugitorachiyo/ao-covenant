@@ -1,0 +1,53 @@
+{
+  "schema_version": "ao.foundry.mutation-class-authority-request.v0.1",
+  "request_id": "low-risk-code-authority-request",
+  "status": "pending_covenant_authority",
+  "mutation_class": "low_risk_code",
+  "safe_to_request": true,
+  "safe_to_execute": false,
+  "repo": {
+    "id": "ao-atlas",
+    "remote": "uesugitorachiyo/ao-atlas",
+    "target_branch": "main"
+  },
+  "branch_policy": {
+    "branch_prefix": "codex/low-risk-",
+    "requires_isolated_branch": true,
+    "requires_clean_worktree": true,
+    "requires_pr": true,
+    "allows_direct_main": false
+  },
+  "allowed_paths": [
+    "internal/atlas/validate.go"
+  ],
+  "forbidden_paths": [
+    ".github/**",
+    "schemas/**",
+    "scripts/**",
+    "examples/**",
+    "go.mod",
+    "go.sum"
+  ],
+  "max_changed_files": 1,
+  "required_gates": [
+    "atlas_classification",
+    "test_only_success",
+    "foundry_class_gate",
+    "sentinel_no_hold",
+    "promoter_low_risk_ready",
+    "command_readback",
+    "ci_passed"
+  ],
+  "rollback_required": true,
+  "rollback_scope": [
+    "internal/atlas/validate.go"
+  ],
+  "rollback_evidence": {
+    "status": "rehearsed",
+    "artifact_paths": [
+      "examples/mutation-class-authority/rollback-low-risk-code.patch"
+    ],
+    "digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  },
+  "authority_boundary": "class_ticket_only"
+}
