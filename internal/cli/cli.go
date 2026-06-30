@@ -3089,7 +3089,10 @@ func validateMutationClassAuthorityTicket(request map[string]any, ticket map[str
 	if !jsonEquivalent(ticketScope["allowed_paths"], request["allowed_paths"]) {
 		return fmt.Errorf("ticket path scope is broader than request")
 	}
-	for _, field := range []string{"repo", "branch_policy", "forbidden_paths", "max_changed_files", "required_gates", "authority_boundary"} {
+	if !jsonEquivalent(ticketScope["max_changed_files"], request["max_changed_files"]) {
+		return fmt.Errorf("ticket diff limit does not exactly match request")
+	}
+	for _, field := range []string{"repo", "branch_policy", "forbidden_paths", "required_gates", "authority_boundary"} {
 		if !jsonEquivalent(ticketScope[field], request[field]) {
 			return fmt.Errorf("ticket scope does not exactly match request")
 		}
