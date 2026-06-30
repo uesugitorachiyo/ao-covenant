@@ -1,0 +1,53 @@
+{
+  "schema_version": "ao.foundry.mutation-class-authority-request.v0.1",
+  "request_id": "multi-repo-low-risk-partial-rollback-request",
+  "status": "pending_covenant_authority",
+  "mutation_class": "multi_repo_low_risk",
+  "safe_to_request": true,
+  "safe_to_execute": false,
+  "repo": {
+    "id": "ao-atlas",
+    "remote": "uesugitorachiyo/ao-atlas",
+    "target_branch": "main"
+  },
+  "branch_policy": {
+    "branch_prefix": "codex/multi-repo-low-risk-",
+    "requires_isolated_branch": true,
+    "requires_clean_worktree": true,
+    "requires_pr": true,
+    "allows_direct_main": false
+  },
+  "allowed_paths": ["repo:ao-atlas:internal/**", "repo:ao-foundry:internal/**"],
+  "forbidden_paths": ["repo:*:.github/**", "repo:*:scripts/**", "repo:*:secrets/**"],
+  "max_changed_files": 4,
+  "required_gates": ["atlas_classification", "foundry_serialized_plan", "per_repo_rollback", "ci_per_repo", "operator_kill_switch"],
+  "rollback_required": true,
+  "rollback_scope": ["repo:ao-atlas:internal/**", "repo:ao-foundry:internal/**"],
+  "rollback_evidence": {
+    "status": "rehearsed",
+    "artifact_paths": ["examples/mutation-class-authority/rollback-multi-repo-low-risk.patch"],
+    "digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "multi_repo_plan": {
+    "status": "ready",
+    "order": ["ao-atlas", "ao-foundry"],
+    "ordered_merge_plan": [
+      { "repo": "ao-atlas", "order": 1, "planned_pr": "dry-run-pr:ao-atlas", "depends_on": [], "merge_after": [] },
+      { "repo": "ao-foundry", "order": 2, "planned_pr": "dry-run-pr:ao-foundry", "depends_on": ["ao-atlas"], "merge_after": ["ao-atlas"] }
+    ]
+  },
+  "per_repo_rollback": [
+    { "repo": "ao-atlas", "status": "ready", "rollback_scope": ["repo:ao-atlas:internal/**"] },
+    { "repo": "ao-foundry", "status": "missing", "rollback_scope": [] }
+  ],
+  "ci_by_repo": [
+    { "repo": "ao-atlas", "status": "passed", "required": true },
+    { "repo": "ao-foundry", "status": "passed", "required": true }
+  ],
+  "repo_state_evidence": [
+    { "repo": "ao-atlas", "status": "clean_synced", "branch": "main", "observed_at_utc": "2026-06-30T00:00:00Z", "expires_at_utc": "2999-01-01T00:00:00Z" },
+    { "repo": "ao-foundry", "status": "clean_synced", "branch": "main", "observed_at_utc": "2026-06-30T00:00:00Z", "expires_at_utc": "2999-01-01T00:00:00Z" }
+  ],
+  "kill_switch": { "required": true, "status": "armed" },
+  "authority_boundary": "class_ticket_only"
+}
