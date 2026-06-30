@@ -1,0 +1,86 @@
+{
+  "schema_version": "covenant.mutation-class-authority-ticket.v1",
+  "ticket_id": "mutation-class-multi-repo-low-risk-missing-dependency-ticket",
+  "request_id": "multi-repo-low-risk-missing-dependency-request",
+  "approval_state": "approved",
+  "approver_identity": "ao-operator",
+  "issued_at": "2026-06-30T00:00:00Z",
+  "expires_at": "2099-01-01T00:00:00Z",
+  "consumed": false,
+  "mutation_class": "multi_repo_low_risk",
+  "approved_scope": {
+    "repo": {
+      "id": "ao-atlas",
+      "remote": "uesugitorachiyo/ao-atlas",
+      "target_branch": "main"
+    },
+    "branch_policy": {
+      "branch_prefix": "codex/multi-repo-low-risk-",
+      "requires_isolated_branch": true,
+      "requires_clean_worktree": true,
+      "requires_pr": true,
+      "allows_direct_main": false
+    },
+    "mutation_class": "multi_repo_low_risk",
+    "allowed_paths": ["repo:ao-atlas:internal/**", "repo:ao-foundry:internal/**"],
+    "forbidden_paths": ["repo:*:.github/**", "repo:*:scripts/**", "repo:*:secrets/**"],
+    "max_changed_files": 4,
+    "required_gates": ["atlas_classification", "foundry_serialized_plan", "per_repo_rollback", "ci_per_repo", "operator_kill_switch"],
+    "rollback_required": true,
+    "rollback_scope": ["repo:ao-atlas:internal/**", "repo:ao-foundry:internal/**"],
+    "rollback_evidence": {
+      "status": "rehearsed",
+      "artifact_paths": ["examples/mutation-class-authority/rollback-multi-repo-low-risk.patch"],
+      "digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "multi_repo_plan": {
+      "status": "ready",
+      "order": ["ao-atlas", "ao-foundry"],
+      "ordered_merge_plan": [
+        {
+          "repo": "ao-atlas",
+          "order": 1,
+          "planned_pr": "dry-run-pr:ao-atlas",
+          "depends_on": [],
+          "merge_after": []
+        },
+        {
+          "repo": "ao-foundry",
+          "order": 2,
+          "planned_pr": "dry-run-pr:ao-foundry",
+          "depends_on": ["ao-command"],
+          "merge_after": ["ao-command"]
+        }
+      ]
+    },
+    "per_repo_rollback": [
+      { "repo": "ao-atlas", "status": "ready", "rollback_scope": ["repo:ao-atlas:internal/**"] },
+      { "repo": "ao-foundry", "status": "ready", "rollback_scope": ["repo:ao-foundry:internal/**"] }
+    ],
+    "ci_by_repo": [
+      { "repo": "ao-atlas", "status": "passed", "required": true },
+      { "repo": "ao-foundry", "status": "passed", "required": true }
+    ],
+    "repo_state_evidence": [
+      { "repo": "ao-atlas", "status": "clean_synced", "branch": "main", "observed_at_utc": "2026-06-30T00:00:00Z", "expires_at_utc": "2999-01-01T00:00:00Z" },
+      { "repo": "ao-foundry", "status": "clean_synced", "branch": "main", "observed_at_utc": "2026-06-30T00:00:00Z", "expires_at_utc": "2999-01-01T00:00:00Z" }
+    ],
+    "kill_switch": { "required": true, "status": "armed" },
+    "authority_boundary": "class_ticket_only"
+  },
+  "scope_digest": {
+    "algorithm": "sha256",
+    "value": "6c18d687e54cfe062ce5141f6c64be111638f612c03506cfea7a53bc0350593e",
+    "covers": ["approved_scope"]
+  },
+  "authority_boundaries": {
+    "exact_scope": true,
+    "class_bound": true,
+    "digest_bound": true,
+    "single_use": true,
+    "live_mutation_grant": false,
+    "provider_calls_allowed": false,
+    "release_or_publish_allowed": false
+  },
+  "operator_note": "Invalid fixture: ordered dependency does not name an earlier planned repo."
+}

@@ -3105,6 +3105,11 @@ func validateMutationClassAuthorityTicket(request map[string]any, ticket map[str
 			return fmt.Errorf("ticket rollback scope does not exactly match request")
 		}
 	}
+	if requestClass == "multi_repo_low_risk" {
+		if err := validateMultiRepoLowRiskAuthorityScope(request, ticketScope, now); err != nil {
+			return err
+		}
+	}
 	digest, ok := ticket["scope_digest"].(map[string]any)
 	if !ok {
 		return fmt.Errorf("scope_digest is required")
@@ -3134,6 +3139,140 @@ func validateMutationClassAuthorityTicket(request map[string]any, ticket map[str
 	for _, field := range []string{"live_mutation_grant", "provider_calls_allowed", "release_or_publish_allowed"} {
 		if boolField(boundaries, field) {
 			return fmt.Errorf("authority boundary %s must be false", field)
+		}
+	}
+	return nil
+}
+
+func validateMultiRepoLowRiskAuthorityScope(request map[string]any, ticketScope map[string]any, now time.Time) error {
+	for _, field := range []string{"multi_repo_plan", "per_repo_rollback", "ci_by_repo", "repo_state_evidence", "kill_switch"} {
+		if !jsonEquivalent(ticketScope[field], request[field]) {
+			return fmt.Errorf("ticket scope does not exactly match multi_repo_low_risk request")
+		}
+	}
+	plan, ok := ticketScope["multi_repo_plan"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("multi_repo_low_risk ordered merge plan is required")
+	}
+	if stringField(plan, "status") != "ready" {
+		return fmt.Errorf("multi_repo_low_risk ordered merge plan is not ready")
+	}
+	plannedRepos, err := validateOrderedMultiRepoPlan(plan)
+	if err != nil {
+		return err
+	}
+	if err := validatePerRepoRollback(plannedRepos, ticketScope["per_repo_rollback"]); err != nil {
+		return err
+	}
+	if err := validatePerRepoCI(plannedRepos, ticketScope["ci_by_repo"]); err != nil {
+		return err
+	}
+	if err := validateFreshRepoState(plannedRepos, ticketScope["repo_state_evidence"], now); err != nil {
+		return err
+	}
+	killSwitch, ok := ticketScope["kill_switch"].(map[string]any)
+	if !ok || !boolField(killSwitch, "required") || stringField(killSwitch, "status") != "armed" {
+		return fmt.Errorf("operator kill-switch must be armed for multi_repo_low_risk")
+	}
+	return nil
+}
+
+func validateOrderedMultiRepoPlan(plan map[string]any) ([]string, error) {
+	order, ok := stringSliceField(plan["order"])
+	if !ok || len(order) == 0 {
+		return nil, fmt.Errorf("ordered dependency is missing or not earlier")
+	}
+	entries, ok := mapSliceField(plan["ordered_merge_plan"])
+	if !ok || len(entries) != len(order) {
+		return nil, fmt.Errorf("ordered dependency is missing or not earlier")
+	}
+	seen := map[string]bool{}
+	repos := make([]string, 0, len(entries))
+	for index, entry := range entries {
+		repo := stringField(entry, "repo")
+		if repo == "" || repo != order[index] || intField(entry, "order") != index+1 || stringField(entry, "planned_pr") == "" {
+			return nil, fmt.Errorf("ordered dependency is missing or not earlier")
+		}
+		dependencies, ok := stringSliceField(entry["depends_on"])
+		if !ok {
+			return nil, fmt.Errorf("ordered dependency is missing or not earlier")
+		}
+		mergeAfter, ok := stringSliceField(entry["merge_after"])
+		if !ok || !jsonEquivalent(entry["depends_on"], entry["merge_after"]) {
+			return nil, fmt.Errorf("ordered dependency is missing or not earlier")
+		}
+		for _, dependency := range dependencies {
+			if !seen[dependency] {
+				return nil, fmt.Errorf("ordered dependency is missing or not earlier")
+			}
+		}
+		for _, dependency := range mergeAfter {
+			if !seen[dependency] {
+				return nil, fmt.Errorf("ordered dependency is missing or not earlier")
+			}
+		}
+		seen[repo] = true
+		repos = append(repos, repo)
+	}
+	return repos, nil
+}
+
+func validatePerRepoRollback(repos []string, value any) error {
+	entries, ok := mapSliceField(value)
+	if !ok {
+		return fmt.Errorf("per-repo rollback is incomplete")
+	}
+	byRepo := map[string]map[string]any{}
+	for _, entry := range entries {
+		byRepo[stringField(entry, "repo")] = entry
+	}
+	for _, repo := range repos {
+		entry := byRepo[repo]
+		scope, _ := stringSliceField(entry["rollback_scope"])
+		if entry == nil || stringField(entry, "status") != "ready" || len(scope) == 0 {
+			return fmt.Errorf("per-repo rollback is incomplete")
+		}
+	}
+	return nil
+}
+
+func validatePerRepoCI(repos []string, value any) error {
+	entries, ok := mapSliceField(value)
+	if !ok {
+		return fmt.Errorf("per-repo CI is incomplete")
+	}
+	byRepo := map[string]map[string]any{}
+	for _, entry := range entries {
+		byRepo[stringField(entry, "repo")] = entry
+	}
+	for _, repo := range repos {
+		entry := byRepo[repo]
+		status := stringField(entry, "status")
+		if entry == nil || !boolField(entry, "required") || (status != "passed" && status != "success") {
+			return fmt.Errorf("per-repo CI is incomplete")
+		}
+	}
+	return nil
+}
+
+func validateFreshRepoState(repos []string, value any, now time.Time) error {
+	entries, ok := mapSliceField(value)
+	if !ok {
+		return fmt.Errorf("repo state evidence is stale")
+	}
+	byRepo := map[string]map[string]any{}
+	for _, entry := range entries {
+		byRepo[stringField(entry, "repo")] = entry
+	}
+	for _, repo := range repos {
+		entry := byRepo[repo]
+		if entry == nil || stringField(entry, "status") != "clean_synced" || stringField(entry, "branch") != "main" {
+			return fmt.Errorf("repo state evidence is stale")
+		}
+		observedAt, observedErr := time.Parse(time.RFC3339, stringField(entry, "observed_at_utc"))
+		expiresAt, expiresErr := time.Parse(time.RFC3339, stringField(entry, "expires_at_utc"))
+		if observedErr != nil || expiresErr != nil || observedAt.After(now) || !expiresAt.After(now) {
+			return fmt.Errorf("repo state evidence is stale")
 		}
 	}
 	return nil
@@ -3184,6 +3323,49 @@ func stringField(document map[string]any, key string) string {
 func boolField(document map[string]any, key string) bool {
 	value, _ := document[key].(bool)
 	return value
+}
+
+func intField(document map[string]any, key string) int {
+	switch value := document[key].(type) {
+	case float64:
+		return int(value)
+	case int:
+		return value
+	default:
+		return 0
+	}
+}
+
+func stringSliceField(value any) ([]string, bool) {
+	items, ok := value.([]any)
+	if !ok {
+		return nil, false
+	}
+	values := make([]string, 0, len(items))
+	for _, item := range items {
+		text, ok := item.(string)
+		if !ok {
+			return nil, false
+		}
+		values = append(values, text)
+	}
+	return values, true
+}
+
+func mapSliceField(value any) ([]map[string]any, bool) {
+	items, ok := value.([]any)
+	if !ok {
+		return nil, false
+	}
+	values := make([]map[string]any, 0, len(items))
+	for _, item := range items {
+		document, ok := item.(map[string]any)
+		if !ok {
+			return nil, false
+		}
+		values = append(values, document)
+	}
+	return values, true
 }
 
 func jsonEquivalent(left any, right any) bool {

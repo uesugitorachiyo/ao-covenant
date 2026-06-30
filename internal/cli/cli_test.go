@@ -184,6 +184,30 @@ func TestMutationClassAuthorityValidateAcceptsLowRiskCodeDryRunTicket(t *testing
 	}
 }
 
+func TestMutationClassAuthorityValidateAcceptsMultiRepoLowRiskTicket(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{
+		"covenant", "approval", "mutation-class", "validate",
+		"--request", filepath.Join("..", "..", "examples", "mutation-class-authority", "request-multi-repo-low-risk.json"),
+		"--ticket", filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-approved-multi-repo-low-risk.json"),
+	}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("Run returned %d, want 0; stdout=%s stderr=%s", code, stdout.String(), stderr.String())
+	}
+	for _, want := range []string{
+		"valid=true",
+		"ticket_id=mutation-class-multi-repo-low-risk-ticket",
+		"request_id=multi-repo-low-risk-authority-request",
+		"mutation_class=multi_repo_low_risk",
+		"safe_to_request=true",
+		"safe_to_execute=false",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("stdout missing %q: %s", want, stdout.String())
+		}
+	}
+}
+
 func TestMutationClassAuthorityValidateRejectsLowRiskDiffLimitBroadening(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := Run([]string{
@@ -196,6 +220,50 @@ func TestMutationClassAuthorityValidateRejectsLowRiskDiffLimitBroadening(t *test
 	}
 	if !strings.Contains(stderr.String(), "ticket diff limit does not exactly match request") {
 		t.Fatalf("stderr missing diff-limit diagnostic: %s", stderr.String())
+	}
+}
+
+func TestMutationClassAuthorityValidateRejectsInvalidMultiRepoLowRiskScope(t *testing.T) {
+	cases := []struct {
+		name        string
+		requestPath string
+		ticketPath  string
+		wantError   string
+	}{
+		{
+			name:        "missing_dependency",
+			requestPath: filepath.Join("..", "..", "examples", "mutation-class-authority", "request-multi-repo-low-risk-missing-dependency.json"),
+			ticketPath:  filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-missing-dependency-multi-repo-low-risk.json"),
+			wantError:   "ordered dependency is missing or not earlier",
+		},
+		{
+			name:        "stale_repo_state",
+			requestPath: filepath.Join("..", "..", "examples", "mutation-class-authority", "request-multi-repo-low-risk-stale-repo-state.json"),
+			ticketPath:  filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-stale-repo-state-multi-repo-low-risk.json"),
+			wantError:   "repo state evidence is stale",
+		},
+		{
+			name:        "partial_rollback",
+			requestPath: filepath.Join("..", "..", "examples", "mutation-class-authority", "request-multi-repo-low-risk-partial-rollback.json"),
+			ticketPath:  filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-partial-rollback-multi-repo-low-risk.json"),
+			wantError:   "per-repo rollback is incomplete",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			code := Run([]string{
+				"covenant", "approval", "mutation-class", "validate",
+				"--request", tc.requestPath,
+				"--ticket", tc.ticketPath,
+			}, &stdout, &stderr)
+			if code == 0 {
+				t.Fatalf("Run returned success; stdout=%s", stdout.String())
+			}
+			if !strings.Contains(stderr.String(), tc.wantError) {
+				t.Fatalf("stderr missing %q: %s", tc.wantError, stderr.String())
+			}
+		})
 	}
 }
 

@@ -481,7 +481,10 @@ low-risk diff limit, stale digest, wrong class, consumed ticket, and missing
 rollback fixtures live in `examples/mutation-class-authority/`. The `test_only`
 approved fixture is bounded to one test file, and the `low_risk_code` dry-run
 fixture is bounded to one code file. Both keep `safe_to_execute=false`, so they
-prove ticket shape without granting live mutation. A valid ticket only proves
+prove ticket shape without granting live mutation. The `multi_repo_low_risk`
+ticket fixture additionally binds an ordered merge plan, per-repo rollback,
+per-repo CI, fresh clean-main repo state, and an armed kill switch; missing
+dependency, stale repo state, and partial rollback fixtures fail closed. A valid ticket only proves
 that one class-specific authority request has Covenant approval evidence; it
 still does not schedule, execute, promote, publish, call providers, allow
 direct-main mutation, or approve fully unsupervised complex repository mutation.
