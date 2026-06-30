@@ -184,6 +184,21 @@ func TestMutationClassAuthorityValidateAcceptsLowRiskCodeDryRunTicket(t *testing
 	}
 }
 
+func TestMutationClassAuthorityValidateRejectsLowRiskDiffLimitBroadening(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{
+		"covenant", "approval", "mutation-class", "validate",
+		"--request", filepath.Join("..", "..", "examples", "mutation-class-authority", "request-low-risk-code.json"),
+		"--ticket", filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-broadened-diff-limit-low-risk-code.json"),
+	}, &stdout, &stderr)
+	if code == 0 {
+		t.Fatalf("Run returned success; stdout=%s", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "ticket diff limit does not exactly match request") {
+		t.Fatalf("stderr missing diff-limit diagnostic: %s", stderr.String())
+	}
+}
+
 func TestMutationClassAuthorityValidateFailsClosed(t *testing.T) {
 	cases := []struct {
 		name       string

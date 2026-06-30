@@ -474,16 +474,17 @@ Class-specific live mutation authority uses
 `covenant approval mutation-class validate --request <json> --ticket <json>`.
 These tickets are exact-scope, expiring, digest-bound, class-bound, and
 single-use. Validation recomputes the SHA-256 digest over `approved_scope`,
-requires the ticket class to match the request class, requires rollback scope
-and rollback evidence, and rejects consumed tickets. Broadened path scope,
-stale digest, wrong class, consumed ticket, and missing rollback fixtures live
-in `examples/mutation-class-authority/`. The `test_only` approved fixture is
-bounded to one test file, and the `low_risk_code` dry-run fixture is bounded to
-one code file. Both keep `safe_to_execute=false`, so they prove ticket shape
-without granting live mutation. A valid ticket only proves that one
-class-specific authority request has Covenant approval evidence; it still does
-not schedule, execute, promote, publish, call providers, allow direct-main
-mutation, or approve fully unsupervised complex repository mutation.
+requires the ticket class to match the request class, requires exact
+`max_changed_files` diff-limit binding, requires rollback scope and rollback
+evidence, and rejects consumed tickets. Broadened path scope, broadened
+low-risk diff limit, stale digest, wrong class, consumed ticket, and missing
+rollback fixtures live in `examples/mutation-class-authority/`. The `test_only`
+approved fixture is bounded to one test file, and the `low_risk_code` dry-run
+fixture is bounded to one code file. Both keep `safe_to_execute=false`, so they
+prove ticket shape without granting live mutation. A valid ticket only proves
+that one class-specific authority request has Covenant approval evidence; it
+still does not schedule, execute, promote, publish, call providers, allow
+direct-main mutation, or approve fully unsupervised complex repository mutation.
 
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
