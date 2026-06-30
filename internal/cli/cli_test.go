@@ -184,6 +184,49 @@ func TestMutationClassAuthorityValidateAcceptsLowRiskCodeDryRunTicket(t *testing
 	}
 }
 
+func TestLowRiskCodeLivePolicyValidateAcceptsExactCandidatePolicy(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{
+		"covenant", "approval", "low-risk-code-live", "validate",
+		"--policy", filepath.Join("..", "..", "examples", "low-risk-code-live-policy", "policy-approved-candidate-one.json"),
+	}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("Run returned %d, want 0; stdout=%s stderr=%s", code, stdout.String(), stderr.String())
+	}
+	for _, want := range []string{
+		"valid=true",
+		"policy_id=low-risk-code-live-policy-candidate-one",
+		"mutation_class=low_risk_code",
+		"candidate_repo=ao-atlas",
+		"base_branch=main",
+		"proposed_branch=codex/low-risk-code-rehearsal-one",
+		"file_allowlist=internal/atlas/validate.go",
+		"command_allowlist=git diff --check",
+		"command_allowlist=go test ./...",
+		"safe_to_request=true",
+		"safe_to_execute=false",
+		"live_mutation_grant=false",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("stdout missing %q: %s", want, stdout.String())
+		}
+	}
+}
+
+func TestLowRiskCodeLivePolicyValidateFailsClosedOnScopeMismatch(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{
+		"covenant", "approval", "low-risk-code-live", "validate",
+		"--policy", filepath.Join("..", "..", "examples", "low-risk-code-live-policy", "policy-mismatched-branch.json"),
+	}, &stdout, &stderr)
+	if code == 0 {
+		t.Fatalf("Run returned success; stdout=%s", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "proposed_branch must be codex/low-risk-code-rehearsal-one") {
+		t.Fatalf("stderr missing proposed branch diagnostic: %s", stderr.String())
+	}
+}
+
 func TestMutationClassAuthorityValidateAcceptsMultiRepoLowRiskTicket(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := Run([]string{

@@ -1353,6 +1353,8 @@ func runApproval(args []string, stdout io.Writer, stderr io.Writer) int {
 		return runApprovalLiveDocs(args[1:], stdout, stderr)
 	case "mutation-class":
 		return runApprovalMutationClass(args[1:], stdout, stderr)
+	case "low-risk-code-live":
+		return runApprovalLowRiskCodeLive(args[1:], stdout, stderr)
 	case "validate":
 		return runApprovalValidate(args[1:], stdout, stderr)
 	case "attach":
@@ -1431,6 +1433,21 @@ type mutationClassAuthorityValidateResult struct {
 	MutationClass string `json:"mutation_class"`
 	SafeToRequest bool   `json:"safe_to_request"`
 	SafeToExecute bool   `json:"safe_to_execute"`
+}
+
+type lowRiskCodeLivePolicyValidateResult struct {
+	SchemaVersion     string   `json:"schema_version"`
+	Valid             bool     `json:"valid"`
+	PolicyID          string   `json:"policy_id"`
+	MutationClass     string   `json:"mutation_class"`
+	CandidateRepo     string   `json:"candidate_repo"`
+	BaseBranch        string   `json:"base_branch"`
+	ProposedBranch    string   `json:"proposed_branch"`
+	FileAllowlist     []string `json:"file_allowlist"`
+	CommandAllowlist  []string `json:"command_allowlist"`
+	SafeToRequest     bool     `json:"safe_to_request"`
+	SafeToExecute     bool     `json:"safe_to_execute"`
+	LiveMutationGrant bool     `json:"live_mutation_grant"`
 }
 
 type approvalAttachResult struct {
@@ -2844,6 +2861,21 @@ func runApprovalLiveDocs(args []string, stdout io.Writer, stderr io.Writer) int 
 	}
 }
 
+func runApprovalLowRiskCodeLive(args []string, stdout io.Writer, stderr io.Writer) int {
+	if len(args) < 1 {
+		printApprovalLowRiskCodeLiveUsage(stderr)
+		return 2
+	}
+	switch args[0] {
+	case "validate":
+		return runApprovalLowRiskCodeLiveValidate(args[1:], stdout, stderr)
+	default:
+		fmt.Fprintf(stderr, "unknown approval low-risk-code-live command %q\n", args[0])
+		printApprovalLowRiskCodeLiveUsage(stderr)
+		return 2
+	}
+}
+
 func runApprovalMutationClass(args []string, stdout io.Writer, stderr io.Writer) int {
 	if len(args) < 1 {
 		printApprovalMutationClassUsage(stderr)
@@ -2927,6 +2959,86 @@ func runApprovalMutationClassValidate(args []string, stdout io.Writer, stderr io
 	fmt.Fprintf(stdout, "mutation_class=%s\n", result.MutationClass)
 	fmt.Fprintf(stdout, "safe_to_request=%t\n", result.SafeToRequest)
 	fmt.Fprintf(stdout, "safe_to_execute=%t\n", result.SafeToExecute)
+	return 0
+}
+
+func runApprovalLowRiskCodeLiveValidate(args []string, stdout io.Writer, stderr io.Writer) int {
+	flags := flag.NewFlagSet("approval low-risk-code-live validate", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	policyPath := flags.String("policy", "", "path to Covenant low_risk_code live policy evidence JSON")
+	jsonOutput := flags.Bool("json", false, "emit JSON")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	if *policyPath == "" {
+		fmt.Fprintln(stderr, "--policy is required")
+		return 2
+	}
+	policyBytes, err := os.ReadFile(*policyPath)
+	if err != nil {
+		fmt.Fprintf(stderr, "read low_risk_code live policy: %v\n", err)
+		return 1
+	}
+	if err := schema.ValidateBytes(schema.LowRiskCodeLivePolicySchemaID, policyBytes); err != nil {
+		fmt.Fprintf(stderr, "validate low_risk_code live policy schema: %v\n", err)
+		return 1
+	}
+	var policy map[string]any
+	if err := json.Unmarshal(policyBytes, &policy); err != nil {
+		fmt.Fprintf(stderr, "decode low_risk_code live policy: %v\n", err)
+		return 1
+	}
+	if err := validateLowRiskCodeLivePolicy(policy, time.Now().UTC()); err != nil {
+		fmt.Fprintf(stderr, "validate low_risk_code live policy: %v\n", err)
+		return 1
+	}
+	candidateScope, _ := policy["candidate_scope"].(map[string]any)
+	repo, _ := candidateScope["repo"].(map[string]any)
+	fileAllowlist, _ := stringSliceField(candidateScope["file_allowlist"])
+	commandAllowlist, _ := stringSliceField(candidateScope["command_allowlist"])
+	boundaries, _ := policy["authority_boundaries"].(map[string]any)
+	result := lowRiskCodeLivePolicyValidateResult{
+		SchemaVersion:     schema.ApprovalValidateResultSchemaID,
+		Valid:             true,
+		PolicyID:          stringField(policy, "policy_id"),
+		MutationClass:     stringField(policy, "mutation_class"),
+		CandidateRepo:     stringField(repo, "id"),
+		BaseBranch:        stringField(candidateScope, "base_branch"),
+		ProposedBranch:    stringField(candidateScope, "proposed_branch"),
+		FileAllowlist:     fileAllowlist,
+		CommandAllowlist:  commandAllowlist,
+		SafeToRequest:     boolField(policy, "safe_to_request"),
+		SafeToExecute:     boolField(policy, "safe_to_execute"),
+		LiveMutationGrant: boolField(boundaries, "live_mutation_grant"),
+	}
+	if *jsonOutput {
+		jsonResult := approvalValidateResult{
+			SchemaVersion: schema.ApprovalValidateResultSchemaID,
+			Valid:         true,
+			TicketID:      result.PolicyID,
+			ContractPath:  *policyPath,
+		}
+		if err := writeSchemaJSON(stdout, schema.ApprovalValidateResultSchemaID, jsonResult); err != nil {
+			fmt.Fprintf(stderr, "write low_risk_code live policy validate result: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+	fmt.Fprintln(stdout, "valid=true")
+	fmt.Fprintf(stdout, "policy_id=%s\n", result.PolicyID)
+	fmt.Fprintf(stdout, "mutation_class=%s\n", result.MutationClass)
+	fmt.Fprintf(stdout, "candidate_repo=%s\n", result.CandidateRepo)
+	fmt.Fprintf(stdout, "base_branch=%s\n", result.BaseBranch)
+	fmt.Fprintf(stdout, "proposed_branch=%s\n", result.ProposedBranch)
+	for _, path := range result.FileAllowlist {
+		fmt.Fprintf(stdout, "file_allowlist=%s\n", path)
+	}
+	for _, command := range result.CommandAllowlist {
+		fmt.Fprintf(stdout, "command_allowlist=%s\n", command)
+	}
+	fmt.Fprintf(stdout, "safe_to_request=%t\n", result.SafeToRequest)
+	fmt.Fprintf(stdout, "safe_to_execute=%t\n", result.SafeToExecute)
+	fmt.Fprintf(stdout, "live_mutation_grant=%t\n", result.LiveMutationGrant)
 	return 0
 }
 
@@ -3144,6 +3256,126 @@ func validateMutationClassAuthorityTicket(request map[string]any, ticket map[str
 	return nil
 }
 
+func validateLowRiskCodeLivePolicy(policy map[string]any, now time.Time) error {
+	if stringField(policy, "schema_version") != schema.LowRiskCodeLivePolicySchemaID {
+		return fmt.Errorf("schema_version must be %s", schema.LowRiskCodeLivePolicySchemaID)
+	}
+	if stringField(policy, "approval_state") != "approved" {
+		return fmt.Errorf("approval_state must be approved")
+	}
+	if stringField(policy, "approver_identity") == "" {
+		return fmt.Errorf("approver_identity is required")
+	}
+	if boolField(policy, "consumed") {
+		return fmt.Errorf("low_risk_code live policy has already been consumed")
+	}
+	if stringField(policy, "mutation_class") != "low_risk_code" {
+		return fmt.Errorf("mutation_class must be low_risk_code")
+	}
+	if boolField(policy, "safe_to_request") != true || boolField(policy, "safe_to_execute") != false {
+		return fmt.Errorf("policy must be safe_to_request=true and safe_to_execute=false")
+	}
+	issuedAt, issuedErr := time.Parse(time.RFC3339, stringField(policy, "issued_at"))
+	expiresAt, expiresErr := time.Parse(time.RFC3339, stringField(policy, "expires_at"))
+	if issuedErr != nil || expiresErr != nil {
+		return fmt.Errorf("policy issued_at and expires_at must be RFC3339")
+	}
+	if issuedAt.After(now) || !expiresAt.After(now) {
+		return fmt.Errorf("low_risk_code live policy is stale or not yet valid")
+	}
+	candidateScope, ok := policy["candidate_scope"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("candidate_scope is required")
+	}
+	if err := validateLowRiskCodeLiveCandidateScope(candidateScope); err != nil {
+		return err
+	}
+	digest, ok := policy["scope_digest"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("scope_digest is required")
+	}
+	if stringField(digest, "algorithm") != "sha256" {
+		return fmt.Errorf("scope_digest algorithm must be sha256")
+	}
+	if !stringArrayContains(digest["covers"], "candidate_scope") {
+		return fmt.Errorf("scope_digest must cover candidate_scope")
+	}
+	expected, err := digestApprovedScope(candidateScope)
+	if err != nil {
+		return err
+	}
+	if stringField(digest, "value") != expected {
+		return fmt.Errorf("scope_digest does not match candidate_scope")
+	}
+	boundaries, ok := policy["authority_boundaries"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("authority_boundaries are required")
+	}
+	for _, field := range []string{"exact_scope", "class_bound", "digest_bound", "single_use", "single_repo", "single_branch"} {
+		if !boolField(boundaries, field) {
+			return fmt.Errorf("authority boundary %s must be true", field)
+		}
+	}
+	for _, field := range []string{"live_mutation_grant", "multi_repo_mutation_allowed", "complex_repo_mutation_allowed", "fully_unsupervised_complex_mutation_allowed", "provider_calls_allowed", "release_or_publish_allowed"} {
+		if boolField(boundaries, field) {
+			return fmt.Errorf("authority boundary %s must be false", field)
+		}
+	}
+	return nil
+}
+
+func validateLowRiskCodeLiveCandidateScope(scope map[string]any) error {
+	chain, ok := scope["dry_run_chain"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("dry_run_chain is required")
+	}
+	if stringField(chain, "path") != "tmp/low-risk-code-live-rehearsal-20260630/chain/summary.json" {
+		return fmt.Errorf("dry_run_chain path must be tmp/low-risk-code-live-rehearsal-20260630/chain/summary.json")
+	}
+	if stringField(chain, "sha256") != "046dcdc9a17fcfd60877c8e61d1a15c722f7c34cacdeeb139651f153c6e1196e" {
+		return fmt.Errorf("dry_run_chain sha256 must match current held rehearsal chain")
+	}
+	repo, ok := scope["repo"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("repo is required")
+	}
+	if stringField(repo, "id") != "ao-atlas" {
+		return fmt.Errorf("repo id must be ao-atlas")
+	}
+	if stringField(repo, "remote") != "uesugitorachiyo/ao-atlas" {
+		return fmt.Errorf("repo remote must be uesugitorachiyo/ao-atlas")
+	}
+	if stringField(scope, "base_branch") != "main" {
+		return fmt.Errorf("base_branch must be main")
+	}
+	if stringField(scope, "proposed_branch") != "codex/low-risk-code-rehearsal-one" {
+		return fmt.Errorf("proposed_branch must be codex/low-risk-code-rehearsal-one")
+	}
+	if stringField(scope, "intent") != "behavior-preserving cleanup in internal uniqueStrings helper" {
+		return fmt.Errorf("intent must match selected held candidate")
+	}
+	if err := requireExactStringSlice(scope["file_allowlist"], []string{"internal/atlas/validate.go"}, "file_allowlist"); err != nil {
+		return err
+	}
+	if err := requireExactStringSlice(scope["command_allowlist"], []string{"git diff --check", "go test ./..."}, "command_allowlist"); err != nil {
+		return err
+	}
+	rollbackPlan, ok := scope["rollback_plan"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("rollback_plan is required")
+	}
+	if !boolField(rollbackPlan, "required") {
+		return fmt.Errorf("rollback_plan required must be true")
+	}
+	if stringField(rollbackPlan, "strategy") == "" {
+		return fmt.Errorf("rollback_plan strategy is required")
+	}
+	if err := requireExactStringSlice(rollbackPlan["scope"], []string{"internal/atlas/validate.go"}, "rollback_plan scope"); err != nil {
+		return err
+	}
+	return nil
+}
+
 func validateMultiRepoLowRiskAuthorityScope(request map[string]any, ticketScope map[string]any, now time.Time) error {
 	for _, field := range []string{"multi_repo_plan", "per_repo_rollback", "ci_by_repo", "repo_state_evidence", "kill_switch"} {
 		if !jsonEquivalent(ticketScope[field], request[field]) {
@@ -3313,6 +3545,22 @@ func stringArrayContains(value any, want string) bool {
 		}
 	}
 	return false
+}
+
+func requireExactStringSlice(value any, want []string, label string) error {
+	got, ok := stringSliceField(value)
+	if !ok {
+		return fmt.Errorf("%s must be a string array", label)
+	}
+	if len(got) != len(want) {
+		return fmt.Errorf("%s must exactly match selected held candidate", label)
+	}
+	for index := range want {
+		if got[index] != want[index] {
+			return fmt.Errorf("%s must exactly match selected held candidate", label)
+		}
+	}
+	return nil
 }
 
 func stringField(document map[string]any, key string) string {
@@ -4019,7 +4267,7 @@ func printUsage(stderr io.Writer) {
 
 func printApprovalUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: covenant approval <command>")
-	fmt.Fprintln(stderr, "commands: create, inspect, live-docs, mutation-class, validate, attach, revoke, revocations")
+	fmt.Fprintln(stderr, "commands: create, inspect, live-docs, mutation-class, low-risk-code-live, validate, attach, revoke, revocations")
 }
 
 func printApprovalLiveDocsUsage(stderr io.Writer) {
@@ -4029,6 +4277,11 @@ func printApprovalLiveDocsUsage(stderr io.Writer) {
 
 func printApprovalMutationClassUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: covenant approval mutation-class <command>")
+	fmt.Fprintln(stderr, "commands: validate")
+}
+
+func printApprovalLowRiskCodeLiveUsage(stderr io.Writer) {
+	fmt.Fprintln(stderr, "usage: covenant approval low-risk-code-live <command>")
 	fmt.Fprintln(stderr, "commands: validate")
 }
 
