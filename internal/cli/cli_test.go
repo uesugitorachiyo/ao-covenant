@@ -136,6 +136,30 @@ func TestMutationClassAuthorityValidateAcceptsExactTicket(t *testing.T) {
 	}
 }
 
+func TestMutationClassAuthorityValidateAcceptsTestOnlyTicket(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := Run([]string{
+		"covenant", "approval", "mutation-class", "validate",
+		"--request", filepath.Join("..", "..", "examples", "mutation-class-authority", "request-test-only.json"),
+		"--ticket", filepath.Join("..", "..", "examples", "mutation-class-authority", "ticket-approved-test-only.json"),
+	}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("Run returned %d, want 0; stdout=%s stderr=%s", code, stdout.String(), stderr.String())
+	}
+	for _, want := range []string{
+		"valid=true",
+		"ticket_id=mutation-class-test-only-ticket",
+		"request_id=test-only-authority-request",
+		"mutation_class=test_only",
+		"safe_to_request=true",
+		"safe_to_execute=false",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("stdout missing %q: %s", want, stdout.String())
+		}
+	}
+}
+
 func TestMutationClassAuthorityValidateFailsClosed(t *testing.T) {
 	cases := []struct {
 		name       string
