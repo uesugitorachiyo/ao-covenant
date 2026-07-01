@@ -1237,8 +1237,21 @@ The approved public wording is exactly: "AO has public-safe causal-review
 evidence that prior bounded evidence can guide later evidence-selection and
 blocker prioritization under independent review gates; stronger
 recursive-improvement wording and broad_RSI remain denied." Covenant approves
-only that narrow evidence-selection guidance wording. The highest proven live
-class is `public_safe_causal_review_evidence_selection_guidance` and the next
-denied class is `broad_RSI`. Stronger recursive-improvement wording,
+only that narrow evidence-selection guidance wording as prior evidence.
+Stronger recursive-improvement wording, `broad_RSI`, unrestricted
+self-modification, hidden instruction mutation, and policy-changing autonomy
+remain denied.
+
+`public_safe_guided_evidence_application_four_attempts` is proven from AO
+Foundry PR #193, commit `4ec509fd64d1fc1ea41ea7f22aae900ba79e09a1`, with
+tracked public evidence under
+`docs/evidence/recursive-improvement-guided-evidence-application/`. The approved
+public wording is exactly: "AO has public-safe guided evidence-application
+evidence showing causal-review guidance can select and prioritize later bounded
+evidence attempts under independent gates; stronger recursive-improvement
+wording and broad_RSI remain denied." Covenant approves only that guided
+evidence-application wording. The highest proven live class is
+`public_safe_guided_evidence_application_four_attempts` and the next denied class
+is `broad_RSI`. Stronger recursive-improvement wording,
 `broad_RSI`, unrestricted self-modification, hidden instruction mutation, and
 policy-changing autonomy remain denied.
