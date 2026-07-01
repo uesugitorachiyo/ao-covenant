@@ -129,6 +129,13 @@ intended for automation that needs to confirm whether the stronger
 For retained rehearsal/readback evidence, the expected decision remains denied
 with `publish_authority=false`.
 
+The conservative public wording approved by the current evidence chain remains
+narrower: "AO has public-safe tracked readback evidence for bounded
+improvement-claim review and retraction rehearsal; stronger
+recursive-improvement claims remain denied." Covenant treats that wording as
+`exact_safe_public_claim_wording_conservative_readback_evidence`; it is not
+publication authority for `broad_RSI`.
+
 Consumers can validate a captured gate result with:
 
 ```sh
