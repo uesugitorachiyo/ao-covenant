@@ -134,6 +134,13 @@ Without those evidence classes, operators should keep the wording at
 The policy spine exposes this boundary through the `rsi-claim-boundary`
 responsibility.
 
+The approved conservative public wording is exactly: "AO has public-safe
+tracked readback evidence for bounded improvement-claim review and retraction
+rehearsal; stronger recursive-improvement claims remain denied." That wording is
+`exact_safe_public_claim_wording_conservative_readback_evidence` only; it does
+not approve `broad_RSI`, unrestricted self-modification, hidden instruction
+mutation, policy-changing autonomy, or stronger recursive-improvement claims.
+
 Consumers can validate the authority packet with:
 
 ```sh

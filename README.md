@@ -539,6 +539,15 @@ JSON output includes `schema_version:
 covenant.rsi-claim-publish-gate.v1`, covered by the embedded public schema
 exported by `covenant schema export`:
 
+The latest approved public wording is narrower than the stronger RSI claim:
+"AO has public-safe tracked readback evidence for bounded improvement-claim
+review and retraction rehearsal; stronger recursive-improvement claims remain
+denied." Covenant treats this as
+`exact_safe_public_claim_wording_conservative_readback_evidence` only.
+`broad_RSI`, unrestricted self-modification, hidden instruction mutation,
+policy-changing autonomy, and stronger recursive-improvement claims remain
+denied.
+
 ```sh
 go run ./cmd/covenant policy claim-publish-gate --json \
   --claim-readiness /tmp/ao2-rsi-claim-readiness/summary.json \
