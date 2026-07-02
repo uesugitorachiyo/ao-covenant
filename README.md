@@ -1469,3 +1469,9 @@ release/config/dependency expansion, credential use, provider calls,
 release/deploy/publish/upload/tag authority, dependency update authority, direct
 main mutation, concurrent mutation, hidden instruction changes, or any
 unrestricted RSI claim.
+
+## Multi-Surface Support/Eval Covenant Readback
+
+AO Covenant approves only the narrow class `public_safe_bounded_sandboxed_self_change_multi_surface_support_eval_negative_controls_four_attempts` from AO Foundry PR #223, commit `3cd8c470538d626bebfc63262979f364ea53b081`, with tracked public evidence under `docs/evidence/unrestricted-self-modification-multi-surface-support-eval/` and final rollup `docs/evidence/unrestricted-self-modification-multi-surface-support-eval/final-rollup.json`. The Covenant result is `deny_unrestricted_self_modification_allow_multi_surface_support_eval_negative_controls`. The approved public wording is exactly: "AO has public-safe bounded sandboxed self-change multi-surface support/eval negative-control evidence across four exact-scope reversible attempts under sandbox containment gates; unrestricted self-modification, hidden instruction mutation, policy-changing autonomy, and forbidden surface expansion remain denied."
+
+This evidence does not grant unrestricted self-modification, hidden instruction mutation, policy-changing autonomy, forbidden surface expansion, sandbox containment bypass, policy/auth/secret/provider/deploy/release/config/dependency expansion, credential use, provider calls, direct-main mutation, concurrent mutation, or unrestricted RSI.
