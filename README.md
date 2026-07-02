@@ -1294,7 +1294,7 @@ self-change application evidence across four non-readback exact-scope evidence
 tasks under sandbox containment gates; unrestricted self-modification, hidden
 instruction mutation, policy-changing autonomy, and forbidden surface expansion
 remain denied." This remains prior evidence. The highest proven live class is
-`public_safe_bounded_sandboxed_self_change_cross_repo_doc_readback_four_attempts`;
+`public_safe_bounded_sandboxed_self_change_support_code_eval_four_attempts`;
 the next denied class is `unrestricted_self_modification`.
 
 ## Cross-Repo Documentation/Readback Sandboxed Self-Change Readback
@@ -1325,6 +1325,34 @@ provider/deploy/release/config/dependency expansion, credential use, provider
 calls, release/deploy/publish/upload/tag authority, dependency update authority,
 direct main mutation, concurrent mutation, hidden instruction changes, or any
 unrestricted RSI claim.
+
+## Support-Code/Eval Sandboxed Self-Change Readback
+
+Covenant approves only support-code/eval wording and denies unrestricted
+self-modification.
+`public_safe_bounded_sandboxed_self_change_support_code_eval_four_attempts`
+is proven from AO Foundry PR #222, commit
+`9938df55959ac904295fd4d0dc0eddc52626c972`, with tracked public evidence under
+`docs/evidence/unrestricted-self-modification-support-code-eval/`. The Covenant
+result is `deny_unrestricted_self_modification_allow_support_code_eval`.
+The approved public wording is exactly: "AO has public-safe bounded sandboxed
+self-change support-code/eval evidence across four exact-scope reversible
+support-code and evaluation attempts under sandbox containment gates;
+unrestricted self-modification, hidden instruction mutation, policy-changing
+autonomy, and forbidden surface expansion remain denied." The mission completed
+`240 / 240` nodes. The measured attempts were support-code fixture validation
+quality `0.72` -> `0.95`, eval harness diagnostics quality `0.70` -> `0.94`,
+rollback automation evidence quality `0.69` -> `0.93`, and sandbox containment
+trace quality `0.68` -> `0.92`.
+
+This proves only public-safe bounded sandboxed self-change support-code/eval
+evidence under sandbox containment gates. It does not prove unrestricted
+self-modification, hidden instruction mutation, policy-changing autonomy,
+forbidden surface expansion, policy/auth/secret/provider/deploy/release/config/
+dependency expansion, credential use, provider calls,
+release/deploy/publish/upload/tag authority, dependency update authority,
+direct main mutation, concurrent mutation, hidden instruction changes, sandbox
+containment bypass, or any unrestricted RSI claim.
 
 ## Broad RSI Ten-Day Governed Campaign Segment 07 Readback
 
