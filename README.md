@@ -1304,16 +1304,16 @@ mutation, or unbounded stronger recursive-improvement claims.
 
 This does not prove unrestricted self-modification, hidden instruction mutation, policy-changing autonomy, policy/auth/secret/provider/deploy/release/config/dependency expansion, release/deploy/publish/upload/tag/provider calls, credential use, direct main mutation, concurrent mutation, or any unrestricted RSI claim.
 
-## Unrestricted Self-Modification Readiness Boundary Readback
+## Unrestricted Self-Modification Sandbox Containment Readback
 
-Covenant approves only readiness-boundary wording and denies unrestricted
-self-modification. `public_safe_unrestricted_self_modification_readiness_boundary_map`
-is proven from AO Foundry PR #215, commit
-`e5ed75361554b1c90518c0e0df10b18adec77e5f`, with tracked public evidence under
-`docs/evidence/unrestricted-self-modification-readiness-boundary/`. The Covenant
-result is `deny_unrestricted_self_modification_allow_readiness_boundary_map`.
-The approved public wording is exactly: "AO has public-safe readiness-boundary
-evidence for evaluating unrestricted self-modification; unrestricted
+Covenant approves only sandbox-containment wording and denies unrestricted
+self-modification. `public_safe_unrestricted_self_modification_sandbox_containment_rehearsal`
+is proven from AO Foundry PR #216, commit
+`7881613065de48f2547833a9ecc9a9011b55a96a`, with tracked public evidence under
+`docs/evidence/unrestricted-self-modification-sandbox-containment/`. The Covenant
+result is `deny_unrestricted_self_modification_allow_sandbox_containment_rehearsal`.
+The approved public wording is exactly: "AO has public-safe sandbox containment evidence for
+dry-run self-change proposal evaluation; unrestricted
 self-modification, hidden instruction mutation, policy-changing autonomy, and
 forbidden surface expansion remain denied."
 
