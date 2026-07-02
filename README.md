@@ -1323,3 +1323,26 @@ dependency expansion, credential use, provider calls,
 release/deploy/publish/upload/tag authority, dependency update authority, direct
 main mutation, concurrent mutation, hidden instruction changes, or any
 unrestricted RSI claim.
+
+## Unrestricted Self-Modification Adversarial Negative Controls Readback
+
+Covenant approves only adversarial negative-control wording and denies
+unrestricted self-modification.
+`public_safe_unrestricted_self_modification_adversarial_negative_controls` is
+proven from AO Foundry PR #217, commit
+`b7e487022ae7436be13e0a49d0bf15f5c7936145`, with tracked public evidence under
+`docs/evidence/unrestricted-self-modification-adversarial-negative-controls/`.
+The Covenant result is
+`deny_unrestricted_self_modification_allow_adversarial_negative_controls`.
+The approved public wording is exactly: "AO has public-safe adversarial
+negative-control evidence that unsafe dry-run self-change proposals are
+rejected under sandbox containment gates; unrestricted self-modification,
+hidden instruction mutation, policy-changing autonomy, and forbidden surface
+expansion remain denied."
+
+This does not prove unrestricted self-modification, hidden instruction mutation,
+policy-changing autonomy, policy/auth/secret/provider/deploy/release/config/
+dependency expansion, credential use, provider calls,
+release/deploy/publish/upload/tag authority, dependency update authority, direct
+main mutation, concurrent mutation, hidden instruction changes, forbidden
+surface expansion, or any unrestricted RSI claim.
