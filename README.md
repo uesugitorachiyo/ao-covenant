@@ -1609,3 +1609,23 @@ use, hidden instruction mutation, policy-changing autonomy, forbidden surface
 expansion, release/deploy/publish/upload/tag authority, dependency updates,
 direct-main mutation, concurrent mutation, broad public claims, or unrestricted
 RSI.
+
+## Authority-Request Dry-Run Decision
+
+AO Covenant approves only the narrow class
+`public_safe_unrestricted_self_modification_authority_request_dry_run_four_attempts`
+from AO Foundry PR #237, commit
+`1eda6a0c0fc6a97580e7ef52a94cfae85f41d5f2`, with tracked public evidence under
+`docs/evidence/unrestricted-self-modification-authority-request-dry-run/` and
+final rollup
+`docs/evidence/unrestricted-self-modification-authority-request-dry-run/final-rollup.json`.
+The Covenant result is
+`deny_unrestricted_self_modification_allow_authority_request_dry_run_evidence`.
+The approved public wording is exactly: "AO has public-safe unrestricted self-modification authority-request dry-run evidence across four exact-scope reversible packet, denial-ticket, hold, and no-execution readback attempts under contained external-command self-change gates; unrestricted self-modification, sandbox containment bypass authority, real sandbox escape, provider calls, credential use, hidden instruction mutation, policy-changing autonomy, forbidden surface expansion, release/deploy/publish/upload/tag authority, dependency updates, direct-main mutation, concurrent mutation, and broad public claims remain denied."
+
+This evidence does not grant `unrestricted_self_modification`, sandbox
+containment bypass authority, real sandbox escape, provider calls, credential
+use, hidden instruction mutation, policy-changing autonomy, forbidden surface
+expansion, release/deploy/publish/upload/tag authority, dependency updates,
+direct-main mutation, concurrent mutation, broad public claims, or unrestricted
+RSI.
