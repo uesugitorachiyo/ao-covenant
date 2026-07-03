@@ -1589,3 +1589,23 @@ instruction mutation, policy-changing autonomy, forbidden surface expansion,
 release/deploy/publish/upload/tag authority, dependency updates, direct-main
 mutation, concurrent mutation, broad public claims, or unrestricted RSI from
 this evidence.
+
+## Authority-Escalation Criteria Decision
+
+AO Covenant approves only the narrow class
+`public_safe_unrestricted_self_modification_authority_escalation_criteria_four_attempts`
+from AO Foundry PR #236, commit
+`b5f3b9a4f3164635a0dff078675a15a03f7c2fb6`, with tracked public evidence under
+`docs/evidence/unrestricted-self-modification-authority-escalation-criteria/`
+and final rollup
+`docs/evidence/unrestricted-self-modification-authority-escalation-criteria/final-rollup.json`.
+The Covenant result is
+`deny_unrestricted_self_modification_allow_authority_escalation_criteria_evidence`.
+The approved public wording is exactly: "AO has public-safe unrestricted self-modification authority-escalation criteria evidence across four exact-scope reversible readback and negative-control attempts under contained external-command self-change gates; unrestricted self-modification, sandbox containment bypass authority, real sandbox escape, provider calls, credential use, hidden instruction mutation, policy-changing autonomy, forbidden surface expansion, release/deploy/publish/upload/tag authority, dependency updates, direct-main mutation, concurrent mutation, and broad public claims remain denied."
+
+This evidence does not grant `unrestricted_self_modification`, sandbox
+containment bypass authority, real sandbox escape, provider calls, credential
+use, hidden instruction mutation, policy-changing autonomy, forbidden surface
+expansion, release/deploy/publish/upload/tag authority, dependency updates,
+direct-main mutation, concurrent mutation, broad public claims, or unrestricted
+RSI.
