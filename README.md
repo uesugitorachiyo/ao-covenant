@@ -1548,3 +1548,24 @@ release/deploy/publish/upload/tag authority, dependency updates, direct-main
 mutation, concurrent mutation, broad public claims, or unrestricted RSI. The
 highest proven live class is `public_safe_bounded_sandboxed_external_execution_authority_rehearsal_four_attempts`; the next denied class is
 `unrestricted_self_modification`.
+
+## Contained External-Command Self-Change Application Covenant Readback
+
+AO Covenant approves only
+`public_safe_contained_external_command_self_change_application_four_attempts`
+from AO Foundry PR #234, commit
+`a9ea020f4b19a43c22dcde7194409989862ae951`, with tracked public evidence under
+`docs/evidence/unrestricted-self-modification-contained-external-command-self-change/`
+and final rollup
+`docs/evidence/unrestricted-self-modification-contained-external-command-self-change/final-rollup.json`.
+The approved public wording is exactly: "AO has public-safe contained external-command self-change application evidence across four exact-scope reversible allowlisted local-command attempts under sandbox containment gates; unrestricted self-modification, sandbox containment bypass, provider calls, credential use, hidden instruction mutation, policy-changing autonomy, forbidden surface expansion, release/deploy/publish/upload/tag authority, dependency updates, direct-main mutation, concurrent mutation, and broad public claims remain denied."
+
+The Covenant result is
+`deny_unrestricted_self_modification_allow_contained_external_command_self_change_application`.
+Covenant approves only the exact-scope contained external-command self-change
+application wording and keeps unrestricted self-modification, sandbox
+containment bypass, provider calls, credential use, hidden instruction mutation,
+policy-changing autonomy, forbidden surface expansion,
+release/deploy/publish/upload/tag authority, dependency updates, direct-main
+mutation, concurrent mutation, broad public claims, and unrestricted RSI
+denied.
