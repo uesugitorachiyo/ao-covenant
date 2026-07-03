@@ -1569,3 +1569,23 @@ policy-changing autonomy, forbidden surface expansion,
 release/deploy/publish/upload/tag authority, dependency updates, direct-main
 mutation, concurrent mutation, broad public claims, and unrestricted RSI
 denied.
+
+## Sandbox Bypass Resistance Claim Boundary
+
+AO Covenant allows only the narrow
+`public_safe_sandbox_bypass_resistance_evidence_four_attempts` wording from AO
+Foundry PR #235, commit `322bd8b2ce3b6f8134196d33b0f605e0fe68f938`, with
+tracked public evidence under
+`docs/evidence/unrestricted-self-modification-sandbox-bypass-resistance/` and
+final rollup
+`docs/evidence/unrestricted-self-modification-sandbox-bypass-resistance/final-rollup.json`.
+The Covenant result is
+`deny_unrestricted_self_modification_allow_sandbox_bypass_resistance_evidence`.
+The approved public wording is exactly: "AO has public-safe sandbox containment bypass resistance evidence across four exact-scope reversible negative-control attempts under contained external-command self-change gates; unrestricted self-modification, sandbox containment bypass authority, provider calls, credential use, hidden instruction mutation, policy-changing autonomy, forbidden surface expansion, release/deploy/publish/upload/tag authority, dependency updates, direct-main mutation, concurrent mutation, and broad public claims remain denied."
+
+Covenant does not allow unrestricted self-modification, sandbox containment
+bypass authority, real sandbox escape, provider calls, credential use, hidden
+instruction mutation, policy-changing autonomy, forbidden surface expansion,
+release/deploy/publish/upload/tag authority, dependency updates, direct-main
+mutation, concurrent mutation, broad public claims, or unrestricted RSI from
+this evidence.
