@@ -1499,6 +1499,28 @@ This evidence does not grant unrestricted self-modification, hidden instruction 
 
 ## Sandboxed External-Execution Dry-Run Packet Covenant Readback
 
-AO Covenant approves only the narrow class `public_safe_sandboxed_external_execution_dry_run_packet_evidence_four_attempts` from AO Foundry PR #231, commit `18a609f430a9a7e91fc0e62aea4b5789144c9fec`, with tracked public evidence under `docs/evidence/sandboxed-external-execution-dry-run-packet/` and final rollup `docs/evidence/sandboxed-external-execution-dry-run-packet/final-rollup.json`. The Covenant result is `deny_actual_external_execution_authority_allow_dry_run_packet_evidence`. The approved public wording is exactly: "AO has public-safe sandboxed external-execution dry-run authority packet evidence across four exact-scope reversible attempts under sandbox containment gates; actual external execution authority, provider calls, credential use, sandbox containment bypass, unrestricted self-modification, hidden instruction mutation, policy-changing autonomy, and forbidden surface expansion remain denied."
+AO Covenant approves only the narrow class `public_safe_sandboxed_external_execution_dry_run_packet_evidence_four_attempts` from AO Foundry PR #231, commit `18a609f430a9a7e91fc0e62aea4b5789144c9fec`, with tracked public evidence under `docs/evidence/sandboxed-external-execution-dry-run-packet/` and final rollup `docs/evidence/sandboxed-external-execution-dry-run-packet/final-rollup.json`. The Covenant result is `deny_actual_external_execution_authority_allow_dry_run_packet_evidence`. The approved public wording is exactly: "AO has public-safe sandboxed external-execution dry-run authority packet evidence across four exact-scope reversible attempts under sandbox containment gates; actual external execution authority, provider calls, credential use, sandbox containment bypass, unrestricted self-modification, hidden instruction mutation, policy-changing autonomy, and forbidden surface expansion remain denied." This remains prior evidence.
 
 This does not weaken Covenant authority gates: actual external execution authority, provider calls, credential use, sandbox containment bypass, unrestricted self-modification, hidden instruction mutation, policy-changing autonomy, forbidden surface expansion, and unrestricted RSI remain denied.
+
+## External-Execution Authority Readiness Boundary Covenant Readback
+
+AO Covenant approves only the narrow class
+`public_safe_external_execution_authority_readiness_boundary_map` from AO Foundry
+PR #232, commit `b6f409946775bc19a04f5ca25a9aea91b9631707`, with tracked public
+evidence under `docs/evidence/external-execution-authority-readiness-boundary/`
+and final rollup
+`docs/evidence/external-execution-authority-readiness-boundary/final-rollup.json`.
+The Covenant result is
+`approved_public_safe_external_execution_readiness_boundary_only_actual_external_execution_denied`.
+The approved public wording is exactly: "AO has public-safe external-execution
+authority readiness-boundary evidence across four exact-scope reversible dry-run
+attempts under sandbox containment gates; actual external execution authority,
+provider calls, credential use, sandbox containment bypass, unrestricted
+self-modification, hidden instruction mutation, policy-changing autonomy, and
+forbidden surface expansion remain denied."
+
+This does not weaken Covenant authority gates: actual external execution
+authority, provider calls, credential use, sandbox containment bypass,
+unrestricted self-modification, hidden instruction mutation, policy-changing
+autonomy, forbidden surface expansion, and unrestricted RSI remain denied.
