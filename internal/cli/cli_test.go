@@ -184,6 +184,46 @@ func TestMutationClassAuthorityValidateAcceptsLowRiskCodeDryRunTicket(t *testing
 	}
 }
 
+func TestGatewayIntentAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
+	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	readme := string(readmeBytes)
+	for _, want := range []string{
+		"AO Mission gateway intents have a separate denial boundary",
+		"gateway inputs can create operator intents and readback requests only",
+		"decision=deny_gateway_intent_mutation_authority",
+		"mutates_repositories=false",
+	} {
+		if !strings.Contains(readme, want) {
+			t.Fatalf("README missing gateway authority denial term %q", want)
+		}
+	}
+	var fixture map[string]any
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "gateway-intent-authority-denial", "decision.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(body, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{
+		"telegram_intents_grant_mutation_authority",
+		"a2a_intents_grant_mutation_authority",
+		"safe_to_execute",
+		"executes_work",
+		"approves_work",
+		"mutates_repositories",
+		"provider_calls_allowed",
+		"release_or_publish_allowed",
+	} {
+		if fixture[key] != false {
+			t.Fatalf("gateway authority fixture %s = %#v, want false", key, fixture[key])
+		}
+	}
+}
+
 func TestLowRiskCodeLivePolicyValidateAcceptsExactCandidatePolicy(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := Run([]string{

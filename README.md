@@ -489,6 +489,16 @@ that one class-specific authority request has Covenant approval evidence; it
 still does not schedule, execute, promote, publish, call providers, allow
 direct-main mutation, or approve fully unsupervised complex repository mutation.
 
+AO Mission gateway intents have a separate denial boundary. Telegram and A2A
+gateway inputs can create operator intents and readback requests only; they do
+not grant mutation authority, approval authority, provider-call authority,
+release or publish authority, dependency-update authority, direct-main mutation,
+or policy-changing autonomy. The public fixture
+`examples/gateway-intent-authority-denial/decision.json` records
+`decision=deny_gateway_intent_mutation_authority` with
+`safe_to_execute=false`, `executes_work=false`, `approves_work=false`, and
+`mutates_repositories=false`.
+
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
 still denied, retained rollback rehearsal evidence without mutation authority
