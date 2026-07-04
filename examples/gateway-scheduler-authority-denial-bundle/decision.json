@@ -5,6 +5,7 @@
   "subject": "ao-mission-telegram-a2a-scheduler-readbacks",
   "telegram_intents_grant_mutation_authority": false,
   "a2a_intents_grant_mutation_authority": false,
+  "a2a_push_notifications_grant_execution_authority": false,
   "scheduler_recovery_grants_scheduling_authority": false,
   "scheduler_recovery_grants_execution_authority": false,
   "safe_to_request": true,

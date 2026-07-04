@@ -300,6 +300,7 @@ func TestGatewaySchedulerAuthorityDenialBundleFixtureStaysReadOnly(t *testing.T)
 		"executes_work",
 		"approves_work",
 		"mutates_repositories",
+		"a2a_push_notifications_grant_execution_authority",
 		"provider_calls_allowed",
 		"release_or_publish_allowed",
 		"credential_use_allowed",
