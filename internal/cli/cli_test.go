@@ -310,6 +310,21 @@ func TestGatewaySchedulerAuthorityDenialBundleFixtureStaysReadOnly(t *testing.T)
 	}
 }
 
+func TestGatewaySchedulerAuthorityDenialBundleInvalidFixturesFail(t *testing.T) {
+	for _, name := range []string{
+		"telegram-a2a-authority-widening.json",
+		"scheduler-authority-widening.json",
+	} {
+		body, err := os.ReadFile(filepath.Join("..", "..", "examples", "gateway-scheduler-authority-denial-bundle", "invalid", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := schema.ValidateBytes(schema.GatewaySchedulerAuthorityDenialBundleSchemaID, body); err == nil {
+			t.Fatalf("invalid gateway scheduler authority bundle %s unexpectedly passed schema validation", name)
+		}
+	}
+}
+
 func TestSchedulerRecoveryAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
 	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
 	if err != nil {

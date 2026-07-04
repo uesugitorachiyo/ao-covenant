@@ -510,6 +510,9 @@ The combined `covenant.gateway-scheduler-authority-denial-bundle.v1` fixture
 under `examples/gateway-scheduler-authority-denial-bundle/` binds Telegram,
 A2A, and scheduler recovery denial into one readback packet for downstream
 Mission aggregate checks.
+Invalid examples under `examples/gateway-scheduler-authority-denial-bundle/invalid/`
+prove the schema rejects Telegram, A2A, or scheduler fields that claim denied
+mutation, scheduling, or execution authority.
 
 AO Mission scheduler recovery has a separate execution-authority denial
 boundary. Recovery readbacks can record missed wakeups and recommend governed
