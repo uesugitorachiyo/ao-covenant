@@ -504,7 +504,8 @@ boundary. Recovery readbacks can record missed wakeups and recommend governed
 continuation only; they do not schedule work by themselves, execute mutation,
 approve policy, mutate repositories, call providers, use credentials, publish
 releases, allow direct-main mutation, or allow concurrent mutation. The public
-fixture `examples/scheduler-recovery-authority-denial/decision.json` records
+fixture `examples/scheduler-recovery-authority-denial/decision.json` is
+validated by `covenant.scheduler-recovery-authority-denial.v1` and records
 `decision=deny_scheduler_recovery_execution_authority` with
 `schedules_work=false`, `safe_to_execute=false`, `executes_work=false`,
 `approves_work=false`, and `mutates_repositories=false`.
