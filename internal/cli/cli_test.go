@@ -279,6 +279,37 @@ func TestTelegramAndA2AIntentAuthorityDenialFixturesStayReadOnly(t *testing.T) {
 	}
 }
 
+func TestGatewaySchedulerAuthorityDenialBundleFixtureStaysReadOnly(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "gateway-scheduler-authority-denial-bundle", "decision.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture map[string]any
+	if err := json.Unmarshal(body, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	if err := schema.ValidateBytes(schema.GatewaySchedulerAuthorityDenialBundleSchemaID, body); err != nil {
+		t.Fatalf("gateway scheduler authority bundle schema validation failed: %v\n%s", err, string(body))
+	}
+	if fixture["decision"] != "deny_gateway_scheduler_mutation_authority" {
+		t.Fatalf("unexpected bundle decision: %#v", fixture["decision"])
+	}
+	for _, key := range []string{
+		"safe_to_execute",
+		"schedules_work",
+		"executes_work",
+		"approves_work",
+		"mutates_repositories",
+		"provider_calls_allowed",
+		"release_or_publish_allowed",
+		"credential_use_allowed",
+	} {
+		if fixture[key] != false {
+			t.Fatalf("gateway scheduler bundle %s = %#v, want false", key, fixture[key])
+		}
+	}
+}
+
 func TestSchedulerRecoveryAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
 	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
 	if err != nil {
