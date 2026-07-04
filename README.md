@@ -499,6 +499,16 @@ or policy-changing autonomy. The public fixture
 `safe_to_execute=false`, `executes_work=false`, `approves_work=false`, and
 `mutates_repositories=false`.
 
+AO Mission scheduler recovery has a separate execution-authority denial
+boundary. Recovery readbacks can record missed wakeups and recommend governed
+continuation only; they do not schedule work by themselves, execute mutation,
+approve policy, mutate repositories, call providers, use credentials, publish
+releases, allow direct-main mutation, or allow concurrent mutation. The public
+fixture `examples/scheduler-recovery-authority-denial/decision.json` records
+`decision=deny_scheduler_recovery_execution_authority` with
+`schedules_work=false`, `safe_to_execute=false`, `executes_work=false`,
+`approves_work=false`, and `mutates_repositories=false`.
+
 The public fixture set in `examples/full-rsi-claim-boundary/` demonstrates the
 claim boundary through the CLI: no approval is denied, a generic approval is
 still denied, retained rollback rehearsal evidence without mutation authority

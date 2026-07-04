@@ -224,6 +224,50 @@ func TestGatewayIntentAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
 	}
 }
 
+func TestSchedulerRecoveryAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
+	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	readme := string(readmeBytes)
+	for _, want := range []string{
+		"AO Mission scheduler recovery has a separate execution-authority denial",
+		"Recovery readbacks can record missed wakeups and recommend governed",
+		"decision=deny_scheduler_recovery_execution_authority",
+		"schedules_work=false",
+	} {
+		if !strings.Contains(readme, want) {
+			t.Fatalf("README missing scheduler recovery authority denial term %q", want)
+		}
+	}
+	var fixture map[string]any
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "scheduler-recovery-authority-denial", "decision.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(body, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{
+		"scheduler_recovery_grants_scheduling_authority",
+		"scheduler_recovery_grants_execution_authority",
+		"safe_to_execute",
+		"schedules_work",
+		"executes_work",
+		"approves_work",
+		"mutates_repositories",
+		"provider_calls_allowed",
+		"release_or_publish_allowed",
+		"credential_use_allowed",
+		"direct_main_mutation_allowed",
+		"concurrent_mutation_allowed",
+	} {
+		if fixture[key] != false {
+			t.Fatalf("scheduler recovery authority fixture %s = %#v, want false", key, fixture[key])
+		}
+	}
+}
+
 func TestLowRiskCodeLivePolicyValidateAcceptsExactCandidatePolicy(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := Run([]string{
