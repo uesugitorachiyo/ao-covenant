@@ -248,6 +248,9 @@ func TestSchedulerRecoveryAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
 	if err := json.Unmarshal(body, &fixture); err != nil {
 		t.Fatal(err)
 	}
+	if err := schema.ValidateBytes(schema.SchedulerRecoveryAuthorityDenialSchemaID, body); err != nil {
+		t.Fatalf("scheduler recovery authority fixture schema validation failed: %v\n%s", err, string(body))
+	}
 	for _, key := range []string{
 		"scheduler_recovery_grants_scheduling_authority",
 		"scheduler_recovery_grants_execution_authority",
