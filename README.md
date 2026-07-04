@@ -494,7 +494,8 @@ gateway inputs can create operator intents and readback requests only; they do
 not grant mutation authority, approval authority, provider-call authority,
 release or publish authority, dependency-update authority, direct-main mutation,
 or policy-changing autonomy. The public fixture
-`examples/gateway-intent-authority-denial/decision.json` records
+`examples/gateway-intent-authority-denial/decision.json` is validated by
+`covenant.gateway-intent-authority-denial.v1` and records
 `decision=deny_gateway_intent_mutation_authority` with
 `safe_to_execute=false`, `executes_work=false`, `approves_work=false`, and
 `mutates_repositories=false`.

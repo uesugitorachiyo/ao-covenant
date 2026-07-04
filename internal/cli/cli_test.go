@@ -208,6 +208,9 @@ func TestGatewayIntentAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
 	if err := json.Unmarshal(body, &fixture); err != nil {
 		t.Fatal(err)
 	}
+	if err := schema.ValidateBytes(schema.GatewayIntentAuthorityDenialSchemaID, body); err != nil {
+		t.Fatalf("gateway intent authority fixture schema validation failed: %v\n%s", err, string(body))
+	}
 	for _, key := range []string{
 		"telegram_intents_grant_mutation_authority",
 		"a2a_intents_grant_mutation_authority",

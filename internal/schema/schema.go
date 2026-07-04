@@ -32,6 +32,7 @@ const (
 	LowRiskCodeLivePolicySchemaID             = "covenant.low-risk-code-live-policy.v1"
 	LiveSelfChangeAuthoritySchemaID           = "covenant.live-self-change-authority.v1"
 	LiveMutationAuthoritySchemaID             = "covenant.live-mutation-authority.v1"
+	GatewayIntentAuthorityDenialSchemaID      = "covenant.gateway-intent-authority-denial.v1"
 	SchedulerRecoveryAuthorityDenialSchemaID  = "covenant.scheduler-recovery-authority-denial.v1"
 	ApprovalRevocationsSchemaID               = "covenant.approval-revocations.v1"
 	ApprovalCreateResultSchemaID              = "covenant.approval-create-result.v1"
@@ -109,6 +110,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.low-risk-code-live-policy.v1.schema.json", LowRiskCodeLivePolicySchemaID),
 	requiredSchema("covenant.live-self-change-authority.v1.schema.json", LiveSelfChangeAuthoritySchemaID),
 	requiredSchema("covenant.live-mutation-authority.v1.schema.json", LiveMutationAuthoritySchemaID),
+	requiredSchema("covenant.gateway-intent-authority-denial.v1.schema.json", GatewayIntentAuthorityDenialSchemaID),
 	requiredSchema("covenant.scheduler-recovery-authority-denial.v1.schema.json", SchedulerRecoveryAuthorityDenialSchemaID),
 	requiredSchema("covenant.approval-revocations.v1.schema.json", ApprovalRevocationsSchemaID),
 	requiredSchema("covenant.approval-create-result.v1.schema.json", ApprovalCreateResultSchemaID),
