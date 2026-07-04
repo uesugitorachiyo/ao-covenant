@@ -1,0 +1,15 @@
+{
+  "schema_version": "covenant.a2a-intent-authority-denial.v1",
+  "status": "denied",
+  "decision": "deny_a2a_intent_mutation_authority",
+  "subject": "ao-mission-a2a-intents",
+  "a2a_intents_grant_mutation_authority": false,
+  "safe_to_request": true,
+  "safe_to_execute": false,
+  "executes_work": false,
+  "approves_work": false,
+  "mutates_repositories": false,
+  "provider_calls_allowed": false,
+  "release_or_publish_allowed": false,
+  "reason": "A2A gateway inputs can create AO Mission intents and readbacks only; they cannot approve policy, execute mutation, widen authority, call providers, or publish releases."
+}

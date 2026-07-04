@@ -55,6 +55,8 @@ and run integrity:
 - `covenant.rsi-claim-publish-gate.v1`
 - `covenant.live-self-change-authority.v1`
 - `covenant.gateway-intent-authority-denial.v1`
+- `covenant.telegram-intent-authority-denial.v1`
+- `covenant.a2a-intent-authority-denial.v1`
 - `covenant.scheduler-recovery-authority-denial.v1`
 - `covenant.approval-ticket.v1`
 - `covenant.verify-result.v1`

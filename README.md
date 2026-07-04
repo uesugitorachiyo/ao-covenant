@@ -499,6 +499,13 @@ or policy-changing autonomy. The public fixture
 `decision=deny_gateway_intent_mutation_authority` with
 `safe_to_execute=false`, `executes_work=false`, `approves_work=false`, and
 `mutates_repositories=false`.
+Telegram-only and A2A-only denial packets are also published as
+`covenant.telegram-intent-authority-denial.v1` and
+`covenant.a2a-intent-authority-denial.v1` with fixtures under
+`examples/telegram-intent-authority-denial/` and
+`examples/a2a-intent-authority-denial/`. They allow downstream tools to prove
+that a single gateway family is still intent/readback only without granting
+execution, approval, provider, release, or repository mutation authority.
 
 AO Mission scheduler recovery has a separate execution-authority denial
 boundary. Recovery readbacks can record missed wakeups and recommend governed
