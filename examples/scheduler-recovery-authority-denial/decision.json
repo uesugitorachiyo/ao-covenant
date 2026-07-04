@@ -1,0 +1,20 @@
+{
+  "schema_version": "covenant.scheduler-recovery-authority-denial.v1",
+  "status": "denied",
+  "decision": "deny_scheduler_recovery_execution_authority",
+  "subject": "ao-mission-scheduler-recovery-readback",
+  "scheduler_recovery_grants_scheduling_authority": false,
+  "scheduler_recovery_grants_execution_authority": false,
+  "safe_to_request": true,
+  "safe_to_execute": false,
+  "schedules_work": false,
+  "executes_work": false,
+  "approves_work": false,
+  "mutates_repositories": false,
+  "provider_calls_allowed": false,
+  "release_or_publish_allowed": false,
+  "credential_use_allowed": false,
+  "direct_main_mutation_allowed": false,
+  "concurrent_mutation_allowed": false,
+  "reason": "AO Mission scheduler recovery readbacks can record missed wakeups and recommend governed continuation only; they cannot schedule work by themselves, approve policy, execute mutation, widen authority, call providers, use credentials, or publish releases."
+}
