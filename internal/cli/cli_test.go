@@ -315,6 +315,7 @@ func TestGatewaySchedulerAuthorityDenialBundleInvalidFixturesFail(t *testing.T) 
 		"telegram-a2a-authority-widening.json",
 		"scheduler-authority-widening.json",
 		"a2a-streaming-execution-widening.json",
+		"a2a-push-notification-execution-widening.json",
 	} {
 		body, err := os.ReadFile(filepath.Join("..", "..", "examples", "gateway-scheduler-authority-denial-bundle", "invalid", name))
 		if err != nil {

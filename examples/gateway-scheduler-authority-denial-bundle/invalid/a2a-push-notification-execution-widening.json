@@ -1,0 +1,23 @@
+{
+  "schema_version": "covenant.gateway-scheduler-authority-denial-bundle.v1",
+  "status": "denied",
+  "decision": "deny_gateway_scheduler_mutation_authority",
+  "subject": "ao-mission-a2a-push-notification-readback",
+  "telegram_intents_grant_mutation_authority": false,
+  "a2a_intents_grant_mutation_authority": false,
+  "a2a_push_notifications_grant_execution_authority": true,
+  "scheduler_recovery_grants_scheduling_authority": false,
+  "scheduler_recovery_grants_execution_authority": false,
+  "safe_to_request": true,
+  "safe_to_execute": false,
+  "schedules_work": false,
+  "executes_work": false,
+  "approves_work": false,
+  "mutates_repositories": false,
+  "provider_calls_allowed": false,
+  "release_or_publish_allowed": false,
+  "credential_use_allowed": false,
+  "direct_main_mutation_allowed": false,
+  "concurrent_mutation_allowed": false,
+  "reason": "Invalid fixture: A2A push notifications must not grant execution authority."
+}

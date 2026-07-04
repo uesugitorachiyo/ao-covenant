@@ -514,8 +514,8 @@ Invalid examples under `examples/gateway-scheduler-authority-denial-bundle/inval
 prove the schema rejects Telegram, A2A, or scheduler fields that claim denied
 mutation, scheduling, or execution authority.
 A2A streaming and push-style gateway behavior remains outside the authority
-bundle unless separately gated; invalid fixtures also prove a streaming claim
-cannot add execution authority.
+bundle unless separately gated; invalid fixtures also prove streaming and push
+notification claims cannot add execution authority.
 
 AO Mission scheduler recovery has a separate execution-authority denial
 boundary. Recovery readbacks can record missed wakeups and recommend governed
