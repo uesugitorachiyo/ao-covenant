@@ -54,6 +54,7 @@ and run integrity:
 - `covenant.policy-spine-result.v1`
 - `covenant.rsi-claim-publish-gate.v1`
 - `covenant.live-self-change-authority.v1`
+- `covenant.gateway-intent-authority-denial.v1`
 - `covenant.scheduler-recovery-authority-denial.v1`
 - `covenant.approval-ticket.v1`
 - `covenant.verify-result.v1`
