@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.a2a-intent-authority-denial.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "decision",
+    "subject",
+    "a2a_intents_grant_mutation_authority",
+    "safe_to_request",
+    "safe_to_execute",
+    "executes_work",
+    "approves_work",
+    "mutates_repositories",
+    "provider_calls_allowed",
+    "release_or_publish_allowed",
+    "reason"
+  ],
+  "properties": {
+    "schema_version": { "const": "covenant.a2a-intent-authority-denial.v1" },
+    "status": { "const": "denied" },
+    "decision": { "const": "deny_a2a_intent_mutation_authority" },
+    "subject": { "type": "string", "minLength": 1 },
+    "a2a_intents_grant_mutation_authority": { "const": false },
+    "safe_to_request": { "const": true },
+    "safe_to_execute": { "const": false },
+    "executes_work": { "const": false },
+    "approves_work": { "const": false },
+    "mutates_repositories": { "const": false },
+    "provider_calls_allowed": { "const": false },
+    "release_or_publish_allowed": { "const": false },
+    "reason": { "type": "string", "minLength": 1 }
+  }
+}

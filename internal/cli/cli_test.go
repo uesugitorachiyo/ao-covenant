@@ -227,6 +227,58 @@ func TestGatewayIntentAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
 	}
 }
 
+func TestTelegramAndA2AIntentAuthorityDenialFixturesStayReadOnly(t *testing.T) {
+	cases := []struct {
+		name     string
+		path     string
+		schemaID string
+		decision string
+	}{
+		{
+			name:     "telegram",
+			path:     filepath.Join("..", "..", "examples", "telegram-intent-authority-denial", "decision.json"),
+			schemaID: schema.TelegramIntentAuthorityDenialSchemaID,
+			decision: "deny_telegram_intent_mutation_authority",
+		},
+		{
+			name:     "a2a",
+			path:     filepath.Join("..", "..", "examples", "a2a-intent-authority-denial", "decision.json"),
+			schemaID: schema.A2AIntentAuthorityDenialSchemaID,
+			decision: "deny_a2a_intent_mutation_authority",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			body, err := os.ReadFile(tc.path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var fixture map[string]any
+			if err := json.Unmarshal(body, &fixture); err != nil {
+				t.Fatal(err)
+			}
+			if err := schema.ValidateBytes(tc.schemaID, body); err != nil {
+				t.Fatalf("%s authority fixture schema validation failed: %v\n%s", tc.name, err, string(body))
+			}
+			if fixture["decision"] != tc.decision {
+				t.Fatalf("%s decision = %#v, want %s", tc.name, fixture["decision"], tc.decision)
+			}
+			for _, key := range []string{
+				"safe_to_execute",
+				"executes_work",
+				"approves_work",
+				"mutates_repositories",
+				"provider_calls_allowed",
+				"release_or_publish_allowed",
+			} {
+				if fixture[key] != false {
+					t.Fatalf("%s authority fixture %s = %#v, want false", tc.name, key, fixture[key])
+				}
+			}
+		})
+	}
+}
+
 func TestSchedulerRecoveryAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
 	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
 	if err != nil {
