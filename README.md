@@ -506,6 +506,10 @@ Telegram-only and A2A-only denial packets are also published as
 `examples/a2a-intent-authority-denial/`. They allow downstream tools to prove
 that a single gateway family is still intent/readback only without granting
 execution, approval, provider, release, or repository mutation authority.
+The combined `covenant.gateway-scheduler-authority-denial-bundle.v1` fixture
+under `examples/gateway-scheduler-authority-denial-bundle/` binds Telegram,
+A2A, and scheduler recovery denial into one readback packet for downstream
+Mission aggregate checks.
 
 AO Mission scheduler recovery has a separate execution-authority denial
 boundary. Recovery readbacks can record missed wakeups and recommend governed

@@ -57,6 +57,7 @@ and run integrity:
 - `covenant.gateway-intent-authority-denial.v1`
 - `covenant.telegram-intent-authority-denial.v1`
 - `covenant.a2a-intent-authority-denial.v1`
+- `covenant.gateway-scheduler-authority-denial-bundle.v1`
 - `covenant.scheduler-recovery-authority-denial.v1`
 - `covenant.approval-ticket.v1`
 - `covenant.verify-result.v1`
