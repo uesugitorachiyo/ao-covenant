@@ -1,0 +1,57 @@
+{
+  "schema": "covenant.test.policy-event-hash-fields.v1",
+  "status": "ready",
+  "base_event": {
+    "schema_version": "covenant.event.v1",
+    "event_id": "event-000001",
+    "sequence": 1,
+    "run_id": "run-policy-hash-fixture",
+    "previous_event_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "type": "policy_decided",
+    "task_id": "scripted_change",
+    "status": "allowed",
+    "message": "allowed file.write on demo-output/report.txt",
+    "decision_id": "policy-scripted_change-1",
+    "decision": "allow",
+    "effect_type": "file.write",
+    "resource": "demo-output/report.txt",
+    "approval_ticket_id": "approve-file-write"
+  },
+  "variants": [
+    {
+      "name": "decision id",
+      "override": {
+        "decision_id": "policy-scripted_change-2"
+      },
+      "must_change_hash": true
+    },
+    {
+      "name": "decision",
+      "override": {
+        "decision": "deny"
+      },
+      "must_change_hash": true
+    },
+    {
+      "name": "effect type",
+      "override": {
+        "effect_type": "process.spawn"
+      },
+      "must_change_hash": true
+    },
+    {
+      "name": "resource",
+      "override": {
+        "resource": "demo-output/other.txt"
+      },
+      "must_change_hash": true
+    },
+    {
+      "name": "approval ticket id",
+      "override": {
+        "approval_ticket_id": "approve-other-ticket"
+      },
+      "must_change_hash": true
+    }
+  ]
+}

@@ -281,6 +281,62 @@ func TestEventContentHashBindsPolicyDecisionFields(t *testing.T) {
 	}
 }
 
+func TestEventContentHashBindsPolicyDecisionFieldsFromFixture(t *testing.T) {
+	var fixture struct {
+		Schema    string `json:"schema"`
+		Status    string `json:"status"`
+		BaseEvent Event  `json:"base_event"`
+		Variants  []struct {
+			Name           string `json:"name"`
+			Override       Event  `json:"override"`
+			MustChangeHash bool   `json:"must_change_hash"`
+		} `json:"variants"`
+	}
+	bytes, err := os.ReadFile(filepath.Join("testdata", "policy_event_hash_fields.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(bytes, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	if fixture.Schema != "covenant.test.policy-event-hash-fields.v1" || fixture.Status != "ready" || len(fixture.Variants) == 0 {
+		t.Fatalf("bad policy hash fixture metadata: %+v", fixture)
+	}
+	baseHash, err := EventContentHash(fixture.BaseEvent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, variant := range fixture.Variants {
+		changed := overlayPolicyHashEvent(fixture.BaseEvent, variant.Override)
+		changedHash, err := EventContentHash(changed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if variant.MustChangeHash && changedHash == baseHash {
+			t.Fatalf("fixture variant %q did not alter event content hash %s", variant.Name, baseHash)
+		}
+	}
+}
+
+func overlayPolicyHashEvent(base Event, override Event) Event {
+	if override.DecisionID != "" {
+		base.DecisionID = override.DecisionID
+	}
+	if override.Decision != "" {
+		base.Decision = override.Decision
+	}
+	if override.EffectType != "" {
+		base.EffectType = override.EffectType
+	}
+	if override.Resource != "" {
+		base.Resource = override.Resource
+	}
+	if override.ApprovalTicketID != "" {
+		base.ApprovalTicketID = override.ApprovalTicketID
+	}
+	return base
+}
+
 func TestExecuteUsesActionAdapterForFileWrite(t *testing.T) {
 	workspace := t.TempDir()
 	mustWrite(t, filepath.Join(workspace, "examples", "risky-change", "brief.md"), "Create a demo report.")
