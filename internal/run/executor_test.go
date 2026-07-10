@@ -216,6 +216,71 @@ func TestExecuteRecordsPolicyDecisionsInEvidence(t *testing.T) {
 	}
 }
 
+func TestEventContentHashBindsPolicyDecisionFields(t *testing.T) {
+	base := Event{
+		SchemaVersion:     EventSchemaVersion,
+		EventID:           "event-000001",
+		Sequence:          1,
+		RunID:             "run-policy-hash",
+		PreviousEventHash: GenesisEventHash,
+		Type:              "policy_decided",
+		TaskID:            "scripted_change",
+		Status:            "allowed",
+		Message:           "allowed file.write on demo-output/report.txt",
+		DecisionID:        "policy-scripted_change-1",
+		Decision:          policy.DecisionAllow,
+		EffectType:        "file.write",
+		Resource:          "demo-output/report.txt",
+		ApprovalTicketID:  "approve-file-write",
+	}
+	baseHash, err := EventContentHash(base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	variants := map[string]Event{
+		"decision id": {
+			DecisionID: "policy-scripted_change-2",
+		},
+		"decision": {
+			Decision: policy.DecisionDeny,
+		},
+		"effect type": {
+			EffectType: "process.spawn",
+		},
+		"resource": {
+			Resource: "demo-output/other.txt",
+		},
+		"approval ticket id": {
+			ApprovalTicketID: "approve-other-ticket",
+		},
+	}
+	for name, overlay := range variants {
+		changed := base
+		if overlay.DecisionID != "" {
+			changed.DecisionID = overlay.DecisionID
+		}
+		if overlay.Decision != "" {
+			changed.Decision = overlay.Decision
+		}
+		if overlay.EffectType != "" {
+			changed.EffectType = overlay.EffectType
+		}
+		if overlay.Resource != "" {
+			changed.Resource = overlay.Resource
+		}
+		if overlay.ApprovalTicketID != "" {
+			changed.ApprovalTicketID = overlay.ApprovalTicketID
+		}
+		changedHash, err := EventContentHash(changed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if changedHash == baseHash {
+			t.Fatalf("%s change did not alter event content hash %s", name, baseHash)
+		}
+	}
+}
+
 func TestExecuteUsesActionAdapterForFileWrite(t *testing.T) {
 	workspace := t.TempDir()
 	mustWrite(t, filepath.Join(workspace, "examples", "risky-change", "brief.md"), "Create a demo report.")

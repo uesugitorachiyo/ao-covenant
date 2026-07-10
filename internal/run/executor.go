@@ -675,6 +675,11 @@ func EventContentHash(event Event) (string, error) {
 		Status:            event.Status,
 		Message:           event.Message,
 		ArtifactIDs:       event.ArtifactIDs,
+		DecisionID:        event.DecisionID,
+		Decision:          event.Decision,
+		EffectType:        event.EffectType,
+		Resource:          event.Resource,
+		ApprovalTicketID:  event.ApprovalTicketID,
 	}
 	bytes, err := json.Marshal(payload)
 	if err != nil {
@@ -695,4 +700,9 @@ type eventHashPayload struct {
 	Status            string   `json:"status"`
 	Message           string   `json:"message,omitempty"`
 	ArtifactIDs       []string `json:"artifact_ids,omitempty"`
+	DecisionID        string   `json:"decision_id,omitempty"`
+	Decision          string   `json:"decision,omitempty"`
+	EffectType        string   `json:"effect_type,omitempty"`
+	Resource          string   `json:"resource,omitempty"`
+	ApprovalTicketID  string   `json:"approval_ticket_id,omitempty"`
 }
