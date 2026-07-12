@@ -70,6 +70,7 @@ const (
 	PolicyExplainResultSchemaID                   = "covenant.policy-explain-result.v1"
 	PolicyIndexResultSchemaID                     = "covenant.policy-index-result.v1"
 	PolicySpineResultSchemaID                     = "covenant.policy-spine-result.v1"
+	ScopedCredentialPolicyChecklistSchemaID       = "covenant.scoped-credential-policy-checklist.v1"
 	RSIClaimPublishGateSchemaID                   = "covenant.rsi-claim-publish-gate.v1"
 	SchemaCatalogResultSchemaID                   = "covenant.schema-catalog-result.v1"
 	SchemaExportResultSchemaID                    = "covenant.schema-export-result.v1"
@@ -152,6 +153,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.policy-explain-result.v1.schema.json", PolicyExplainResultSchemaID),
 	requiredSchema("covenant.policy-index-result.v1.schema.json", PolicyIndexResultSchemaID),
 	requiredSchema("covenant.policy-spine-result.v1.schema.json", PolicySpineResultSchemaID),
+	requiredSchema("covenant.scoped-credential-policy-checklist.v1.schema.json", ScopedCredentialPolicyChecklistSchemaID),
 	requiredSchema("covenant.rsi-claim-publish-gate.v1.schema.json", RSIClaimPublishGateSchemaID),
 	requiredSchema("covenant.schema-catalog-result.v1.schema.json", SchemaCatalogResultSchemaID),
 	requiredSchema("covenant.schema-export-result.v1.schema.json", SchemaExportResultSchemaID),

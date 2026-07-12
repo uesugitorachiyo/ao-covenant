@@ -1382,6 +1382,8 @@ func runPolicy(args []string, stdout io.Writer, stderr io.Writer) int {
 		return runPolicyIndex(args[1:], stdout, stderr)
 	case "spine":
 		return runPolicySpine(args[1:], stdout, stderr)
+	case "credential-checklist":
+		return runPolicyCredentialChecklist(args[1:], stdout, stderr)
 	case "claim-publish-gate":
 		return runPolicyClaimPublishGate(args[1:], stdout, stderr)
 	default:
@@ -2640,6 +2642,31 @@ func runPolicySpine(args []string, stdout io.Writer, stderr io.Writer) int {
 	}
 	for _, boundary := range report.OutOfBounds {
 		fmt.Fprintf(stdout, "out_of_bounds=%s\n", boundary)
+	}
+	return 0
+}
+
+func runPolicyCredentialChecklist(args []string, stdout io.Writer, stderr io.Writer) int {
+	flags := flag.NewFlagSet("policy credential-checklist", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	jsonOutput := flags.Bool("json", false, "emit JSON")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	report := policy.ScopedCredentialPolicyChecklist(schema.ScopedCredentialPolicyChecklistSchemaID)
+	if *jsonOutput {
+		if err := writeSchemaJSON(stdout, schema.ScopedCredentialPolicyChecklistSchemaID, report); err != nil {
+			fmt.Fprintf(stderr, "write credential checklist: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+	fmt.Fprintf(stdout, "status=%s\n", report.Status)
+	fmt.Fprintf(stdout, "scope=%s\n", report.Scope)
+	fmt.Fprintf(stdout, "credential_values_inspected=%t\n", report.CredentialValuesInspected)
+	fmt.Fprintf(stdout, "requires_credential_material=%t\n", report.RequiresCredentialMaterial)
+	for _, check := range report.Checks {
+		fmt.Fprintf(stdout, "check=%s status=%s requires_credential_value=%t\n", check.ID, check.Status, check.RequiresCredentialValue)
 	}
 	return 0
 }
@@ -4292,7 +4319,7 @@ func printApprovalRevocationsUsage(stderr io.Writer) {
 
 func printPolicyUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage: covenant policy <command>")
-	fmt.Fprintln(stderr, "commands: explain, index, spine, claim-publish-gate")
+	fmt.Fprintln(stderr, "commands: explain, index, spine, credential-checklist, claim-publish-gate")
 }
 
 func printSchemaUsage(stderr io.Writer) {

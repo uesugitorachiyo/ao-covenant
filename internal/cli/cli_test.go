@@ -6067,6 +6067,63 @@ func TestPolicySpineCommandPrintsAO2FirstGovernanceJSON(t *testing.T) {
 	}
 }
 
+func TestPolicyCredentialChecklistCommandPrintsNoInspectionJSON(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	code := Run([]string{
+		"covenant",
+		"policy",
+		"credential-checklist",
+		"--json",
+	}, &stdout, &stderr)
+
+	if code != 0 {
+		t.Fatalf("exit code = %d, stderr = %q", code, stderr.String())
+	}
+	var decoded struct {
+		SchemaVersion                    string `json:"schema_version"`
+		Status                           string `json:"status"`
+		Scope                            string `json:"scope"`
+		CheckCount                       int    `json:"check_count"`
+		CredentialValueInspectionAllowed bool   `json:"credential_value_inspection_allowed"`
+		CredentialValuesInspected        bool   `json:"credential_values_inspected"`
+		CredentialValuesStored           bool   `json:"credential_values_stored"`
+		RequiresCredentialMaterial       bool   `json:"requires_credential_material"`
+		SafeToExecute                    bool   `json:"safe_to_execute"`
+		ExecutesWork                     bool   `json:"executes_work"`
+		ApprovesWork                     bool   `json:"approves_work"`
+		MutatesRepositories              bool   `json:"mutates_repositories"`
+		ProviderCallsAllowed             bool   `json:"provider_calls_allowed"`
+		ReleaseOrPublishAllowed          bool   `json:"release_or_publish_allowed"`
+		ClaimsAuthorityAdvance           bool   `json:"claims_authority_advance"`
+		RSIRemainsDenied                 bool   `json:"rsi_remains_denied"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &decoded); err != nil {
+		t.Fatalf("decode credential checklist json: %v; stdout = %q", err, stdout.String())
+	}
+	if decoded.SchemaVersion != schema.ScopedCredentialPolicyChecklistSchemaID ||
+		decoded.Status != "ready" ||
+		decoded.Scope != "metadata_and_operator_checklist_only" ||
+		decoded.CheckCount < 5 ||
+		decoded.CredentialValueInspectionAllowed ||
+		decoded.CredentialValuesInspected ||
+		decoded.CredentialValuesStored ||
+		decoded.RequiresCredentialMaterial ||
+		decoded.SafeToExecute ||
+		decoded.ExecutesWork ||
+		decoded.ApprovesWork ||
+		decoded.MutatesRepositories ||
+		decoded.ProviderCallsAllowed ||
+		decoded.ReleaseOrPublishAllowed ||
+		decoded.ClaimsAuthorityAdvance ||
+		!decoded.RSIRemainsDenied {
+		t.Fatalf("credential checklist widened authority or inspected credentials: %+v", decoded)
+	}
+	if err := schema.ValidateBytes(schema.ScopedCredentialPolicyChecklistSchemaID, stdout.Bytes()); err != nil {
+		t.Fatalf("credential checklist did not match published schema: %v\njson:\n%s", err, stdout.String())
+	}
+}
+
 func TestPolicyClaimPublishGateDeniesFullRSIFromAO2RetainedReadbackEvidence(t *testing.T) {
 	dir := t.TempDir()
 	claimReadinessPath := filepath.Join(dir, "claim-readiness.json")
