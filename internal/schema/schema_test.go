@@ -163,6 +163,70 @@ func TestMutationClassAuthorityTicketSchemaValidatesFixtures(t *testing.T) {
 	}
 }
 
+func TestContractOwnershipMatrixSchemaValidatesPublishedFixture(t *testing.T) {
+	if !KnownSchemaID(ContractOwnershipMatrixSchemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", ContractOwnershipMatrixSchemaID)
+	}
+	fixtureBytes, err := os.ReadFile(filepath.Join("..", "..", "examples", "contract-ownership", "matrix.json"))
+	if err != nil {
+		t.Fatalf("read contract ownership matrix fixture: %v", err)
+	}
+	if err := ValidateBytes(ContractOwnershipMatrixSchemaID, fixtureBytes); err != nil {
+		t.Fatalf("contract ownership matrix fixture failed schema: %v", err)
+	}
+
+	var fixture struct {
+		SchemaVersion            string `json:"schema_version"`
+		OwnerRepo                string `json:"owner_repo"`
+		Status                   string `json:"status"`
+		SourceRecommendationRank int    `json:"source_recommendation_rank"`
+		SafetyGate               string `json:"safety_gate"`
+		Entries                  []struct {
+			ContractID                string   `json:"contract_id"`
+			OwnerRepo                 string   `json:"owner_repo"`
+			ProducerRepos             []string `json:"producer_repos"`
+			ConsumerRepos             []string `json:"consumer_repos"`
+			ConsumerTestRefs          []string `json:"consumer_test_refs"`
+			CompatibilityGateRequired bool     `json:"compatibility_gate_required"`
+		} `json:"entries"`
+		EntryCount              int  `json:"entry_count"`
+		NoPromotionRequested    bool `json:"no_promotion_requested"`
+		ProviderCallsAllowed    bool `json:"provider_calls_allowed"`
+		CredentialUseAllowed    bool `json:"credential_use_allowed"`
+		ReleaseOrPublishAllowed bool `json:"release_or_publish_allowed"`
+		ClaimsAuthorityAdvance  bool `json:"claims_authority_advance"`
+		RSIRemainsDenied        bool `json:"rsi_remains_denied"`
+	}
+	if err := json.Unmarshal(fixtureBytes, &fixture); err != nil {
+		t.Fatalf("decode contract ownership matrix fixture: %v", err)
+	}
+	if fixture.SchemaVersion != ContractOwnershipMatrixSchemaID ||
+		fixture.OwnerRepo != "ao-covenant" ||
+		fixture.Status != "published_fixture" ||
+		fixture.SourceRecommendationRank != 4 ||
+		fixture.SafetyGate != "planning_only_no_provider_no_release" ||
+		len(fixture.Entries) < 6 ||
+		fixture.EntryCount != len(fixture.Entries) ||
+		!fixture.NoPromotionRequested ||
+		fixture.ProviderCallsAllowed ||
+		fixture.CredentialUseAllowed ||
+		fixture.ReleaseOrPublishAllowed ||
+		fixture.ClaimsAuthorityAdvance ||
+		!fixture.RSIRemainsDenied {
+		t.Fatalf("contract ownership matrix lost governance boundary: %+v", fixture)
+	}
+	seen := map[string]bool{}
+	for _, entry := range fixture.Entries {
+		if seen[entry.ContractID] {
+			t.Fatalf("duplicate contract_id %q", entry.ContractID)
+		}
+		seen[entry.ContractID] = true
+		if entry.OwnerRepo == "" || len(entry.ProducerRepos) == 0 || len(entry.ConsumerRepos) == 0 || len(entry.ConsumerTestRefs) == 0 || !entry.CompatibilityGateRequired {
+			t.Fatalf("contract ownership entry is not compatibility-bound: %+v", entry)
+		}
+	}
+}
+
 func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	required, ok := RequiredSchemaByID(VersionResultSchemaID)
 	if !ok {

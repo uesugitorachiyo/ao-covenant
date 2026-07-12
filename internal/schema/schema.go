@@ -81,6 +81,7 @@ const (
 	BundlePublicKeySchemaID                       = "covenant.bundle-public-key.v1"
 	BundleSignatureSchemaID                       = "covenant.bundle-signature.v1"
 	ClosureMatrixSchemaID                         = "covenant.closure-matrix.v1"
+	ContractOwnershipMatrixSchemaID               = "covenant.contract-ownership-matrix.v1"
 	FailureSchemaID                               = "covenant.failure.v1"
 	EvidenceBundleSchemaID                        = "covenant.evidence-bundle.v1"
 	EvidencePackSchemaID                          = "covenant.evidence-pack.v1"
@@ -162,6 +163,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.bundle-public-key.v1.schema.json", BundlePublicKeySchemaID),
 	requiredSchema("covenant.bundle-signature.v1.schema.json", BundleSignatureSchemaID),
 	requiredSchema("covenant.closure-matrix.v1.schema.json", ClosureMatrixSchemaID),
+	requiredSchema("covenant.contract-ownership-matrix.v1.schema.json", ContractOwnershipMatrixSchemaID),
 	requiredSchema("covenant.failure.v1.schema.json", FailureSchemaID),
 	requiredSchema("covenant.evidence-bundle.v1.schema.json", EvidenceBundleSchemaID),
 	requiredSchema("covenant.evidence-pack.v1.schema.json", EvidencePackSchemaID),

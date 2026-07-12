@@ -1,0 +1,107 @@
+{
+  "schema_version": "covenant.contract-ownership-matrix.v1",
+  "matrix_id": "ao-stack-month6-contract-ownership-matrix",
+  "owner_repo": "ao-covenant",
+  "status": "published_fixture",
+  "source_recommendation_rank": 4,
+  "source_recommendation_task": "Publish Covenant-owned contract ownership matrix fixture",
+  "safety_gate": "planning_only_no_provider_no_release",
+  "entries": [
+    {
+      "contract_id": "covenant.contract.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "contract schema registry",
+      "stability": "stable",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao-blueprint", "ao-atlas", "ao-foundry"],
+      "consumer_test_refs": [
+        "internal/schema/schema_test.go:TestContractOwnershipMatrixSchemaValidatesPublishedFixture",
+        "internal/contract/contract_test.go:TestContractFixtureRoundTrips"
+      ],
+      "policy_authority_required": true,
+      "compatibility_gate_required": true
+    },
+    {
+      "contract_id": "covenant.approval-ticket.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "approval ticket authority",
+      "stability": "stable",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao-command", "ao-foundry", "ao2"],
+      "consumer_test_refs": [
+        "internal/schema/schema_test.go:TestContractOwnershipMatrixSchemaValidatesPublishedFixture",
+        "internal/approval/approval_test.go:TestApprovalTicketValidation"
+      ],
+      "policy_authority_required": true,
+      "compatibility_gate_required": true
+    },
+    {
+      "contract_id": "covenant.policy-decision.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "policy decision evaluator",
+      "stability": "stable",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao-command", "ao-foundry", "ao-promoter"],
+      "consumer_test_refs": [
+        "internal/schema/schema_test.go:TestContractOwnershipMatrixSchemaValidatesPublishedFixture",
+        "internal/policy/policy_test.go:TestPolicyDecisionSchema"
+      ],
+      "policy_authority_required": true,
+      "compatibility_gate_required": true
+    },
+    {
+      "contract_id": "covenant.schema-catalog-result.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "public schema catalog",
+      "stability": "stable",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao-atlas", "ao-command", "ao-architecture"],
+      "consumer_test_refs": [
+        "internal/schema/schema_test.go:TestCatalogListsRequiredSchemasInStableOrder",
+        "internal/schema/schema_test.go:TestContractOwnershipMatrixSchemaValidatesPublishedFixture"
+      ],
+      "policy_authority_required": false,
+      "compatibility_gate_required": true
+    },
+    {
+      "contract_id": "covenant.rsi-claim-publish-gate.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "public claim policy gate",
+      "stability": "experimental",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao-sentinel", "ao-promoter", "ao-architecture"],
+      "consumer_test_refs": [
+        "internal/schema/schema_test.go:TestContractOwnershipMatrixSchemaValidatesPublishedFixture",
+        "internal/policy/claim_gate_test.go:TestRSIClaimPublishGateDeniesBroadClaims"
+      ],
+      "policy_authority_required": true,
+      "compatibility_gate_required": true
+    },
+    {
+      "contract_id": "covenant.contract-ownership-matrix.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "contract ownership registry",
+      "stability": "experimental",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao-atlas", "ao-mission", "ao-architecture"],
+      "consumer_test_refs": [
+        "internal/schema/schema_test.go:TestContractOwnershipMatrixSchemaValidatesPublishedFixture"
+      ],
+      "policy_authority_required": false,
+      "compatibility_gate_required": true
+    }
+  ],
+  "entry_count": 6,
+  "no_promotion_requested": true,
+  "provider_calls_allowed": false,
+  "credential_use_allowed": false,
+  "release_or_publish_allowed": false,
+  "claims_authority_advance": false,
+  "rsi_remains_denied": true
+}
