@@ -86,6 +86,7 @@ const (
 	SchemaDeprecationLedgerSchemaID                  = "covenant.schema-deprecation-ledger.v1"
 	RegistryCompatibilityCIHandoffSchemaID           = "covenant.registry-compatibility-ci-handoff.v1"
 	ProducerConsumerContractDigestComparisonSchemaID = "covenant.producer-consumer-contract-digest-comparison.v1"
+	CompatibilityMatrixStaleOwnerWarningSchemaID     = "covenant.compatibility-matrix-stale-owner-warning.v1"
 	FailureSchemaID                                  = "covenant.failure.v1"
 	EvidenceBundleSchemaID                           = "covenant.evidence-bundle.v1"
 	EvidencePackSchemaID                             = "covenant.evidence-pack.v1"
@@ -172,6 +173,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.schema-deprecation-ledger.v1.schema.json", SchemaDeprecationLedgerSchemaID),
 	requiredSchema("covenant.registry-compatibility-ci-handoff.v1.schema.json", RegistryCompatibilityCIHandoffSchemaID),
 	requiredSchema("covenant.producer-consumer-contract-digest-comparison.v1.schema.json", ProducerConsumerContractDigestComparisonSchemaID),
+	requiredSchema("covenant.compatibility-matrix-stale-owner-warning.v1.schema.json", CompatibilityMatrixStaleOwnerWarningSchemaID),
 	requiredSchema("covenant.failure.v1.schema.json", FailureSchemaID),
 	requiredSchema("covenant.evidence-bundle.v1.schema.json", EvidenceBundleSchemaID),
 	requiredSchema("covenant.evidence-pack.v1.schema.json", EvidencePackSchemaID),

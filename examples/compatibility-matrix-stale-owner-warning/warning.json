@@ -1,0 +1,49 @@
+{
+  "schema_version": "covenant.compatibility-matrix-stale-owner-warning.v1",
+  "warning_id": "ao-stack-month6-compatibility-matrix-stale-owner-warning",
+  "owner_repo": "ao-covenant",
+  "status": "stale_owner_warning",
+  "source_recommendation_rank": 36,
+  "source_recommendation_task": "Add compatibility matrix stale-owner warning",
+  "safety_gate": "planning_only_no_provider_no_release",
+  "source_matrix": "examples/contract-ownership/matrix.json",
+  "compatibility_gate_status": "blocked_pending_owner_refresh",
+  "warnings": [
+    {
+      "contract_id": "covenant.contract.v1",
+      "recorded_owner_repo": "ao-blueprint",
+      "expected_owner_repo": "ao-covenant",
+      "consumer_repos": ["ao-blueprint", "ao-atlas", "ao-foundry"],
+      "reason": "Consumer compatibility matrix records a non-authoritative owner for a Covenant-published contract.",
+      "refresh_evidence_required": [
+        "canonical Covenant ownership matrix digest",
+        "consumer matrix owner refresh",
+        "producer consumer compatibility readback"
+      ],
+      "blocks_compatibility_gate": true
+    },
+    {
+      "contract_id": "covenant.approval-ticket.v1",
+      "recorded_owner_repo": "ao-command",
+      "expected_owner_repo": "ao-covenant",
+      "consumer_repos": ["ao-command", "ao-foundry", "ao2"],
+      "reason": "Consumer approval compatibility entry must retain Covenant as the ticket authority owner.",
+      "refresh_evidence_required": [
+        "canonical approval ticket owner readback",
+        "consumer parser compatibility test",
+        "policy authority non-substitution evidence"
+      ],
+      "blocks_compatibility_gate": true
+    }
+  ],
+  "stale_owner_count": 2,
+  "no_promotion_requested": true,
+  "provider_calls_allowed": false,
+  "credential_use_allowed": false,
+  "release_or_publish_allowed": false,
+  "claims_authority_advance": false,
+  "policy_or_auth_widening": false,
+  "hidden_instruction_change": false,
+  "direct_main_mutation": false,
+  "rsi_remains_denied": true
+}

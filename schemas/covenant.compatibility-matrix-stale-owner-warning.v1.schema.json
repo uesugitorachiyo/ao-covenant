@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.compatibility-matrix-stale-owner-warning.v1",
+  "title": "AO Covenant Compatibility Matrix Stale Owner Warning",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "warning_id",
+    "owner_repo",
+    "status",
+    "source_recommendation_rank",
+    "source_recommendation_task",
+    "safety_gate",
+    "source_matrix",
+    "compatibility_gate_status",
+    "warnings",
+    "stale_owner_count",
+    "no_promotion_requested",
+    "provider_calls_allowed",
+    "credential_use_allowed",
+    "release_or_publish_allowed",
+    "claims_authority_advance",
+    "policy_or_auth_widening",
+    "hidden_instruction_change",
+    "direct_main_mutation",
+    "rsi_remains_denied"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.compatibility-matrix-stale-owner-warning.v1"
+    },
+    "warning_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "owner_repo": {
+      "const": "ao-covenant"
+    },
+    "status": {
+      "const": "stale_owner_warning"
+    },
+    "source_recommendation_rank": {
+      "const": 36
+    },
+    "source_recommendation_task": {
+      "const": "Add compatibility matrix stale-owner warning"
+    },
+    "safety_gate": {
+      "const": "planning_only_no_provider_no_release"
+    },
+    "source_matrix": {
+      "const": "examples/contract-ownership/matrix.json"
+    },
+    "compatibility_gate_status": {
+      "const": "blocked_pending_owner_refresh"
+    },
+    "warnings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contract_id",
+          "recorded_owner_repo",
+          "expected_owner_repo",
+          "consumer_repos",
+          "reason",
+          "refresh_evidence_required",
+          "blocks_compatibility_gate"
+        ],
+        "properties": {
+          "contract_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]*\\.v[0-9]+$"
+          },
+          "recorded_owner_repo": {
+            "type": "string",
+            "pattern": "^ao[0-9a-z-]*$"
+          },
+          "expected_owner_repo": {
+            "const": "ao-covenant"
+          },
+          "consumer_repos": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^ao[0-9a-z-]*$"
+            }
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "refresh_evidence_required": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "blocks_compatibility_gate": {
+            "const": true
+          }
+        }
+      }
+    },
+    "stale_owner_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "no_promotion_requested": {
+      "const": true
+    },
+    "provider_calls_allowed": {
+      "const": false
+    },
+    "credential_use_allowed": {
+      "const": false
+    },
+    "release_or_publish_allowed": {
+      "const": false
+    },
+    "claims_authority_advance": {
+      "const": false
+    },
+    "policy_or_auth_widening": {
+      "const": false
+    },
+    "hidden_instruction_change": {
+      "const": false
+    },
+    "direct_main_mutation": {
+      "const": false
+    },
+    "rsi_remains_denied": {
+      "const": true
+    }
+  }
+}
