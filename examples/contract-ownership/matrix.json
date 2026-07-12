@@ -95,9 +95,23 @@
       ],
       "policy_authority_required": false,
       "compatibility_gate_required": true
+    },
+    {
+      "contract_id": "covenant.compatibility-matrix-stale-owner-warning.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "contract compatibility registry",
+      "stability": "experimental",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao-atlas", "ao-mission", "ao-command"],
+      "consumer_test_refs": [
+        "internal/schema/schema_test.go:TestCompatibilityMatrixStaleOwnerWarningValidatesBlockingWarnings"
+      ],
+      "policy_authority_required": false,
+      "compatibility_gate_required": true
     }
   ],
-  "entry_count": 6,
+  "entry_count": 7,
   "no_promotion_requested": true,
   "provider_calls_allowed": false,
   "credential_use_allowed": false,

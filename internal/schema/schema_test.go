@@ -278,6 +278,119 @@ func TestSchemaOwnershipGuardCoversEverySchemaFile(t *testing.T) {
 	}
 }
 
+func TestCompatibilityMatrixStaleOwnerWarningValidatesBlockingWarnings(t *testing.T) {
+	if !KnownSchemaID(CompatibilityMatrixStaleOwnerWarningSchemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", CompatibilityMatrixStaleOwnerWarningSchemaID)
+	}
+	fixtureBytes, err := os.ReadFile(filepath.Join("..", "..", "examples", "compatibility-matrix-stale-owner-warning", "warning.json"))
+	if err != nil {
+		t.Fatalf("read compatibility matrix stale-owner warning fixture: %v", err)
+	}
+	if err := ValidateBytes(CompatibilityMatrixStaleOwnerWarningSchemaID, fixtureBytes); err != nil {
+		t.Fatalf("compatibility matrix stale-owner warning fixture failed schema: %v", err)
+	}
+
+	var fixture struct {
+		SchemaVersion            string `json:"schema_version"`
+		WarningID                string `json:"warning_id"`
+		OwnerRepo                string `json:"owner_repo"`
+		Status                   string `json:"status"`
+		SourceRecommendationRank int    `json:"source_recommendation_rank"`
+		SafetyGate               string `json:"safety_gate"`
+		CompatibilityGateStatus  string `json:"compatibility_gate_status"`
+		StaleOwnerCount          int    `json:"stale_owner_count"`
+		NoPromotionRequested     bool   `json:"no_promotion_requested"`
+		ProviderCallsAllowed     bool   `json:"provider_calls_allowed"`
+		CredentialUseAllowed     bool   `json:"credential_use_allowed"`
+		ReleaseOrPublishAllowed  bool   `json:"release_or_publish_allowed"`
+		ClaimsAuthorityAdvance   bool   `json:"claims_authority_advance"`
+		PolicyOrAuthWidening     bool   `json:"policy_or_auth_widening"`
+		HiddenInstructionChange  bool   `json:"hidden_instruction_change"`
+		DirectMainMutation       bool   `json:"direct_main_mutation"`
+		RSIRemainsDenied         bool   `json:"rsi_remains_denied"`
+		Warnings                 []struct {
+			ContractID              string   `json:"contract_id"`
+			RecordedOwnerRepo       string   `json:"recorded_owner_repo"`
+			ExpectedOwnerRepo       string   `json:"expected_owner_repo"`
+			ConsumerRepos           []string `json:"consumer_repos"`
+			Reason                  string   `json:"reason"`
+			RefreshEvidenceRequired []string `json:"refresh_evidence_required"`
+			BlocksCompatibilityGate bool     `json:"blocks_compatibility_gate"`
+		} `json:"warnings"`
+	}
+	if err := json.Unmarshal(fixtureBytes, &fixture); err != nil {
+		t.Fatalf("decode compatibility matrix stale-owner warning fixture: %v", err)
+	}
+	if fixture.SchemaVersion != CompatibilityMatrixStaleOwnerWarningSchemaID ||
+		fixture.WarningID != "ao-stack-month6-compatibility-matrix-stale-owner-warning" ||
+		fixture.OwnerRepo != "ao-covenant" ||
+		fixture.Status != "stale_owner_warning" ||
+		fixture.SourceRecommendationRank != 36 ||
+		fixture.SafetyGate != "planning_only_no_provider_no_release" ||
+		fixture.CompatibilityGateStatus != "blocked_pending_owner_refresh" ||
+		len(fixture.Warnings) == 0 ||
+		fixture.StaleOwnerCount != len(fixture.Warnings) ||
+		!fixture.NoPromotionRequested ||
+		fixture.ProviderCallsAllowed ||
+		fixture.CredentialUseAllowed ||
+		fixture.ReleaseOrPublishAllowed ||
+		fixture.ClaimsAuthorityAdvance ||
+		fixture.PolicyOrAuthWidening ||
+		fixture.HiddenInstructionChange ||
+		fixture.DirectMainMutation ||
+		!fixture.RSIRemainsDenied {
+		t.Fatalf("compatibility matrix stale-owner warning lost governance boundary: %+v", fixture)
+	}
+	seen := map[string]bool{}
+	for _, warning := range fixture.Warnings {
+		if seen[warning.ContractID] {
+			t.Fatalf("duplicate stale owner warning for contract_id %q", warning.ContractID)
+		}
+		seen[warning.ContractID] = true
+		if warning.RecordedOwnerRepo == "" ||
+			warning.ExpectedOwnerRepo != "ao-covenant" ||
+			len(warning.ConsumerRepos) == 0 ||
+			warning.Reason == "" ||
+			len(warning.RefreshEvidenceRequired) == 0 ||
+			!warning.BlocksCompatibilityGate {
+			t.Fatalf("stale owner warning is not compatibility-blocking: %+v", warning)
+		}
+	}
+
+	var document map[string]any
+	if err := json.Unmarshal(fixtureBytes, &document); err != nil {
+		t.Fatalf("decode fixture as map: %v", err)
+	}
+	document["claims_authority_advance"] = true
+	mutated, err := json.Marshal(document)
+	if err != nil {
+		t.Fatalf("marshal mutated claims_authority_advance fixture: %v", err)
+	}
+	if err := ValidateBytes(CompatibilityMatrixStaleOwnerWarningSchemaID, mutated); err == nil {
+		t.Fatalf("stale owner warning allowed claims_authority_advance=true")
+	}
+
+	if err := json.Unmarshal(fixtureBytes, &document); err != nil {
+		t.Fatalf("decode fixture for warning mutation: %v", err)
+	}
+	warnings, ok := document["warnings"].([]any)
+	if !ok || len(warnings) == 0 {
+		t.Fatalf("warnings did not decode as non-empty array")
+	}
+	firstWarning, ok := warnings[0].(map[string]any)
+	if !ok {
+		t.Fatalf("first warning did not decode as object")
+	}
+	firstWarning["blocks_compatibility_gate"] = false
+	mutated, err = json.Marshal(document)
+	if err != nil {
+		t.Fatalf("marshal mutated blocks_compatibility_gate fixture: %v", err)
+	}
+	if err := ValidateBytes(CompatibilityMatrixStaleOwnerWarningSchemaID, mutated); err == nil {
+		t.Fatalf("stale owner warning allowed non-blocking compatibility warning")
+	}
+}
+
 func TestSchemaDeprecationLedgerValidatesOwnerAcknowledgements(t *testing.T) {
 	if !KnownSchemaID(SchemaDeprecationLedgerSchemaID) {
 		t.Fatalf("KnownSchemaID(%q) = false, want true", SchemaDeprecationLedgerSchemaID)
