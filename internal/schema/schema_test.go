@@ -227,6 +227,57 @@ func TestContractOwnershipMatrixSchemaValidatesPublishedFixture(t *testing.T) {
 	}
 }
 
+func TestSchemaOwnershipGuardCoversEverySchemaFile(t *testing.T) {
+	fixtureBytes, err := os.ReadFile(filepath.Join("..", "..", "examples", "contract-ownership", "matrix.json"))
+	if err != nil {
+		t.Fatalf("read contract ownership matrix fixture: %v", err)
+	}
+	var fixture struct {
+		Entries []struct {
+			ContractID string `json:"contract_id"`
+		} `json:"entries"`
+	}
+	if err := json.Unmarshal(fixtureBytes, &fixture); err != nil {
+		t.Fatalf("decode contract ownership matrix fixture: %v", err)
+	}
+	owned := map[string]bool{}
+	for _, entry := range fixture.Entries {
+		owned[entry.ContractID] = true
+	}
+
+	exemptionsPath := filepath.Join("..", "..", "examples", "contract-ownership", "legacy-schema-exemptions.txt")
+	exemptionsBytes, err := os.ReadFile(exemptionsPath)
+	if err != nil {
+		t.Fatalf("read legacy schema ownership exemptions: %v", err)
+	}
+	exemptions := map[string]bool{}
+	for _, line := range strings.Split(string(exemptionsBytes), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		exemptions[line] = true
+	}
+
+	files, err := filepath.Glob(filepath.Join("..", "..", "schemas", "covenant.*.schema.json"))
+	if err != nil {
+		t.Fatalf("glob schemas: %v", err)
+	}
+	if len(files) == 0 {
+		t.Fatalf("no schema files found")
+	}
+	var missing []string
+	for _, file := range files {
+		id := strings.TrimSuffix(filepath.Base(file), ".schema.json")
+		if !owned[id] && !exemptions[id] {
+			missing = append(missing, id)
+		}
+	}
+	if len(missing) > 0 {
+		t.Fatalf("schemas require an ownership matrix entry or legacy exemption: %s", strings.Join(missing, ", "))
+	}
+}
+
 func TestSchemaDeprecationLedgerValidatesOwnerAcknowledgements(t *testing.T) {
 	if !KnownSchemaID(SchemaDeprecationLedgerSchemaID) {
 		t.Fatalf("KnownSchemaID(%q) = false, want true", SchemaDeprecationLedgerSchemaID)
