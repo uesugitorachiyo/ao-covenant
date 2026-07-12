@@ -386,6 +386,100 @@ func TestRegistryCompatibilityCIHandoffFixtureValidatesPlanningBoundary(t *testi
 	}
 }
 
+func TestProducerConsumerContractDigestComparisonFixtureValidatesMismatches(t *testing.T) {
+	const schemaID = "covenant.producer-consumer-contract-digest-comparison.v1"
+	if !KnownSchemaID(schemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", schemaID)
+	}
+	fixtureBytes, err := os.ReadFile(filepath.Join("..", "..", "examples", "producer-consumer-contract-digest-comparison", "comparison.json"))
+	if err != nil {
+		t.Fatalf("read producer consumer contract digest comparison fixture: %v", err)
+	}
+	if err := ValidateBytes(schemaID, fixtureBytes); err != nil {
+		t.Fatalf("producer consumer contract digest comparison fixture failed schema: %v", err)
+	}
+
+	var fixture struct {
+		SchemaVersion            string `json:"schema_version"`
+		ComparisonID             string `json:"comparison_id"`
+		OwnerRepo                string `json:"owner_repo"`
+		Status                   string `json:"status"`
+		SourceRecommendationRank int    `json:"source_recommendation_rank"`
+		SourceRecommendationTask string `json:"source_recommendation_task"`
+		SafetyGate               string `json:"safety_gate"`
+		Comparisons              []struct {
+			ContractID       string   `json:"contract_id"`
+			OwnerRepo        string   `json:"owner_repo"`
+			ProducerRepo     string   `json:"producer_repo"`
+			ConsumerRepo     string   `json:"consumer_repo"`
+			ProducerDigest   string   `json:"producer_digest_sha256"`
+			ConsumerDigest   string   `json:"consumer_digest_sha256"`
+			DigestMatch      bool     `json:"digest_match"`
+			RequiredEvidence []string `json:"required_evidence"`
+		} `json:"comparisons"`
+		ComparisonCount         int  `json:"comparison_count"`
+		MismatchCount           int  `json:"mismatch_count"`
+		CompatibilityGatePassed bool `json:"compatibility_gate_passed"`
+		NoPromotionRequested    bool `json:"no_promotion_requested"`
+		ProviderCallsAllowed    bool `json:"provider_calls_allowed"`
+		CredentialUseAllowed    bool `json:"credential_use_allowed"`
+		ReleaseOrPublishAllowed bool `json:"release_or_publish_allowed"`
+		ClaimsAuthorityAdvance  bool `json:"claims_authority_advance"`
+		PolicyOrAuthWidening    bool `json:"policy_or_auth_widening"`
+		HiddenInstructionChange bool `json:"hidden_instruction_change"`
+		DirectMainMutation      bool `json:"direct_main_mutation"`
+		RSIRemainsDenied        bool `json:"rsi_remains_denied"`
+	}
+	if err := json.Unmarshal(fixtureBytes, &fixture); err != nil {
+		t.Fatalf("decode producer consumer contract digest comparison fixture: %v", err)
+	}
+	if fixture.SchemaVersion != schemaID ||
+		fixture.ComparisonID != "ao-stack-month6-producer-consumer-contract-digest-comparison" ||
+		fixture.OwnerRepo != "ao-covenant" ||
+		fixture.Status != "mismatch_detected_fail_closed" ||
+		fixture.SourceRecommendationRank != 28 ||
+		fixture.SourceRecommendationTask != "Add producer consumer contract digest comparison fixture" ||
+		fixture.SafetyGate != "planning_only_no_provider_no_release" ||
+		len(fixture.Comparisons) < 3 ||
+		fixture.ComparisonCount != len(fixture.Comparisons) ||
+		fixture.MismatchCount == 0 ||
+		fixture.CompatibilityGatePassed ||
+		!fixture.NoPromotionRequested ||
+		fixture.ProviderCallsAllowed ||
+		fixture.CredentialUseAllowed ||
+		fixture.ReleaseOrPublishAllowed ||
+		fixture.ClaimsAuthorityAdvance ||
+		fixture.PolicyOrAuthWidening ||
+		fixture.HiddenInstructionChange ||
+		fixture.DirectMainMutation ||
+		!fixture.RSIRemainsDenied {
+		t.Fatalf("producer consumer digest comparison lost fail-closed planning boundary: %+v", fixture)
+	}
+	mismatches := 0
+	seen := map[string]bool{}
+	for _, comparison := range fixture.Comparisons {
+		key := comparison.ContractID + "|" + comparison.ProducerRepo + "|" + comparison.ConsumerRepo
+		if seen[key] {
+			t.Fatalf("duplicate producer consumer comparison %q", key)
+		}
+		seen[key] = true
+		if comparison.OwnerRepo != "ao-covenant" ||
+			comparison.ProducerRepo == "" ||
+			comparison.ConsumerRepo == "" ||
+			len(comparison.ProducerDigest) != 64 ||
+			len(comparison.ConsumerDigest) != 64 ||
+			len(comparison.RequiredEvidence) == 0 {
+			t.Fatalf("producer consumer comparison is not digest/evidence-bound: %+v", comparison)
+		}
+		if !comparison.DigestMatch {
+			mismatches++
+		}
+	}
+	if mismatches != fixture.MismatchCount {
+		t.Fatalf("mismatch count = %d, want %d", fixture.MismatchCount, mismatches)
+	}
+}
+
 func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	required, ok := RequiredSchemaByID(VersionResultSchemaID)
 	if !ok {
