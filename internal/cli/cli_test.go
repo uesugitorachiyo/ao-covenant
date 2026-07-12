@@ -6046,7 +6046,7 @@ func TestPolicySpineCommandPrintsAO2FirstGovernanceJSON(t *testing.T) {
 	if decoded.Stack != "ao2-first" || decoded.Status != "ready" {
 		t.Fatalf("stack/status = %q/%q, want ao2-first/ready", decoded.Stack, decoded.Status)
 	}
-	for _, want := range []string{"ao2", "ao2-control-plane", "ao-foundry", "ao-forge", "ao-command", "ao-covenant"} {
+	for _, want := range []string{"ao2", "ao2-control-plane", "ao-foundry", "ao-forge", "ao-command", "ao-covenant", "ao-atlas"} {
 		if !containsString(decoded.Scope.ActiveRepositories, want) {
 			t.Fatalf("active repositories = %#v, missing %q", decoded.Scope.ActiveRepositories, want)
 		}

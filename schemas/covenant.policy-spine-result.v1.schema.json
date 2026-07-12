@@ -16,7 +16,7 @@
       "properties": {
         "active_repositories": {
           "type": "array",
-          "minItems": 6,
+          "minItems": 7,
           "uniqueItems": true,
           "contains": { "const": "ao-covenant" },
           "items": {
@@ -26,7 +26,8 @@
               "ao-foundry",
               "ao-forge",
               "ao-command",
-              "ao-covenant"
+              "ao-covenant",
+              "ao-atlas"
             ]
           }
         },
