@@ -162,6 +162,20 @@ Consumers can validate the fixture with:
 covenant schema validate --schema covenant.contract-ownership-matrix.v1 --file examples/contract-ownership/matrix.json
 ```
 
+## Schema Deprecation Ledger
+
+`covenant.schema-deprecation-ledger.v1` publishes a Covenant-owned fixture that
+tracks planned schema retirements, replacement schema IDs, owner
+acknowledgements, consumer notices, and compatibility gates. It is
+planning-only evidence: it does not grant promotion authority, provider
+execution, credential use, release, publish, or authority advancement.
+
+Consumers can validate the fixture with:
+
+```sh
+covenant schema validate --schema covenant.schema-deprecation-ledger.v1 --file examples/schema-deprecation/ledger.json
+```
+
 ## Release Dry-Run Artifact Audit
 
 The release workflow `dry_run=true` path publishes
