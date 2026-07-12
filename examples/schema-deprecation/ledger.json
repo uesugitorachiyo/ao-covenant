@@ -1,0 +1,66 @@
+{
+  "schema_version": "covenant.schema-deprecation-ledger.v1",
+  "ledger_id": "ao-stack-month6-schema-deprecation-ledger",
+  "owner_repo": "ao-covenant",
+  "status": "published_fixture",
+  "source_recommendation_rank": 12,
+  "source_recommendation_task": "Create schema deprecation ledger with owner acknowledgements",
+  "safety_gate": "planning_only_no_provider_no_release",
+  "entries": [
+    {
+      "schema_id": "ao.foundry.release-manifest.v0.1",
+      "owner_repo": "ao-foundry",
+      "lifecycle": "deprecation_planned",
+      "replacement_schema_id": "covenant.release-manifest.v1",
+      "removal_not_before": "2027-01-09",
+      "owner_acknowledgements": [
+        "ao-foundry:owner acknowledged replacement target remains compatibility gated"
+      ],
+      "consumer_notice_refs": [
+        "ao-foundry:docs/contracts/CONTRACT-FIXTURES.md",
+        "ao-covenant:docs/public-schema-changelog.md#schema-deprecation-ledger"
+      ],
+      "compatibility_gate_required": true,
+      "migration_required_before_removal": true
+    },
+    {
+      "schema_id": "ao.forge.release-candidate.v0.1",
+      "owner_repo": "ao-forge",
+      "lifecycle": "deprecation_planned",
+      "replacement_schema_id": "covenant.release-readiness-summary.v1",
+      "removal_not_before": "2027-01-09",
+      "owner_acknowledgements": [
+        "ao-forge:owner acknowledged replacement target remains compatibility gated"
+      ],
+      "consumer_notice_refs": [
+        "ao-forge:docs/README.md",
+        "ao-covenant:docs/public-schema-changelog.md#schema-deprecation-ledger"
+      ],
+      "compatibility_gate_required": true,
+      "migration_required_before_removal": true
+    },
+    {
+      "schema_id": "ao.command.status-readback.v0.1",
+      "owner_repo": "ao-command",
+      "lifecycle": "deprecation_planned",
+      "replacement_schema_id": "covenant.policy-spine-result.v1",
+      "removal_not_before": "2027-01-09",
+      "owner_acknowledgements": [
+        "ao-command:owner acknowledged replacement target remains compatibility gated"
+      ],
+      "consumer_notice_refs": [
+        "ao-command:README.md",
+        "ao-covenant:docs/public-schema-changelog.md#schema-deprecation-ledger"
+      ],
+      "compatibility_gate_required": true,
+      "migration_required_before_removal": true
+    }
+  ],
+  "entry_count": 3,
+  "no_promotion_requested": true,
+  "provider_calls_allowed": false,
+  "credential_use_allowed": false,
+  "release_or_publish_allowed": false,
+  "claims_authority_advance": false,
+  "rsi_remains_denied": true
+}

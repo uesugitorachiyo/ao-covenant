@@ -227,6 +227,78 @@ func TestContractOwnershipMatrixSchemaValidatesPublishedFixture(t *testing.T) {
 	}
 }
 
+func TestSchemaDeprecationLedgerValidatesOwnerAcknowledgements(t *testing.T) {
+	if !KnownSchemaID(SchemaDeprecationLedgerSchemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", SchemaDeprecationLedgerSchemaID)
+	}
+	fixtureBytes, err := os.ReadFile(filepath.Join("..", "..", "examples", "schema-deprecation", "ledger.json"))
+	if err != nil {
+		t.Fatalf("read schema deprecation ledger fixture: %v", err)
+	}
+	if err := ValidateBytes(SchemaDeprecationLedgerSchemaID, fixtureBytes); err != nil {
+		t.Fatalf("schema deprecation ledger fixture failed schema: %v", err)
+	}
+
+	var fixture struct {
+		SchemaVersion            string `json:"schema_version"`
+		LedgerID                 string `json:"ledger_id"`
+		OwnerRepo                string `json:"owner_repo"`
+		Status                   string `json:"status"`
+		SourceRecommendationRank int    `json:"source_recommendation_rank"`
+		SafetyGate               string `json:"safety_gate"`
+		Entries                  []struct {
+			SchemaID              string   `json:"schema_id"`
+			OwnerRepo             string   `json:"owner_repo"`
+			Lifecycle             string   `json:"lifecycle"`
+			ReplacementSchemaID   string   `json:"replacement_schema_id"`
+			RemovalNotBefore      string   `json:"removal_not_before"`
+			OwnerAcknowledgements []string `json:"owner_acknowledgements"`
+			ConsumerNoticeRefs    []string `json:"consumer_notice_refs"`
+		} `json:"entries"`
+		EntryCount              int  `json:"entry_count"`
+		NoPromotionRequested    bool `json:"no_promotion_requested"`
+		ProviderCallsAllowed    bool `json:"provider_calls_allowed"`
+		CredentialUseAllowed    bool `json:"credential_use_allowed"`
+		ReleaseOrPublishAllowed bool `json:"release_or_publish_allowed"`
+		ClaimsAuthorityAdvance  bool `json:"claims_authority_advance"`
+		RSIRemainsDenied        bool `json:"rsi_remains_denied"`
+	}
+	if err := json.Unmarshal(fixtureBytes, &fixture); err != nil {
+		t.Fatalf("decode schema deprecation ledger fixture: %v", err)
+	}
+	if fixture.SchemaVersion != SchemaDeprecationLedgerSchemaID ||
+		fixture.LedgerID != "ao-stack-month6-schema-deprecation-ledger" ||
+		fixture.OwnerRepo != "ao-covenant" ||
+		fixture.Status != "published_fixture" ||
+		fixture.SourceRecommendationRank != 12 ||
+		fixture.SafetyGate != "planning_only_no_provider_no_release" ||
+		len(fixture.Entries) < 3 ||
+		fixture.EntryCount != len(fixture.Entries) ||
+		!fixture.NoPromotionRequested ||
+		fixture.ProviderCallsAllowed ||
+		fixture.CredentialUseAllowed ||
+		fixture.ReleaseOrPublishAllowed ||
+		fixture.ClaimsAuthorityAdvance ||
+		!fixture.RSIRemainsDenied {
+		t.Fatalf("schema deprecation ledger lost governance boundary: %+v", fixture)
+	}
+	seen := map[string]bool{}
+	for _, entry := range fixture.Entries {
+		if seen[entry.SchemaID] {
+			t.Fatalf("duplicate schema_id %q", entry.SchemaID)
+		}
+		seen[entry.SchemaID] = true
+		if entry.OwnerRepo == "" ||
+			entry.Lifecycle == "" ||
+			entry.ReplacementSchemaID == "" ||
+			entry.RemovalNotBefore == "" ||
+			len(entry.OwnerAcknowledgements) == 0 ||
+			len(entry.ConsumerNoticeRefs) == 0 {
+			t.Fatalf("schema deprecation entry is not owner-acknowledged: %+v", entry)
+		}
+	}
+}
+
 func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	required, ok := RequiredSchemaByID(VersionResultSchemaID)
 	if !ok {

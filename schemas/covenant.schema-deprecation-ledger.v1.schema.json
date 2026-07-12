@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.schema-deprecation-ledger.v1",
+  "title": "AO Covenant Schema Deprecation Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ledger_id",
+    "owner_repo",
+    "status",
+    "source_recommendation_rank",
+    "source_recommendation_task",
+    "safety_gate",
+    "entries",
+    "entry_count",
+    "no_promotion_requested",
+    "provider_calls_allowed",
+    "credential_use_allowed",
+    "release_or_publish_allowed",
+    "claims_authority_advance",
+    "rsi_remains_denied"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.schema-deprecation-ledger.v1"
+    },
+    "ledger_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "owner_repo": {
+      "const": "ao-covenant"
+    },
+    "status": {
+      "const": "published_fixture"
+    },
+    "source_recommendation_rank": {
+      "const": 12
+    },
+    "source_recommendation_task": {
+      "const": "Create schema deprecation ledger with owner acknowledgements"
+    },
+    "safety_gate": {
+      "const": "planning_only_no_provider_no_release"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_id",
+          "owner_repo",
+          "lifecycle",
+          "replacement_schema_id",
+          "removal_not_before",
+          "owner_acknowledgements",
+          "consumer_notice_refs",
+          "compatibility_gate_required",
+          "migration_required_before_removal"
+        ],
+        "properties": {
+          "schema_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9.-]*\\.v[0-9]+(\\.[0-9]+)?$"
+          },
+          "owner_repo": {
+            "type": "string",
+            "pattern": "^ao[0-9a-z-]*$"
+          },
+          "lifecycle": {
+            "enum": ["deprecated", "deprecation_planned", "superseded"]
+          },
+          "replacement_schema_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9.-]*\\.v[0-9]+(\\.[0-9]+)?$"
+          },
+          "removal_not_before": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          },
+          "owner_acknowledgements": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^ao[0-9a-z-]+:[A-Za-z0-9._:/# -]+$"
+            }
+          },
+          "consumer_notice_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:/# -]+$"
+            }
+          },
+          "compatibility_gate_required": {
+            "const": true
+          },
+          "migration_required_before_removal": {
+            "const": true
+          }
+        }
+      }
+    },
+    "entry_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "no_promotion_requested": {
+      "const": true
+    },
+    "provider_calls_allowed": {
+      "const": false
+    },
+    "credential_use_allowed": {
+      "const": false
+    },
+    "release_or_publish_allowed": {
+      "const": false
+    },
+    "claims_authority_advance": {
+      "const": false
+    },
+    "rsi_remains_denied": {
+      "const": true
+    }
+  }
+}
