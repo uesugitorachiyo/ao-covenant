@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.producer-consumer-contract-digest-comparison.v1",
+  "title": "AO Covenant Producer Consumer Contract Digest Comparison",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "comparison_id",
+    "owner_repo",
+    "status",
+    "source_recommendation_rank",
+    "source_recommendation_task",
+    "safety_gate",
+    "comparisons",
+    "comparison_count",
+    "mismatch_count",
+    "compatibility_gate_passed",
+    "no_promotion_requested",
+    "provider_calls_allowed",
+    "credential_use_allowed",
+    "release_or_publish_allowed",
+    "claims_authority_advance",
+    "policy_or_auth_widening",
+    "hidden_instruction_change",
+    "direct_main_mutation",
+    "rsi_remains_denied"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.producer-consumer-contract-digest-comparison.v1"
+    },
+    "comparison_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "owner_repo": {
+      "const": "ao-covenant"
+    },
+    "status": {
+      "const": "mismatch_detected_fail_closed"
+    },
+    "source_recommendation_rank": {
+      "const": 28
+    },
+    "source_recommendation_task": {
+      "const": "Add producer consumer contract digest comparison fixture"
+    },
+    "safety_gate": {
+      "const": "planning_only_no_provider_no_release"
+    },
+    "comparisons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contract_id",
+          "owner_repo",
+          "producer_repo",
+          "consumer_repo",
+          "producer_digest_sha256",
+          "consumer_digest_sha256",
+          "digest_match",
+          "required_evidence"
+        ],
+        "properties": {
+          "contract_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]*\\.v[0-9]+$"
+          },
+          "owner_repo": {
+            "const": "ao-covenant"
+          },
+          "producer_repo": {
+            "type": "string",
+            "pattern": "^ao[0-9a-z-]*$"
+          },
+          "consumer_repo": {
+            "type": "string",
+            "pattern": "^ao[0-9a-z-]*$"
+          },
+          "producer_digest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consumer_digest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "digest_match": {
+            "type": "boolean"
+          },
+          "required_evidence": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "comparison_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "mismatch_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "compatibility_gate_passed": {
+      "const": false
+    },
+    "no_promotion_requested": {
+      "const": true
+    },
+    "provider_calls_allowed": {
+      "const": false
+    },
+    "credential_use_allowed": {
+      "const": false
+    },
+    "release_or_publish_allowed": {
+      "const": false
+    },
+    "claims_authority_advance": {
+      "const": false
+    },
+    "policy_or_auth_widening": {
+      "const": false
+    },
+    "hidden_instruction_change": {
+      "const": false
+    },
+    "direct_main_mutation": {
+      "const": false
+    },
+    "rsi_remains_denied": {
+      "const": true
+    }
+  }
+}
