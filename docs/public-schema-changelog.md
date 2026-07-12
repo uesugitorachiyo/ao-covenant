@@ -69,6 +69,7 @@ CI and tool integration:
 - `covenant.schema-catalog-result.v1`
 - `covenant.schema-export-result.v1`
 - `covenant.schema-validation-report.v1`
+- `covenant.contract-ownership-matrix.v1`
 
 Release automation exposes release package, verification, report, diff, and
 fixture inventory data:
@@ -145,6 +146,20 @@ Consumers can validate a captured gate result with:
 
 ```sh
 covenant schema validate --schema covenant.rsi-claim-publish-gate.v1 --file rsi-claim-publish-gate.json
+```
+
+## Contract Ownership Matrix
+
+`covenant.contract-ownership-matrix.v1` publishes a Covenant-owned fixture that
+binds selected AO stack contracts to an owner repository, producer repositories,
+consumer repositories, and compatibility test references. It is planning-only
+evidence: it does not grant promotion authority, provider execution, credential
+use, release, or publish authority.
+
+Consumers can validate the fixture with:
+
+```sh
+covenant schema validate --schema covenant.contract-ownership-matrix.v1 --file examples/contract-ownership/matrix.json
 ```
 
 ## Release Dry-Run Artifact Audit
