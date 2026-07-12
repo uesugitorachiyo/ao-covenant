@@ -299,6 +299,93 @@ func TestSchemaDeprecationLedgerValidatesOwnerAcknowledgements(t *testing.T) {
 	}
 }
 
+func TestRegistryCompatibilityCIHandoffFixtureValidatesPlanningBoundary(t *testing.T) {
+	const schemaID = "covenant.registry-compatibility-ci-handoff.v1"
+	if !KnownSchemaID(schemaID) {
+		t.Fatalf("KnownSchemaID(%q) = false, want true", schemaID)
+	}
+	fixtureBytes, err := os.ReadFile(filepath.Join("..", "..", "examples", "registry-compatibility-ci-handoff", "handoff.json"))
+	if err != nil {
+		t.Fatalf("read registry compatibility CI handoff fixture: %v", err)
+	}
+	if err := ValidateBytes(schemaID, fixtureBytes); err != nil {
+		t.Fatalf("registry compatibility CI handoff fixture failed schema: %v", err)
+	}
+
+	var fixture struct {
+		SchemaVersion            string `json:"schema_version"`
+		HandoffID                string `json:"handoff_id"`
+		OwnerRepo                string `json:"owner_repo"`
+		Status                   string `json:"status"`
+		SourceRecommendationRank int    `json:"source_recommendation_rank"`
+		SourceRecommendationTask string `json:"source_recommendation_task"`
+		SafetyGate               string `json:"safety_gate"`
+		CIIntent                 struct {
+			Mode                   string   `json:"mode"`
+			RequiredInputs         []string `json:"required_inputs"`
+			RequiredConsumerChecks []string `json:"required_consumer_checks"`
+			FailurePolicy          string   `json:"failure_policy"`
+		} `json:"ci_intent"`
+		ProducerConsumerPairs []struct {
+			ContractID       string   `json:"contract_id"`
+			OwnerRepo        string   `json:"owner_repo"`
+			ProducerRepos    []string `json:"producer_repos"`
+			ConsumerRepos    []string `json:"consumer_repos"`
+			RequiredEvidence []string `json:"required_evidence"`
+		} `json:"producer_consumer_pairs"`
+		PairCount               int  `json:"pair_count"`
+		NoPromotionRequested    bool `json:"no_promotion_requested"`
+		ProviderCallsAllowed    bool `json:"provider_calls_allowed"`
+		CredentialUseAllowed    bool `json:"credential_use_allowed"`
+		ReleaseOrPublishAllowed bool `json:"release_or_publish_allowed"`
+		ClaimsAuthorityAdvance  bool `json:"claims_authority_advance"`
+		PolicyOrAuthWidening    bool `json:"policy_or_auth_widening"`
+		HiddenInstructionChange bool `json:"hidden_instruction_change"`
+		DirectMainMutation      bool `json:"direct_main_mutation"`
+		RSIRemainsDenied        bool `json:"rsi_remains_denied"`
+	}
+	if err := json.Unmarshal(fixtureBytes, &fixture); err != nil {
+		t.Fatalf("decode registry compatibility CI handoff fixture: %v", err)
+	}
+	if fixture.SchemaVersion != schemaID ||
+		fixture.HandoffID != "ao-stack-month6-registry-compatibility-ci-handoff" ||
+		fixture.OwnerRepo != "ao-covenant" ||
+		fixture.Status != "planning_only" ||
+		fixture.SourceRecommendationRank != 24 ||
+		fixture.SourceRecommendationTask != "Add registry compatibility CI handoff prompt" ||
+		fixture.SafetyGate != "planning_only_no_provider_no_release" ||
+		fixture.CIIntent.Mode != "handoff_prompt_only" ||
+		len(fixture.CIIntent.RequiredInputs) == 0 ||
+		len(fixture.CIIntent.RequiredConsumerChecks) == 0 ||
+		fixture.CIIntent.FailurePolicy == "" ||
+		len(fixture.ProducerConsumerPairs) < 3 ||
+		fixture.PairCount != len(fixture.ProducerConsumerPairs) ||
+		!fixture.NoPromotionRequested ||
+		fixture.ProviderCallsAllowed ||
+		fixture.CredentialUseAllowed ||
+		fixture.ReleaseOrPublishAllowed ||
+		fixture.ClaimsAuthorityAdvance ||
+		fixture.PolicyOrAuthWidening ||
+		fixture.HiddenInstructionChange ||
+		fixture.DirectMainMutation ||
+		!fixture.RSIRemainsDenied {
+		t.Fatalf("registry compatibility CI handoff lost planning boundary: %+v", fixture)
+	}
+	seen := map[string]bool{}
+	for _, pair := range fixture.ProducerConsumerPairs {
+		if seen[pair.ContractID] {
+			t.Fatalf("duplicate contract_id %q", pair.ContractID)
+		}
+		seen[pair.ContractID] = true
+		if pair.OwnerRepo != "ao-covenant" ||
+			len(pair.ProducerRepos) == 0 ||
+			len(pair.ConsumerRepos) == 0 ||
+			len(pair.RequiredEvidence) == 0 {
+			t.Fatalf("registry compatibility pair is not evidence-bound: %+v", pair)
+		}
+	}
+}
+
 func TestRequiredSchemaLookupReturnsStableMetadata(t *testing.T) {
 	required, ok := RequiredSchemaByID(VersionResultSchemaID)
 	if !ok {

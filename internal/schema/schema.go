@@ -84,6 +84,7 @@ const (
 	ClosureMatrixSchemaID                         = "covenant.closure-matrix.v1"
 	ContractOwnershipMatrixSchemaID               = "covenant.contract-ownership-matrix.v1"
 	SchemaDeprecationLedgerSchemaID               = "covenant.schema-deprecation-ledger.v1"
+	RegistryCompatibilityCIHandoffSchemaID        = "covenant.registry-compatibility-ci-handoff.v1"
 	FailureSchemaID                               = "covenant.failure.v1"
 	EvidenceBundleSchemaID                        = "covenant.evidence-bundle.v1"
 	EvidencePackSchemaID                          = "covenant.evidence-pack.v1"
@@ -168,6 +169,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.closure-matrix.v1.schema.json", ClosureMatrixSchemaID),
 	requiredSchema("covenant.contract-ownership-matrix.v1.schema.json", ContractOwnershipMatrixSchemaID),
 	requiredSchema("covenant.schema-deprecation-ledger.v1.schema.json", SchemaDeprecationLedgerSchemaID),
+	requiredSchema("covenant.registry-compatibility-ci-handoff.v1.schema.json", RegistryCompatibilityCIHandoffSchemaID),
 	requiredSchema("covenant.failure.v1.schema.json", FailureSchemaID),
 	requiredSchema("covenant.evidence-bundle.v1.schema.json", EvidenceBundleSchemaID),
 	requiredSchema("covenant.evidence-pack.v1.schema.json", EvidencePackSchemaID),
