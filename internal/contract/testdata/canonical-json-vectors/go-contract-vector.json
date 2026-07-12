@@ -1,0 +1,74 @@
+{
+  "schema_version": "covenant.canonical-json-vector.v1",
+  "language": "go",
+  "generator": "encoding/json.Marshal via internal/contract.CanonicalJSON",
+  "contract": {
+    "schema_version": "covenant.contract.v1",
+    "objective": "Create a guarded risky-change demo contract.",
+    "workspace": {
+      "root": ".",
+      "reads": [
+        "examples/risky-change/brief.md"
+      ],
+      "writes": [
+        "demo-output/report.txt"
+      ]
+    },
+    "obligations": [
+      {
+        "id": "obl_requested_file",
+        "text": "The requested file is created.",
+        "required": true
+      },
+      {
+        "id": "obl_verify_passes",
+        "text": "The verifier passes.",
+        "required": true
+      }
+    ],
+    "tasks": [
+      {
+        "id": "scripted_change",
+        "kind": "scripted",
+        "adapter": "scripted",
+        "depends_on": [],
+        "obligations": [
+          "obl_requested_file"
+        ],
+        "timeout_seconds": 30,
+        "declared_side_effects": [
+          {
+            "type": "file.write",
+            "resource": "demo-output/report.txt"
+          }
+        ]
+      },
+      {
+        "id": "verify_change",
+        "kind": "verify",
+        "adapter": "scripted",
+        "depends_on": [
+          "scripted_change"
+        ],
+        "obligations": [
+          "obl_verify_passes"
+        ],
+        "timeout_seconds": 30
+      }
+    ],
+    "policy": {
+      "mode": "strict"
+    },
+    "evaluator": {
+      "required_obligations": [
+        "obl_requested_file",
+        "obl_verify_passes"
+      ]
+    }
+  },
+  "canonical_json": "{\"schema_version\":\"covenant.contract.v1\",\"objective\":\"Create a guarded risky-change demo contract.\",\"workspace\":{\"root\":\".\",\"reads\":[\"examples/risky-change/brief.md\"],\"writes\":[\"demo-output/report.txt\"]},\"obligations\":[{\"id\":\"obl_requested_file\",\"text\":\"The requested file is created.\",\"required\":true},{\"id\":\"obl_verify_passes\",\"text\":\"The verifier passes.\",\"required\":true}],\"tasks\":[{\"id\":\"scripted_change\",\"kind\":\"scripted\",\"adapter\":\"scripted\",\"depends_on\":[],\"obligations\":[\"obl_requested_file\"],\"timeout_seconds\":30,\"declared_side_effects\":[{\"type\":\"file.write\",\"resource\":\"demo-output/report.txt\"}]},{\"id\":\"verify_change\",\"kind\":\"verify\",\"adapter\":\"scripted\",\"depends_on\":[\"scripted_change\"],\"obligations\":[\"obl_verify_passes\"],\"timeout_seconds\":30}],\"policy\":{\"mode\":\"strict\"},\"evaluator\":{\"required_obligations\":[\"obl_requested_file\",\"obl_verify_passes\"]}}",
+  "sha256": "7cb0dcb8ea1dabe3ac1ad15c754f1029a0eb6ff41badc561f8cf07ae293fe8c6",
+  "fixture_only": true,
+  "executes_work": false,
+  "approves_work": false
+}
