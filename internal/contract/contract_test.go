@@ -1,12 +1,27 @@
 package contract
 
 import (
+	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/uesugitorachiyo/ao-covenant/internal/policy"
 )
+
+type canonicalJSONVectorFixture struct {
+	SchemaVersion string   `json:"schema_version"`
+	Language      string   `json:"language"`
+	Generator     string   `json:"generator"`
+	Contract      Contract `json:"contract"`
+	CanonicalJSON string   `json:"canonical_json"`
+	SHA256        string   `json:"sha256"`
+	FixtureOnly   bool     `json:"fixture_only"`
+	ExecutesWork  bool     `json:"executes_work"`
+	ApprovesWork  bool     `json:"approves_work"`
+}
 
 func validContract() Contract {
 	return Contract{
@@ -53,6 +68,63 @@ func TestValidateAcceptsValidContract(t *testing.T) {
 	if err := Validate(validContract()); err != nil {
 		t.Fatalf("Validate returned error: %v", err)
 	}
+}
+
+func TestCanonicalJSONVectorExamplesBindGoAndRustBytes(t *testing.T) {
+	root := filepath.Join("testdata", "canonical-json-vectors")
+	goVector := readCanonicalJSONVectorFixture(t, filepath.Join(root, "go-contract-vector.json"))
+	rustVector := readCanonicalJSONVectorFixture(t, filepath.Join(root, "rust-contract-vector.json"))
+
+	if goVector.SchemaVersion != "covenant.canonical-json-vector.v1" ||
+		rustVector.SchemaVersion != "covenant.canonical-json-vector.v1" ||
+		goVector.Language != "go" ||
+		rustVector.Language != "rust" ||
+		!goVector.FixtureOnly ||
+		!rustVector.FixtureOnly ||
+		goVector.ExecutesWork ||
+		rustVector.ExecutesWork ||
+		goVector.ApprovesWork ||
+		rustVector.ApprovesWork {
+		t.Fatalf("canonical JSON vectors changed safety or identity: go=%+v rust=%+v", goVector, rustVector)
+	}
+	goCanonical, err := CanonicalJSON(goVector.Contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	goDigest, err := Digest(goVector.Contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rustCanonical, err := CanonicalJSON(rustVector.Contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rustDigest, err := Digest(rustVector.Contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(goCanonical) != goVector.CanonicalJSON ||
+		goDigest != goVector.SHA256 ||
+		string(rustCanonical) != rustVector.CanonicalJSON ||
+		rustDigest != rustVector.SHA256 {
+		t.Fatalf("canonical vector digest mismatch")
+	}
+	if goVector.CanonicalJSON != rustVector.CanonicalJSON || goVector.SHA256 != rustVector.SHA256 {
+		t.Fatalf("Go and Rust canonical vector examples diverged:\ngo=%s %s\nrust=%s %s", goVector.SHA256, goVector.CanonicalJSON, rustVector.SHA256, rustVector.CanonicalJSON)
+	}
+}
+
+func readCanonicalJSONVectorFixture(t *testing.T, path string) canonicalJSONVectorFixture {
+	t.Helper()
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture canonicalJSONVectorFixture
+	if err := json.Unmarshal(bytes, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	return fixture
 }
 
 func TestValidateRejectsUnsupportedSchemaVersion(t *testing.T) {
