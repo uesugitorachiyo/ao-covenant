@@ -1,5 +1,39 @@
 # AO Covenant
 
+## Role
+
+AO Covenant is the independent source of contract, policy, approval, trust,
+revocation, and key authority for the AO stack. See [AO Architecture](https://github.com/uesugitorachiyo/ao-architecture)
+and the [canonical AO Covenant component page](https://github.com/uesugitorachiyo/ao-architecture/blob/main/components/ao-covenant.md).
+
+## Maturity
+
+Local beta. Policy and contract evaluation are `implemented` and
+`executable-tested`; approval and compatibility paths are `clean-room-rehearsed`.
+
+## Install
+
+```sh
+go build -o bin/covenant ./cmd/covenant
+```
+
+## Quickstart
+
+```sh
+bin/covenant --help
+```
+
+## Safety
+
+Covenant decisions must bind exact governed inputs. Other components may
+consume but may not redefine or silently widen Covenant policy truth.
+
+## External Beta
+
+External beta has not launched. No promotion is requested. RSI remains denied.
+This repository does not grant release, provider, credential, or broad mutation
+authority for the preflight.
+
 [![Release Readiness](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml/badge.svg)](https://github.com/uesugitorachiyo/ao-covenant/actions/workflows/release-readiness.yml)
 
 AO Covenant is a local-first orchestration kernel for evidence-bound agent work.
