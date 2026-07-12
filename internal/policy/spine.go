@@ -33,6 +33,7 @@ func AO2FirstSpine(schemaVersion string) SpineResult {
 				"ao-forge",
 				"ao-command",
 				"ao-covenant",
+				"ao-atlas",
 			},
 			ReplacedBy: []string{
 				"ao2",
