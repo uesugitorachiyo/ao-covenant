@@ -354,6 +354,33 @@ func TestAO2FirstSpineIncludesRSIClaimBoundaryGate(t *testing.T) {
 	}
 }
 
+func TestScopedCredentialPolicyChecklistAvoidsCredentialInspection(t *testing.T) {
+	checklist := ScopedCredentialPolicyChecklist("covenant.scoped-credential-policy-checklist.v1")
+	if checklist.SchemaVersion != "covenant.scoped-credential-policy-checklist.v1" ||
+		checklist.Status != "ready" ||
+		checklist.Scope != "metadata_and_operator_checklist_only" ||
+		len(checklist.Checks) < 5 ||
+		checklist.CredentialValueInspectionAllowed ||
+		checklist.CredentialValuesInspected ||
+		checklist.CredentialValuesStored ||
+		checklist.RequiresCredentialMaterial ||
+		checklist.SafeToExecute ||
+		checklist.ExecutesWork ||
+		checklist.ApprovesWork ||
+		checklist.MutatesRepositories ||
+		checklist.ProviderCallsAllowed ||
+		checklist.ReleaseOrPublishAllowed ||
+		checklist.ClaimsAuthorityAdvance ||
+		!checklist.RSIRemainsDenied {
+		t.Fatalf("credential checklist widened authority or inspected credentials: %+v", checklist)
+	}
+	for _, check := range checklist.Checks {
+		if check.Status != "passed" || check.RequiresCredentialValue {
+			t.Fatalf("credential checklist check must be passed without values: %+v", check)
+		}
+	}
+}
+
 func TestExplainDecisionAllowsDeclaredWorkspaceWrite(t *testing.T) {
 	explanation := ExplainDecision(Decision{
 		DecisionID: "policy-scripted_change-1",
