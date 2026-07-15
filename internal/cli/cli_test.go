@@ -6006,6 +6006,91 @@ func TestPolicyIndexCommandFiltersJSONByApprovalTicket(t *testing.T) {
 	}
 }
 
+func TestConsumesForgeGoalRunCompatibilityVectorAsPolicyTicket(t *testing.T) {
+	var vector struct {
+		SchemaVersion string         `json:"schema_version"`
+		VectorID      string         `json:"vector_id"`
+		Edge          string         `json:"edge"`
+		Producer      map[string]any `json:"producer"`
+		Consumer      map[string]any `json:"consumer"`
+		GoalRun       map[string]any `json:"forge_goal_run"`
+		Expected      map[string]any `json:"expected_covenant_policy_ticket"`
+		Boundaries    map[string]any `json:"boundaries"`
+	}
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "compatibility", "forge-goal-run-to-covenant-policy-ticket-v0.1.json"))
+	if err != nil {
+		t.Fatalf("read compatibility vector: %v", err)
+	}
+	if err := json.Unmarshal(body, &vector); err != nil {
+		t.Fatalf("decode compatibility vector: %v", err)
+	}
+	if vector.SchemaVersion != "ao.compatibility.forge-goal-run-to-covenant-policy-ticket-vector.v1" ||
+		vector.VectorID != "ao-forge-goal-run-to-ao-covenant-policy-ticket-v1" ||
+		vector.Edge != "ao-forge.goal_run -> ao-covenant.policy_ticket" ||
+		vector.Producer["repository"] != "ao-forge" ||
+		vector.Consumer["repository"] != "ao-covenant" {
+		t.Fatalf("bad Forge to Covenant vector identity: %+v", vector)
+	}
+	if vector.GoalRun["schema_version"] != "ao.forge.goal-run.v0.1" ||
+		vector.Expected["schema_version"] != "ao.covenant.policy-ticket.v1" ||
+		vector.Expected["decision"] != "allow" ||
+		vector.Expected["safe_to_execute"] != false ||
+		vector.Expected["goal_id"] != vector.GoalRun["goal_id"] {
+		t.Fatalf("bad expected policy ticket: goal=%#v expected=%#v", vector.GoalRun, vector.Expected)
+	}
+	for _, field := range []string{"release_or_publish", "creates_tag", "uploads_assets", "deploys", "contacts_external_users", "provider_pilot", "promotion_requested", "promotion_granted", "executes_work", "approves_work", "mutates_repositories", "calls_providers"} {
+		if vector.Boundaries[field] != false {
+			t.Fatalf("compatibility vector must not grant %s: %#v", field, vector.Boundaries)
+		}
+	}
+	if vector.Boundaries["rsi_remains_denied"] != true {
+		t.Fatalf("compatibility vector must keep RSI denied: %#v", vector.Boundaries)
+	}
+}
+
+func TestProducesCovenantApprovalTicketForAO2CompatibilityVector(t *testing.T) {
+	var vector struct {
+		SchemaVersion string         `json:"schema_version"`
+		VectorID      string         `json:"vector_id"`
+		Edge          string         `json:"edge"`
+		Producer      map[string]any `json:"producer"`
+		Consumer      map[string]any `json:"consumer"`
+		Ticket        map[string]any `json:"covenant_approval_ticket"`
+		Expected      map[string]any `json:"expected_ao2_approved_execution_request"`
+		Boundaries    map[string]any `json:"boundaries"`
+	}
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "compatibility", "covenant-approval-ticket-to-ao2-approved-execution-v0.1.json"))
+	if err != nil {
+		t.Fatalf("read compatibility vector: %v", err)
+	}
+	if err := json.Unmarshal(body, &vector); err != nil {
+		t.Fatalf("decode compatibility vector: %v", err)
+	}
+	if vector.SchemaVersion != "ao.compatibility.covenant-approval-ticket-to-ao2-approved-execution-vector.v1" ||
+		vector.VectorID != "ao-covenant-approval-ticket-to-ao2-approved-execution-v1" ||
+		vector.Edge != "ao-covenant.approval_ticket -> ao2.approved_execution_request" ||
+		vector.Producer["repository"] != "ao-covenant" ||
+		vector.Consumer["repository"] != "ao2" {
+		t.Fatalf("bad Covenant to AO2 vector identity: %+v", vector)
+	}
+	if vector.Ticket["schema_version"] != "ao.covenant.approval-ticket.v1" ||
+		vector.Ticket["approval_state"] != "approved" ||
+		vector.Expected["schema_version"] != "ao2.approved-execution-request.v1" ||
+		vector.Expected["approval_ticket_id"] != vector.Ticket["ticket_id"] ||
+		vector.Expected["action_digest"] != vector.Ticket["action_digest"] {
+		t.Fatalf("bad expected AO2 approved execution request: ticket=%#v expected=%#v", vector.Ticket, vector.Expected)
+	}
+	if vector.Expected["provider_execution_required"] != false ||
+		vector.Expected["release_or_publish_allowed"] != false {
+		t.Fatalf("approved AO2 request must stay provider-free and non-release: %#v", vector.Expected)
+	}
+	if vector.Boundaries["rsi_remains_denied"] != true ||
+		vector.Boundaries["provider_pilot"] != false ||
+		vector.Boundaries["release_or_publish"] != false {
+		t.Fatalf("bad vector boundaries: %#v", vector.Boundaries)
+	}
+}
+
 func TestPolicySpineCommandPrintsAO2FirstGovernanceJSON(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
