@@ -227,6 +227,61 @@ func TestGatewayIntentAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
 	}
 }
 
+func TestGitHubIssueActionPolicyDeniesFeaturePRMergeAndIssueWrites(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "operator", "github-issue-action-policy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture map[string]any
+	if err := json.Unmarshal(body, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	if fixture["schema_version"] != "ao.covenant.github-issue-action-policy.v0.1" {
+		t.Fatalf("schema_version = %v", fixture["schema_version"])
+	}
+	if fixture["issue_text_can_authorize"] != false || fixture["repository_text_can_authorize"] != false {
+		t.Fatalf("issue and repository text must not grant authority")
+	}
+	actions := fixture["github_actions"].(map[string]any)
+	for _, action := range []string{
+		"mark_feature_pr_ready_for_review",
+		"merge_feature_generated_pr",
+		"submit_github_review_approval",
+		"comment_on_issue",
+		"label_issue",
+		"assign_issue",
+		"close_or_reopen_issue",
+		"push_third_party_upstream_branch",
+	} {
+		if got := actions[action]; got != "permanently_denied_command_or_path" {
+			t.Fatalf("github_actions.%s = %v, want permanently_denied_command_or_path", action, got)
+		}
+	}
+	classes := fixture["command_policy_classes"].(map[string]any)
+	writeClass := classes["approval_required_github_write"].(map[string]any)
+	if writeClass["requires_action_digest"] != true || writeClass["feature_generated_pr_must_be_draft"] != true {
+		t.Fatalf("approval_required_github_write must require exact digest and draft PR output")
+	}
+	boundaries := fixture["boundaries"].(map[string]any)
+	for _, boundary := range []string{
+		"issue_write_authorized",
+		"feature_pr_auto_merge_authorized",
+		"feature_pr_ready_for_review_authorized",
+		"external_maintainer_contact_authorized",
+		"public_security_disclosure_authorized",
+		"release_authorized",
+		"rsi_authorized",
+	} {
+		if boundaries[boundary] != false {
+			t.Fatalf("boundaries.%s = %v, want false", boundary, boundaries[boundary])
+		}
+	}
+	security := fixture["security_sensitive_state"].(map[string]any)
+	if security["terminal_state"] != "security_sensitive" || security["public_draft_pr_allowed"] != false {
+		t.Fatalf("security-sensitive reports must stop before public repair: %v", security)
+	}
+}
+
 func TestTelegramAndA2AIntentAuthorityDenialFixturesStayReadOnly(t *testing.T) {
 	cases := []struct {
 		name     string
