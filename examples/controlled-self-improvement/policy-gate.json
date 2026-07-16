@@ -1,0 +1,50 @@
+{
+  "schema_version": "ao.covenant.controlled-self-improvement-policy-gate.v0.1",
+  "policy_id": "month4-controlled-self-improvement-dry-run-policy",
+  "status": "dry_run_only",
+  "proposal_id": "month4-fixture-only-self-change-proposal",
+  "human_approval_required": true,
+  "fixture_dry_run_permitted": true,
+  "rollback_required": true,
+  "revocation_required": true,
+  "rsi_remains_denied": true,
+  "live_self_modification_authorized": false,
+  "provider_execution_authorized": false,
+  "live_repository_mutation_authorized": false,
+  "promotion_requested": false,
+  "promotion_granted": false,
+  "release_authorized": false,
+  "tag_authorized": false,
+  "upload_authorized": false,
+  "deployment_authorized": false,
+  "policy_classification": {
+    "authority_class": "fixture_dry_run_only",
+    "risk_level": "bounded",
+    "next_stage": "ao2_fixture_dry_run",
+    "requires_operator_approval": true,
+    "allows_live_source_repo_mutation": false,
+    "allows_provider_execution": false,
+    "allows_rsi_activation": false
+  },
+  "approval_gate": {
+    "approval_state": "required",
+    "approval_scope": "fixture_dry_run_only",
+    "approval_does_not_grant_live_self_modification": true,
+    "approval_does_not_grant_provider_execution": true,
+    "approval_does_not_grant_rsi": true
+  },
+  "rollback_gate": {
+    "rollback_scope": "temporary_fixture_workspace",
+    "rollback_evidence_required": true,
+    "rollback_must_restore_fixture": true
+  },
+  "expected_ao2_policy_input": {
+    "schema_version": "ao2.controlled-self-improvement-policy-input.v0.1",
+    "approval_state": "required",
+    "execution_scope": "temporary_fixture_workspace",
+    "rollback_required": true,
+    "provider_execution": false,
+    "rsi_authorized": false,
+    "promotion_requested": false
+  }
+}
