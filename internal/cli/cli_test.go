@@ -6248,6 +6248,60 @@ func TestControlledSelfImprovementPolicyGateFixtureRequiresApprovalAndDeniesLive
 	}
 }
 
+func TestMonth5OperatorPolicyReadbackFixture(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "operator", "month5-policy-readback.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture map[string]any
+	if err := json.Unmarshal(body, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	if fixture["schema_version"] != "ao.covenant.month5-policy-readback.v0.1" ||
+		fixture["policy_id"] != "month5-operator-workflow-policy-readback" ||
+		fixture["status"] != "approval_required" {
+		t.Fatalf("unexpected Month 5 policy readback identity: %#v", fixture)
+	}
+	for _, key := range []string{
+		"human_approval_required",
+		"revocation_supported",
+		"rollback_evidence_required",
+		"operator_readback_required",
+		"rsi_remains_denied",
+	} {
+		if fixture[key] != true {
+			t.Fatalf("%s = %#v, want true", key, fixture[key])
+		}
+	}
+	for _, key := range []string{
+		"missing_approval_allowed",
+		"provider_execution_authorized",
+		"live_self_modification_authorized",
+		"release_authorized",
+		"promotion_requested",
+		"promotion_granted",
+		"rsi_authorized",
+	} {
+		if fixture[key] != false {
+			t.Fatalf("%s = %#v, want false", key, fixture[key])
+		}
+	}
+	gate := fixture["policy_gate"].(map[string]any)
+	if gate["approval_state"] != "required" ||
+		gate["human_decision"] != "required_before_governed_action" ||
+		gate["next_operator_action"] != "review policy gate, dry-run boundary, rollback evidence, and support bundle before action" {
+		t.Fatalf("bad policy gate: %#v", gate)
+	}
+	command := fixture["expected_command_readback"].(map[string]any)
+	if command["schema_version"] != "ao-command.policy-readback.v1" ||
+		command["policy_decision_id"] != fixture["policy_id"] ||
+		command["safe_to_execute"] != false ||
+		command["rsi_authorized"] != false ||
+		command["provider_execution"] != false {
+		t.Fatalf("bad expected Command readback: %#v", command)
+	}
+}
+
 func TestPolicyCredentialChecklistCommandPrintsNoInspectionJSON(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer

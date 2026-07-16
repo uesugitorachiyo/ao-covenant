@@ -1,0 +1,56 @@
+{
+  "schema_version": "ao.covenant.month5-policy-readback.v0.1",
+  "policy_id": "month5-operator-workflow-policy-readback",
+  "status": "approval_required",
+  "scope": "operator_workflow_hardening",
+  "human_approval_required": true,
+  "revocation_supported": true,
+  "rollback_evidence_required": true,
+  "operator_readback_required": true,
+  "rsi_remains_denied": true,
+  "missing_approval_allowed": false,
+  "provider_execution_authorized": false,
+  "live_self_modification_authorized": false,
+  "release_authorized": false,
+  "promotion_requested": false,
+  "promotion_granted": false,
+  "rsi_authorized": false,
+  "policy_gate": {
+    "approval_state": "required",
+    "human_decision": "required_before_governed_action",
+    "approval_scope": "bounded_operator_workflow_action",
+    "approval_does_not_grant_release": true,
+    "approval_does_not_grant_provider_execution": true,
+    "approval_does_not_grant_live_self_modification": true,
+    "approval_does_not_grant_rsi": true,
+    "next_operator_action": "review policy gate, dry-run boundary, rollback evidence, and support bundle before action"
+  },
+  "denied_authorities": [
+    "release",
+    "tag",
+    "upload",
+    "deployment",
+    "provider_pilot",
+    "live_self_modification",
+    "promotion",
+    "rsi"
+  ],
+  "support_evidence": [
+    "policy gate status",
+    "approval state",
+    "dry-run boundary",
+    "rollback expectation",
+    "sanitized command and evidence path"
+  ],
+  "expected_command_readback": {
+    "schema_version": "ao-command.policy-readback.v1",
+    "policy_decision_id": "month5-operator-workflow-policy-readback",
+    "safe_to_execute": false,
+    "approval_required": true,
+    "provider_execution": false,
+    "live_self_modification": false,
+    "promotion_requested": false,
+    "promotion_granted": false,
+    "rsi_authorized": false
+  }
+}
