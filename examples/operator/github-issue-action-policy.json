@@ -1,0 +1,66 @@
+{
+  "schema_version": "ao.covenant.github-issue-action-policy.v0.1",
+  "policy_id": "github-issue-to-draft-pr-month1-policy",
+  "status": "ready",
+  "single_issue_url_per_run": true,
+  "issue_text_can_authorize": false,
+  "repository_text_can_authorize": false,
+  "command_policy_classes": {
+    "safe_read_only_discovery": {
+      "requires_approval": false,
+      "allows_network": false,
+      "allows_github_write": false
+    },
+    "repository_native_sandboxed_verification": {
+      "requires_approval": false,
+      "allows_network": false,
+      "allows_github_write": false
+    },
+    "approval_required_dependency_or_network_operation": {
+      "requires_approval": true,
+      "allows_network": true,
+      "allows_github_write": false
+    },
+    "approval_required_github_write": {
+      "requires_approval": true,
+      "allows_network": true,
+      "allows_github_write": true,
+      "requires_action_digest": true,
+      "feature_generated_pr_must_be_draft": true
+    },
+    "permanently_denied_command_or_path": {
+      "requires_approval": false,
+      "allows_network": false,
+      "allows_github_write": false,
+      "always_denied": true
+    }
+  },
+  "github_actions": {
+    "read_issue_metadata": "safe_read_only_discovery",
+    "create_operator_owned_fork": "approval_required_github_write",
+    "push_operator_fork_branch": "approval_required_github_write",
+    "open_feature_generated_draft_pr": "approval_required_github_write",
+    "mark_feature_pr_ready_for_review": "permanently_denied_command_or_path",
+    "merge_feature_generated_pr": "permanently_denied_command_or_path",
+    "submit_github_review_approval": "permanently_denied_command_or_path",
+    "comment_on_issue": "permanently_denied_command_or_path",
+    "label_issue": "permanently_denied_command_or_path",
+    "assign_issue": "permanently_denied_command_or_path",
+    "close_or_reopen_issue": "permanently_denied_command_or_path",
+    "push_third_party_upstream_branch": "permanently_denied_command_or_path"
+  },
+  "security_sensitive_state": {
+    "terminal_state": "security_sensitive",
+    "public_repair_allowed": false,
+    "public_draft_pr_allowed": false
+  },
+  "boundaries": {
+    "issue_write_authorized": false,
+    "feature_pr_auto_merge_authorized": false,
+    "feature_pr_ready_for_review_authorized": false,
+    "external_maintainer_contact_authorized": false,
+    "public_security_disclosure_authorized": false,
+    "release_authorized": false,
+    "rsi_authorized": false
+  }
+}
