@@ -6193,6 +6193,61 @@ func TestPolicySpineCommandPrintsAO2FirstGovernanceJSON(t *testing.T) {
 	}
 }
 
+func TestControlledSelfImprovementPolicyGateFixtureRequiresApprovalAndDeniesLiveAuthority(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "controlled-self-improvement", "policy-gate.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture map[string]any
+	if err := json.Unmarshal(body, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	if fixture["schema_version"] != "ao.covenant.controlled-self-improvement-policy-gate.v0.1" ||
+		fixture["policy_id"] != "month4-controlled-self-improvement-dry-run-policy" ||
+		fixture["status"] != "dry_run_only" {
+		t.Fatalf("unexpected policy gate identity: %#v", fixture)
+	}
+	for _, key := range []string{
+		"human_approval_required",
+		"fixture_dry_run_permitted",
+		"rollback_required",
+		"revocation_required",
+		"rsi_remains_denied",
+	} {
+		if fixture[key] != true {
+			t.Fatalf("%s = %#v, want true", key, fixture[key])
+		}
+	}
+	for _, key := range []string{
+		"live_self_modification_authorized",
+		"provider_execution_authorized",
+		"live_repository_mutation_authorized",
+		"promotion_requested",
+		"promotion_granted",
+		"release_authorized",
+		"tag_authorized",
+		"upload_authorized",
+		"deployment_authorized",
+	} {
+		if fixture[key] != false {
+			t.Fatalf("%s = %#v, want false", key, fixture[key])
+		}
+	}
+	classification := fixture["policy_classification"].(map[string]any)
+	if classification["authority_class"] != "fixture_dry_run_only" ||
+		classification["risk_level"] != "bounded" ||
+		classification["next_stage"] != "ao2_fixture_dry_run" {
+		t.Fatalf("bad policy classification: %#v", classification)
+	}
+	output := fixture["expected_ao2_policy_input"].(map[string]any)
+	if output["approval_state"] != "required" ||
+		output["execution_scope"] != "temporary_fixture_workspace" ||
+		output["rsi_authorized"] != false ||
+		output["provider_execution"] != false {
+		t.Fatalf("bad AO2 policy input: %#v", output)
+	}
+}
+
 func TestPolicyCredentialChecklistCommandPrintsNoInspectionJSON(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
