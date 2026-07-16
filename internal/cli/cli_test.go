@@ -6091,6 +6091,47 @@ func TestProducesCovenantApprovalTicketForAO2CompatibilityVector(t *testing.T) {
 	}
 }
 
+func TestProducesCovenantPolicyDecisionToCommandReadbackCompatibilityVector(t *testing.T) {
+	var vector struct {
+		SchemaVersion string         `json:"schema_version"`
+		VectorID      string         `json:"vector_id"`
+		Edge          string         `json:"edge"`
+		Producer      map[string]any `json:"producer"`
+		Consumer      map[string]any `json:"consumer"`
+		Decision      map[string]any `json:"covenant_policy_decision"`
+		Expected      map[string]any `json:"expected_command_policy_readback"`
+		Boundaries    map[string]any `json:"boundaries"`
+	}
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "compatibility", "covenant-policy-decision-to-command-readback-v0.1.json"))
+	if err != nil {
+		t.Fatalf("read compatibility vector: %v", err)
+	}
+	if err := json.Unmarshal(body, &vector); err != nil {
+		t.Fatalf("decode compatibility vector: %v", err)
+	}
+	if vector.SchemaVersion != "ao.compatibility.covenant-policy-decision-to-command-readback-vector.v1" ||
+		vector.VectorID != "ao-covenant-policy-decision-to-ao-command-readback-v1" ||
+		vector.Edge != "ao-covenant.policy_decision -> ao-command.policy_readback" ||
+		vector.Producer["repository"] != "ao-covenant" ||
+		vector.Consumer["repository"] != "ao-command" {
+		t.Fatalf("bad Covenant to Command vector identity: %+v", vector)
+	}
+	if vector.Decision["schema_version"] != "ao.covenant.policy-decision.v1" ||
+		vector.Decision["decision"] != "allow" ||
+		vector.Decision["safe_to_execute"] != false ||
+		vector.Expected["schema_version"] != "ao-command.policy-readback.v1" ||
+		vector.Expected["policy_decision_id"] != vector.Decision["decision_id"] ||
+		vector.Expected["safe_to_execute"] != false {
+		t.Fatalf("bad expected Command policy readback: decision=%#v expected=%#v", vector.Decision, vector.Expected)
+	}
+	if vector.Boundaries["rsi_remains_denied"] != true ||
+		vector.Boundaries["provider_pilot"] != false ||
+		vector.Boundaries["release_or_publish"] != false ||
+		vector.Boundaries["approves_work"] != false {
+		t.Fatalf("bad vector boundaries: %#v", vector.Boundaries)
+	}
+}
+
 func TestPolicySpineCommandPrintsAO2FirstGovernanceJSON(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
