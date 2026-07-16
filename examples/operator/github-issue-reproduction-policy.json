@@ -1,0 +1,48 @@
+{
+  "schema_version": "ao.covenant.github-issue-reproduction-policy.v0.1",
+  "policy_id": "github-issue-month2-reproduction-policy",
+  "status": "ready",
+  "command_policy_classes": {
+    "local_test_only": {
+      "requires_approval_ticket": false,
+      "allows_network": false,
+      "allows_github_write": false,
+      "allows_provider_call": false,
+      "allows_repository_mutation": false
+    },
+    "dependency_resolution": {
+      "requires_approval_ticket": true,
+      "allows_network": "operator_approved_allowlist_only",
+      "allows_github_write": false,
+      "allows_provider_call": false,
+      "allows_repository_mutation": false
+    },
+    "github_write": {
+      "requires_approval_ticket": true,
+      "allows_network": "operator_approved_github_only",
+      "allows_github_write": false,
+      "allows_provider_call": false,
+      "allows_repository_mutation": false,
+      "denial_reason": "Month 2 authenticity work cannot write issues, open PRs, mark PRs ready, or push upstream"
+    }
+  },
+  "reproduction_requirements": {
+    "failing_pre_patch_reproduction_required": true,
+    "negative_controls_required": true,
+    "security_sensitive_public_repair_allowed": false,
+    "flaky_cases_require_repeated_runs": true,
+    "uncertainty_state": "cannot_authenticate_without_more_evidence"
+  },
+  "denied_actions": {
+    "issue_comment": false,
+    "label_issue": false,
+    "assign_issue": false,
+    "open_feature_generated_pr": false,
+    "mark_pr_ready": false,
+    "submit_review_approval": false,
+    "push_upstream_branch": false,
+    "run_provider_pilot": false,
+    "contact_maintainer": false
+  },
+  "operator_next_action": "Run only bounded local reproduction commands in an isolated workspace; stop on security-sensitive behavior or policy blockers."
+}

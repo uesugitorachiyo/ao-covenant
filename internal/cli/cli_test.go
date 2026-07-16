@@ -282,6 +282,52 @@ func TestGitHubIssueActionPolicyDeniesFeaturePRMergeAndIssueWrites(t *testing.T)
 	}
 }
 
+func TestGitHubIssueReproductionPolicyRequiresPrePatchFailureAndNoWrites(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", "examples", "operator", "github-issue-reproduction-policy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture map[string]any
+	if err := json.Unmarshal(body, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	if fixture["schema_version"] != "ao.covenant.github-issue-reproduction-policy.v0.1" ||
+		fixture["policy_id"] != "github-issue-month2-reproduction-policy" ||
+		fixture["status"] != "ready" {
+		t.Fatalf("unexpected reproduction policy fixture: %#v", fixture)
+	}
+	classes := fixture["command_policy_classes"].(map[string]any)
+	local := classes["local_test_only"].(map[string]any)
+	for _, key := range []string{"allows_network", "allows_github_write", "allows_provider_call", "allows_repository_mutation"} {
+		if local[key] != false {
+			t.Fatalf("local_test_only.%s = %#v, want false", key, local[key])
+		}
+	}
+	deps := classes["dependency_resolution"].(map[string]any)
+	if deps["requires_approval_ticket"] != true || deps["allows_network"] != "operator_approved_allowlist_only" {
+		t.Fatalf("dependency resolution must require approved allowlist: %#v", deps)
+	}
+	requirements := fixture["reproduction_requirements"].(map[string]any)
+	for _, key := range []string{
+		"failing_pre_patch_reproduction_required",
+		"negative_controls_required",
+		"flaky_cases_require_repeated_runs",
+	} {
+		if requirements[key] != true {
+			t.Fatalf("reproduction_requirements.%s = %#v, want true", key, requirements[key])
+		}
+	}
+	if requirements["security_sensitive_public_repair_allowed"] != false {
+		t.Fatalf("security-sensitive public repair must stay denied: %#v", requirements)
+	}
+	denied := fixture["denied_actions"].(map[string]any)
+	for action, value := range denied {
+		if value != false {
+			t.Fatalf("denied_actions.%s = %#v, want false", action, value)
+		}
+	}
+}
+
 func TestTelegramAndA2AIntentAuthorityDenialFixturesStayReadOnly(t *testing.T) {
 	cases := []struct {
 		name     string
