@@ -1420,10 +1420,16 @@ func WriteJSON(writer io.Writer, schemaID string, value any) error {
 	return nil
 }
 
-var compiledSchemas struct {
+type compiledSchemaCache struct {
 	sync.Once
 	byID map[string]*jsonschema.Schema
 	err  error
+}
+
+var compiledSchemas = &compiledSchemaCache{}
+
+func resetCompiledSchemasForTest() {
+	compiledSchemas = &compiledSchemaCache{}
 }
 
 func compiledSchema(schemaID string) (*jsonschema.Schema, error) {

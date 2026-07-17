@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sync"
 	"testing"
 	"testing/fstest"
 
@@ -4538,17 +4537,8 @@ func TestValidateValueAcceptsValidContractDocument(t *testing.T) {
 }
 
 func TestValidateValueResolvesEmbeddedCrossSchemaRefsFromArbitraryWorkingDirectory(t *testing.T) {
-	previousOnce := compiledSchemas.Once
-	previousByID := compiledSchemas.byID
-	previousErr := compiledSchemas.err
-	compiledSchemas.Once = sync.Once{}
-	compiledSchemas.byID = nil
-	compiledSchemas.err = nil
-	t.Cleanup(func() {
-		compiledSchemas.Once = previousOnce
-		compiledSchemas.byID = previousByID
-		compiledSchemas.err = previousErr
-	})
+	resetCompiledSchemasForTest()
+	t.Cleanup(resetCompiledSchemasForTest)
 
 	previousWorkingDirectory, err := os.Getwd()
 	if err != nil {
