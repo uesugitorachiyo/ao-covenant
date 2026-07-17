@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"testing/fstest"
 
@@ -4533,6 +4534,37 @@ func TestLintResultSchemaDefinesStrictLintSurface(t *testing.T) {
 func TestValidateValueAcceptsValidContractDocument(t *testing.T) {
 	if err := ValidateValue(ContractSchemaID, validContractDocument()); err != nil {
 		t.Fatalf("ValidateValue returned error: %v", err)
+	}
+}
+
+func TestValidateValueResolvesEmbeddedCrossSchemaRefsFromArbitraryWorkingDirectory(t *testing.T) {
+	previousOnce := compiledSchemas.Once
+	previousByID := compiledSchemas.byID
+	previousErr := compiledSchemas.err
+	compiledSchemas.Once = sync.Once{}
+	compiledSchemas.byID = nil
+	compiledSchemas.err = nil
+	t.Cleanup(func() {
+		compiledSchemas.Once = previousOnce
+		compiledSchemas.byID = previousByID
+		compiledSchemas.err = previousErr
+	})
+
+	previousWorkingDirectory, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("get working directory: %v", err)
+	}
+	if err := os.Chdir(t.TempDir()); err != nil {
+		t.Fatalf("change working directory: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(previousWorkingDirectory); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	if err := ValidateValue(ContractSchemaID, validContractDocument()); err != nil {
+		t.Fatalf("ValidateValue returned error from arbitrary working directory: %v", err)
 	}
 }
 

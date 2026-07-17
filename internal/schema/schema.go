@@ -1440,6 +1440,41 @@ func compiledSchema(schemaID string) (*jsonschema.Schema, error) {
 	return compiled, nil
 }
 
+func schemaResourceURI(schemaID string) string {
+	return "https://ao-covenant.local/schemas/" + schemaID
+}
+
+func embeddedSchemaForCompiler(schemaID string, value any) any {
+	switch typed := value.(type) {
+	case map[string]any:
+		copied := make(map[string]any, len(typed))
+		for key, item := range typed {
+			if key == "$id" {
+				copied[key] = schemaResourceURI(schemaID)
+				continue
+			}
+			if key == "$ref" {
+				if ref, ok := item.(string); ok {
+					if _, known := requiredSchemasByID[ref]; known {
+						copied[key] = schemaResourceURI(ref)
+						continue
+					}
+				}
+			}
+			copied[key] = embeddedSchemaForCompiler(schemaID, item)
+		}
+		return copied
+	case []any:
+		copied := make([]any, len(typed))
+		for index, item := range typed {
+			copied[index] = embeddedSchemaForCompiler(schemaID, item)
+		}
+		return copied
+	default:
+		return value
+	}
+}
+
 func compileSchemas() (map[string]*jsonschema.Schema, error) {
 	compiler := jsonschema.NewCompiler()
 	compiler.AssertFormat()
@@ -1455,13 +1490,14 @@ func compileSchemas() (map[string]*jsonschema.Schema, error) {
 		if err := decoder.Decode(&parsed); err != nil {
 			return nil, fmt.Errorf("parse embedded schema %s: %w", entry.FileName, err)
 		}
-		if err := compiler.AddResource(entry.ID, parsed); err != nil {
+		resourceURI := schemaResourceURI(entry.ID)
+		if err := compiler.AddResource(resourceURI, embeddedSchemaForCompiler(entry.ID, parsed)); err != nil {
 			return nil, fmt.Errorf("register schema %s: %w", entry.ID, err)
 		}
 	}
 	compiled := make(map[string]*jsonschema.Schema, len(requiredSchemas))
 	for _, entry := range requiredSchemas {
-		schema, err := compiler.Compile(entry.ID)
+		schema, err := compiler.Compile(schemaResourceURI(entry.ID))
 		if err != nil {
 			return nil, fmt.Errorf("compile schema %s: %w", entry.ID, err)
 		}

@@ -9,6 +9,42 @@ import (
 	"testing"
 )
 
+func pythonForPublicDocsTest(t *testing.T) string {
+	t.Helper()
+	for _, name := range []string{"python3", "python"} {
+		if path, err := exec.LookPath(name); err == nil {
+			return path
+		}
+	}
+	t.Fatalf("python executable not found")
+	return ""
+}
+
+func writeWindowsBranchProtectionFakeGH(t *testing.T, tempDir string, staleRuleset bool) {
+	t.Helper()
+	contexts := `["License policy","Go ubuntu-latest","Go macos-26","Go windows-latest"]`
+	rulesets := `[]`
+	if staleRuleset {
+		rulesets = `[{"name":"main requires CI","enforcement":"active","target":"branch","conditions":{"ref_name":{"include":["~DEFAULT_BRANCH"]}},"rules":[{"type":"required_status_checks","parameters":{"required_status_checks":[{"context":"Go ubuntu-latest"},{"context":"Go macos-latest"},{"context":"Go windows-latest"}]}}]}]`
+	}
+	content := `@echo off
+set patharg=%2
+if "%patharg%"=="repos/uesugitorachiyo/ao-covenant/branches/main/protection" (
+  echo {"required_status_checks":{"strict":true,"contexts":` + contexts + `},"required_pull_request_reviews":{"dismiss_stale_reviews":true},"enforce_admins":{"enabled":true},"required_linear_history":{"enabled":true},"allow_force_pushes":{"enabled":false},"allow_deletions":{"enabled":false}}
+  exit /b 0
+)
+if "%patharg%"=="repos/uesugitorachiyo/ao-covenant/rulesets" (
+  echo ` + rulesets + `
+  exit /b 0
+)
+echo unexpected gh api path: %patharg% 1>&2
+exit /b 2
+`
+	if err := os.WriteFile(filepath.Join(tempDir, "gh.cmd"), []byte(content), 0o755); err != nil {
+		t.Fatalf("write fake gh.cmd: %v", err)
+	}
+}
+
 func TestPublicThreatModelDocumentationIsLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {
@@ -303,6 +339,34 @@ func TestBranchProtectionVerifierRunsAgainstFakeGitHubAPI(t *testing.T) {
 		t.Fatalf("resolve repo root: %v", err)
 	}
 	tempDir := t.TempDir()
+	if runtime.GOOS == "windows" {
+		writeWindowsBranchProtectionFakeGH(t, tempDir, false)
+		cmd := exec.Command(pythonForPublicDocsTest(t), filepath.Join(absoluteRepoRoot, "scripts", "verify-branch-protection.py"))
+		cmd.Dir = absoluteRepoRoot
+		cmd.Env = append(os.Environ(),
+			"PATH="+tempDir+string(os.PathListSeparator)+os.Getenv("PATH"),
+			"AO_COVENANT_GITHUB_REPOSITORY=uesugitorachiyo/ao-covenant",
+			"AO_COVENANT_BRANCH_PROTECTION_BRANCH=main",
+		)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("verify branch protection failed: %v\n%s", err, out)
+		}
+		output := string(out)
+		for _, want := range []string{
+			`"schema_version": "ao.covenant.branch-protection-audit.v1"`,
+			`"status": "passed"`,
+			`"License policy"`,
+			`"Go ubuntu-latest"`,
+			`"Go macos-26"`,
+			`"Go windows-latest"`,
+		} {
+			if !strings.Contains(output, want) {
+				t.Fatalf("verifier output missing %q\n%s", want, output)
+			}
+		}
+		return
+	}
 	fakeGH := filepath.Join(tempDir, "gh")
 	if err := os.WriteFile(fakeGH, []byte(`#!/usr/bin/env bash
 set -euo pipefail
@@ -388,6 +452,31 @@ func TestBranchProtectionVerifierRejectsRulesetStatusCheckDrift(t *testing.T) {
 		t.Fatalf("resolve repo root: %v", err)
 	}
 	tempDir := t.TempDir()
+	if runtime.GOOS == "windows" {
+		writeWindowsBranchProtectionFakeGH(t, tempDir, true)
+		cmd := exec.Command(pythonForPublicDocsTest(t), filepath.Join(absoluteRepoRoot, "scripts", "verify-branch-protection.py"))
+		cmd.Dir = absoluteRepoRoot
+		cmd.Env = append(os.Environ(),
+			"PATH="+tempDir+string(os.PathListSeparator)+os.Getenv("PATH"),
+			"AO_COVENANT_GITHUB_REPOSITORY=uesugitorachiyo/ao-covenant",
+			"AO_COVENANT_BRANCH_PROTECTION_BRANCH=main",
+		)
+		out, err := cmd.CombinedOutput()
+		if err == nil {
+			t.Fatalf("verify branch protection passed with stale ruleset check:\n%s", out)
+		}
+		output := string(out)
+		for _, want := range []string{
+			`"status": "blocked"`,
+			"ruleset_status_checks_current",
+			"Go macos-latest",
+		} {
+			if !strings.Contains(output, want) {
+				t.Fatalf("verifier output missing %q\n%s", want, output)
+			}
+		}
+		return
+	}
 	fakeGH := filepath.Join(tempDir, "gh")
 	if err := os.WriteFile(fakeGH, []byte(`#!/usr/bin/env bash
 set -euo pipefail
