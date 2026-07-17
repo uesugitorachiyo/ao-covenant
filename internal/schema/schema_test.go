@@ -4536,6 +4536,28 @@ func TestValidateValueAcceptsValidContractDocument(t *testing.T) {
 	}
 }
 
+func TestValidateValueResolvesEmbeddedCrossSchemaRefsFromArbitraryWorkingDirectory(t *testing.T) {
+	resetCompiledSchemasForTest()
+	t.Cleanup(resetCompiledSchemasForTest)
+
+	previousWorkingDirectory, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("get working directory: %v", err)
+	}
+	if err := os.Chdir(t.TempDir()); err != nil {
+		t.Fatalf("change working directory: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(previousWorkingDirectory); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	if err := ValidateValue(ContractSchemaID, validContractDocument()); err != nil {
+		t.Fatalf("ValidateValue returned error from arbitrary working directory: %v", err)
+	}
+}
+
 func TestValidateValueRejectsAdditionalContractProperty(t *testing.T) {
 	document := validContractDocument()
 	document["unexpected"] = true

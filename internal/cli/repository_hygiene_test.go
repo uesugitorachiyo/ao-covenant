@@ -89,7 +89,16 @@ func TestTrackedRepositoryFilesDoNotContainLocalSecretsOrMachinePaths(t *testing
 
 func TestPublicRepoPolicyScannerPasses(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
-	cmd := exec.Command("bash", "scripts/check-public-repo-policy.sh")
+	var cmd *exec.Cmd
+	if _, err := exec.LookPath("bash"); err == nil {
+		cmd = exec.Command("bash", "scripts/check-public-repo-policy.sh")
+	} else {
+		python := "python"
+		if path, err := exec.LookPath("python3"); err == nil {
+			python = path
+		}
+		cmd = exec.Command(python, "scripts/check-public-repo-policy.py")
+	}
 	cmd.Dir = repoRoot
 	output, err := cmd.CombinedOutput()
 	if err != nil {
