@@ -3616,6 +3616,73 @@ func TestSchemaValidateCommandValidatesDirectory(t *testing.T) {
 	}
 }
 
+func TestSchemaValidateCommandDirectoryRejectsSymlinkedJSON(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlink creation is privilege-dependent on Windows")
+	}
+	dir := t.TempDir()
+	outsidePath := filepath.Join(t.TempDir(), "outside-contract.json")
+	writeTestFileBytes(t, outsidePath, []byte(validCLIContractJSON()), 0o644)
+	if err := os.Symlink(outsidePath, filepath.Join(dir, "linked-contract.json")); err != nil {
+		t.Fatalf("create JSON symlink: %v", err)
+	}
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	code := Run([]string{"covenant", "schema", "validate", "--dir", dir, "--json"}, &stdout, &stderr)
+
+	if code != 1 {
+		t.Fatalf("exit code = %d, want 1; stdout = %q stderr = %q", code, stdout.String(), stderr.String())
+	}
+	if stdout.Len() != 0 {
+		t.Fatalf("stdout = %q, want empty", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "symlink") {
+		t.Fatalf("stderr = %q, want symlink diagnostic", stderr.String())
+	}
+}
+
+func TestSchemaValidateCommandDirectoryRejectsFileCountLimit(t *testing.T) {
+	dir := t.TempDir()
+	for i := 0; i <= maxSchemaValidationDirectoryFiles; i++ {
+		writeTestFileBytes(t, filepath.Join(dir, fmt.Sprintf("contract-%05d.json", i)), []byte(validCLIContractJSON()), 0o644)
+	}
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	code := Run([]string{"covenant", "schema", "validate", "--dir", dir}, &stdout, &stderr)
+
+	if code != 1 {
+		t.Fatalf("exit code = %d, want 1; stdout = %q stderr = %q", code, stdout.String(), stderr.String())
+	}
+	if stdout.Len() != 0 {
+		t.Fatalf("stdout = %q, want empty", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "file count limit") {
+		t.Fatalf("stderr = %q, want file-count diagnostic", stderr.String())
+	}
+}
+
+func TestSchemaValidateCommandDirectoryRejectsOversizedJSON(t *testing.T) {
+	dir := t.TempDir()
+	oversized := `{"schema_version":"covenant.contract.v1","padding":"` + strings.Repeat("A", maxSchemaValidationDirectoryFileBytes) + `"}`
+	writeTestFileBytes(t, filepath.Join(dir, "oversized-contract.json"), []byte(oversized), 0o644)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	code := Run([]string{"covenant", "schema", "validate", "--dir", dir}, &stdout, &stderr)
+
+	if code != 1 {
+		t.Fatalf("exit code = %d, want 1; stdout = %q stderr = %q", code, stdout.String(), stderr.String())
+	}
+	if stdout.Len() != 0 {
+		t.Fatalf("stdout = %q, want empty", stdout.String())
+	}
+	if !strings.Contains(stderr.String(), "file size limit") {
+		t.Fatalf("stderr = %q, want file-size diagnostic", stderr.String())
+	}
+}
+
 func TestSchemaValidateCommandDirectoryIgnoresPathPrefixes(t *testing.T) {
 	dir := t.TempDir()
 	generatedDir := filepath.Join(dir, "generated")

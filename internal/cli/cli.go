@@ -1999,6 +1999,12 @@ const (
 	outputPairStageSidecar = "sidecar"
 )
 
+const (
+	maxSchemaValidationDirectoryFiles      = 4096
+	maxSchemaValidationDirectoryFileBytes  = 8 * 1024 * 1024
+	maxSchemaValidationDirectoryTotalBytes = 64 * 1024 * 1024
+)
+
 type outputPairError struct {
 	stage string
 	err   error
@@ -2378,11 +2384,18 @@ func schemaValidationFilterMatch(bytes []byte, filters map[string]bool) (string,
 }
 
 func collectSchemaValidationDirectory(root string, ignored []string) ([]string, []schemaValidationIgnoredDocument, error) {
+	if err := ensureSchemaValidationDirectoryRoot(root); err != nil {
+		return nil, nil, err
+	}
 	var paths []string
 	var ignoredDocuments []schemaValidationIgnoredDocument
+	budget := schemaValidationDirectoryScanBudget{}
 	if err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if entry.Type()&os.ModeSymlink != 0 {
+			return fmt.Errorf("schema validation directory symlink is not allowed: %s", filepath.ToSlash(path))
 		}
 		if path != root {
 			displayPath, err := schemaValidationDisplayPath(root, path)
@@ -2391,7 +2404,7 @@ func collectSchemaValidationDirectory(root string, ignored []string) ([]string, 
 			}
 			if pattern, ok := schemaValidationIgnoredByPattern(displayPath, ignored); ok {
 				if entry.IsDir() {
-					nestedIgnored, err := collectIgnoredSchemaValidationJSON(root, path, pattern)
+					nestedIgnored, err := collectIgnoredSchemaValidationJSON(root, path, pattern, &budget)
 					if err != nil {
 						return err
 					}
@@ -2399,6 +2412,9 @@ func collectSchemaValidationDirectory(root string, ignored []string) ([]string, 
 					return filepath.SkipDir
 				}
 				if strings.EqualFold(filepath.Ext(path), ".json") {
+					if err := budget.accept(path, entry); err != nil {
+						return err
+					}
 					ignoredDocuments = append(ignoredDocuments, schemaValidationIgnoredDocument{File: displayPath, Pattern: pattern})
 				}
 				return nil
@@ -2408,6 +2424,9 @@ func collectSchemaValidationDirectory(root string, ignored []string) ([]string, 
 			return nil
 		}
 		if strings.EqualFold(filepath.Ext(path), ".json") {
+			if err := budget.accept(path, entry); err != nil {
+				return err
+			}
 			paths = append(paths, path)
 		}
 		return nil
@@ -2417,17 +2436,62 @@ func collectSchemaValidationDirectory(root string, ignored []string) ([]string, 
 	return paths, ignoredDocuments, nil
 }
 
-func collectIgnoredSchemaValidationJSON(root string, ignoredRoot string, pattern string) ([]schemaValidationIgnoredDocument, error) {
+type schemaValidationDirectoryScanBudget struct {
+	files      int
+	totalBytes int64
+}
+
+func ensureSchemaValidationDirectoryRoot(root string) error {
+	info, err := os.Lstat(root)
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("schema validation directory root is a symlink: %s", root)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("schema validation directory root is not a directory: %s", root)
+	}
+	return nil
+}
+
+func (budget *schemaValidationDirectoryScanBudget) accept(path string, entry os.DirEntry) error {
+	budget.files++
+	if budget.files > maxSchemaValidationDirectoryFiles {
+		return fmt.Errorf("schema validation directory file count limit exceeded: max %d", maxSchemaValidationDirectoryFiles)
+	}
+	info, err := entry.Info()
+	if err != nil {
+		return err
+	}
+	size := info.Size()
+	if size > maxSchemaValidationDirectoryFileBytes {
+		return fmt.Errorf("schema validation directory file size limit exceeded for %s: max %d bytes", filepath.ToSlash(path), maxSchemaValidationDirectoryFileBytes)
+	}
+	budget.totalBytes += size
+	if budget.totalBytes > maxSchemaValidationDirectoryTotalBytes {
+		return fmt.Errorf("schema validation directory total byte limit exceeded: max %d bytes", maxSchemaValidationDirectoryTotalBytes)
+	}
+	return nil
+}
+
+func collectIgnoredSchemaValidationJSON(root string, ignoredRoot string, pattern string, budget *schemaValidationDirectoryScanBudget) ([]schemaValidationIgnoredDocument, error) {
 	var documents []schemaValidationIgnoredDocument
 	if err := filepath.WalkDir(ignoredRoot, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if entry.Type()&os.ModeSymlink != 0 {
+			return fmt.Errorf("schema validation directory symlink is not allowed: %s", filepath.ToSlash(path))
 		}
 		if entry.IsDir() {
 			return nil
 		}
 		if !strings.EqualFold(filepath.Ext(path), ".json") {
 			return nil
+		}
+		if err := budget.accept(path, entry); err != nil {
+			return err
 		}
 		displayPath, err := schemaValidationDisplayPath(root, path)
 		if err != nil {
