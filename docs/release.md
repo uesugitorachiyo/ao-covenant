@@ -1,57 +1,76 @@
 # AO Covenant Release Operations
 
-AO Covenant releases are built by `.github/workflows/release.yml` when a `v*`
-tag is pushed, or manually through `workflow_dispatch`.
-Manual workflow dispatches default to `dry_run=true`, which packages, signs,
-verifies, preflights, and uploads workflow artifacts without publishing GitHub
-release assets, creating GitHub artifact attestations, or running post-release
-smoke verification. Set `dry_run=false` only when intentionally publishing a
-manual release.
+AO Covenant releases use the manual `workflow_dispatch` entry point in
+`.github/workflows/release.yml`. Tag pushes do not start release automation.
+The workflow binds the exact workflow source SHA, repository `VERSION`, tag,
+approved manifest bytes, and `approved_manifest_sha256` before building.
 
-Existing release assets are immutable by default. AO Covenant fails closed
-instead of overwriting assets when a manually dispatched workflow targets a
-release that already has one or more matching asset names. Operators must set
-`replace_existing_assets=true` and provide a `replacement_reason` to replace
-existing assets. Replacement runs publish `release-replacement-policy.json`
-alongside the release artifacts so the override is visible to consumers. The
-replacement policy uses `covenant.release-replacement-policy.v1` and is
-validated by the release workflow before upload. Consumers can validate it with
-`covenant schema validate --schema covenant.release-replacement-policy.v1 --file release-replacement-policy.json`.
-The [release replacement preflight script](../scripts/release-replacement-preflight.sh)
-performs the conflict check, fail-closed replacement gate, replacement-policy
-generation, and schema validation before GitHub artifact attestations are
-created. It also writes `release-replacement-preflight-report.json` as a
-workflow artifact with schema `covenant.release-replacement-preflight-report.v1`
-so maintainers can audit existing assets, conflicts, and replacement decisions
-without adding that report to public release assets.
-Use the [release rollback runbook](release-rollback.md) before replacing,
-withdrawing, or correcting a published release.
-Use the [release threat model matrix](release-threat-model-matrix.md) to map
-release attacks to controls, required evidence, operator response, and residual
-risk before broad public distribution.
+The approved manifest uses
+`ao.covenant.release-approved-manifest.v1`. It declares the exact source,
+version, tag, build timestamp, native Linux amd64, macOS Intel, and Windows
+amd64 candidate inventory, required `LICENSE` and `NOTICE` files, and explicit
+false safety flags. The decoded manifest is limited to 32768 bytes and is
+reconstructed as bytes without shell evaluation.
 
-Before pushing a tag or manually dispatching this workflow, run the
-[release dry-run checklist](release-dry-run.md). The dry run packages, signs,
-verifies, reports, inspects, and schema-validates release artifacts locally
-without creating a tag, GitHub release, attestation, or public release asset.
-The release workflow also supports a non-publishing `dry_run=true` dispatch
-mode for validating the release job on GitHub-hosted runners.
-Draft public release notes with the [release note template](release-note-template.md)
-so normal releases, replacement notices, withdrawal notices, and
-security-sensitive summaries include consumer action and verification guidance
-without exposing private material.
+## Dry Runs
 
-The workflow requires one repository secret:
+Dispatches default to `dry_run=true`. A dry run:
 
-- `COVENANT_RELEASE_SIGNING_KEY`: the complete JSON contents of a
-  `covenant.bundle-private-key.v1` private key file produced by
-  `covenant bundle keygen`.
+- builds and executes the candidate on native Linux, macOS, and Windows runners
+- binds help, version/source, provider-free smoke, checksums, provenance, and
+  archive inventory evidence
+- packages the exact native binaries through the existing signed release
+  manifest contract
+- verifies the Ed25519 signature and writes an immutable promotion plan
+- uploads private GitHub Actions artifacts only
+- records `publication_status=not_attempted`,
+  `tag_creation_attempted=false`, `release_creation_attempted=false`, and
+  `public_upload_attempted=false`
 
-Do not commit the signing key. The workflow writes it to the runner temp
-directory, sets mode `0600`, derives the public key file from it, and uses that
-public key for `covenant release verify`.
+It does not create a tag, release, deployment, GitHub artifact attestation, or
+public upload. Follow the [release dry-run checklist](release-dry-run.md) and
+the [release verification walkthrough](release-verification.md). Use the
+[release threat model matrix](release-threat-model-matrix.md) when reviewing
+the release authority and residual risks.
 
-Set the repository secret from a local private key file:
+## Live Gate
+
+Live publication additionally requires:
+
+- `dry_run=false`
+- exact confirmation
+  `publish:<tag>:<source_sha>:<approved_manifest_sha256>`
+- successful input, native-candidate, and signed-plan jobs
+- approval through the protected `ao-covenant-release` environment
+
+Only the protected publisher receives `contents: write`, `id-token: write`, and
+`attestations: write`. It fails closed if the tag or release already exists,
+creates the lightweight tag atomically at the exact source SHA, generates
+GitHub artifact attestations for the exact release files, and creates one new
+release without an upload or clobber fallback.
+
+A separate read-only job performs post-release smoke verification. It resolves
+the published tag target, compares the downloaded asset inventory and SHA-256
+digests with the immutable plan, and runs `covenant release verify` against the
+published public key. See the
+[release attestation coverage map](release-attestation-coverage.md).
+Prepare consumer-facing text with the
+[release note template](release-note-template.md).
+
+## Signing Key
+
+The workflow preserves the existing repository secret:
+
+- `COVENANT_RELEASE_SIGNING_KEY`: complete JSON for a
+  `covenant.bundle-private-key.v1` key generated by `covenant bundle keygen`
+
+Do not commit the signing key. The read-only assembly job writes it only to the
+runner temporary directory as `covenant-release-private-key.json`, applies
+mode `0600`, derives `covenant-release-public-key.json`, and packages with
+`--sign-key`. No workflow step reads or changes the repository secret itself.
+
+Set the secret from a local key file only through the established operator
+procedure:
 
 ```sh
 gh secret set COVENANT_RELEASE_SIGNING_KEY \
@@ -59,37 +78,7 @@ gh secret set COVENANT_RELEASE_SIGNING_KEY \
   < covenant-release-private-key.json
 ```
 
-The release workflow performs these checks before publishing:
-
-- runs `go test -count=1 ./...`
-- runs `go vet ./...`
-- builds Linux, macOS, and Windows artifacts with `covenant release package`
-- signs the AO Covenant release manifest with the configured release key
-- verifies the signed manifest and binaries with `covenant release verify`
-- emits a machine-readable `covenant release report`
-- publishes `covenant-release-public-key.json` for consumer verification
-- preflights existing release asset conflicts and writes
-  `release-replacement-policy.json` before attestation when replacement is
-  explicitly requested by running `./scripts/release-replacement-preflight.sh`
-- uploads `release-replacement-preflight-report.json` as a workflow artifact
-  for audit review
-- when manually dispatched with `dry_run=true`, uploads workflow artifacts only
-  and skips GitHub artifact attestations, release publishing, and post-release
-  smoke verification
-- generates GitHub artifact attestations for `dist/*`
-- publishes new GitHub release assets, while existing asset replacement requires
-  an explicit `replace_existing_assets` override and `replacement_reason`
-- runs post-release smoke verification against the published GitHub release:
-  downloads the release assets, runs `covenant release verify` with the
-  published public key, and runs `gh attestation verify` for `manifest.json`
-
-Consumers can verify downloaded release artifacts with the bundled checksums,
-the signed AO Covenant manifest, and GitHub artifact attestations. Use the
-[release attestation coverage map](release-attestation-coverage.md) to confirm
-which assets require direct GitHub attestations and which assets are covered by
-manifest signature and checksum verification. Use the
-[release verification walkthrough](release-verification.md) for the full
-consumer checklist.
+## Consumer Verification
 
 Download and verify an AO Covenant release:
 
@@ -101,5 +90,17 @@ chmod +x ao-covenant_*
 covenant release verify --dir . --public-key covenant-release-public-key.json
 ```
 
-The `covenant-release-public-key.json` file is public verification material. It
-does not contain the release private key.
+The public key contains no private signing material. Consumers should verify
+checksums, the signed manifest, the exact installed binary, and GitHub artifact
+attestations before trust.
+
+## Historical Replacement Tools
+
+The [release replacement preflight script](../scripts/release-replacement-preflight.sh),
+`release-replacement-preflight-report.json`, and the
+`covenant.release-replacement-preflight-report.v1` fixtures remain available
+for historical evidence and incident analysis. The current release workflow
+does not call that script and does not accept replacement or clobber inputs.
+Existing releases are immutable. Follow the
+[release rollback runbook](release-rollback.md) when a published release must
+be withdrawn or superseded.

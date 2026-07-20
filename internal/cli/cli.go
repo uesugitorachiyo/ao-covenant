@@ -605,10 +605,12 @@ func runReleasePackage(args []string, stdout io.Writer, stderr io.Writer) int {
 	jsonOutput := flags.Bool("json", false, "emit JSON")
 	signKeyPath := flags.String("sign-key", "", "path to release signing private key JSON")
 	var targetFlags repeatedStringFlag
+	var prebuiltFlags repeatedStringFlag
 	var sbomPaths repeatedStringFlag
 	var provenancePaths repeatedStringFlag
 	var attestationPaths repeatedStringFlag
 	flags.Var(&targetFlags, "target", "release target as os/arch")
+	flags.Var(&prebuiltFlags, "prebuilt", "prebuilt native candidate as target=path")
 	flags.Var(&sbomPaths, "sbom", "path to supplemental SBOM artifact")
 	flags.Var(&provenancePaths, "provenance", "path to supplemental provenance artifact")
 	flags.Var(&attestationPaths, "attestation", "artifact attestation selector and path")
@@ -624,6 +626,25 @@ func runReleasePackage(args []string, stdout io.Writer, stderr io.Writer) int {
 		}
 		targets = append(targets, target)
 	}
+	prebuilt := make(map[string]string, len(prebuiltFlags))
+	for _, raw := range prebuiltFlags {
+		targetValue, path, ok := strings.Cut(raw, "=")
+		if !ok || strings.TrimSpace(path) == "" {
+			fmt.Fprintf(stderr, "prebuilt %q must use target=path\n", raw)
+			return 2
+		}
+		target, err := releasepkg.ParseTarget(targetValue)
+		if err != nil {
+			fmt.Fprintf(stderr, "prebuilt target %q: %v\n", targetValue, err)
+			return 2
+		}
+		key := target.OS + "/" + target.Arch
+		if _, exists := prebuilt[key]; exists {
+			fmt.Fprintf(stderr, "duplicate prebuilt target %q\n", key)
+			return 2
+		}
+		prebuilt[key] = path
+	}
 	result, err := releasepkg.Package(context.Background(), releasepkg.Options{
 		SourceDir:        *sourceDir,
 		OutDir:           *outDir,
@@ -631,6 +652,7 @@ func runReleasePackage(args []string, stdout io.Writer, stderr io.Writer) int {
 		Commit:           *commit,
 		Date:             *date,
 		Targets:          targets,
+		Prebuilt:         prebuilt,
 		SignKeyPath:      *signKeyPath,
 		SBOMPaths:        sbomPaths.Values(),
 		ProvenancePaths:  provenancePaths.Values(),

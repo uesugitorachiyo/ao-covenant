@@ -80,26 +80,26 @@ Use the release workflow `workflow_dispatch` path with `dry_run=true` when the
 GitHub-hosted release job itself needs validation. Manual dispatches default to
 `dry_run=true`; set `dry_run=false` only when intentionally publishing.
 
-The workflow dry run packages, signs, verifies, preflights replacement
-conflicts, writes `release-replacement-preflight-report.json`, and uploads workflow artifacts only.
-It does not publish GitHub release assets, create GitHub artifact attestations, or run post-release smoke verification.
+The workflow dry run binds an exact source SHA, repository version, tag, and
+approved-manifest digest; builds and executes native Linux, macOS, and Windows
+candidates; packages and verifies the signed release; writes an immutable
+promotion plan; and uploads workflow artifacts only. It does not publish GitHub release assets, create GitHub artifact attestations, or run post-release smoke verification.
 
 Required dispatch inputs:
 
-- `version`: existing release tag to check out and package
+- `source_sha`: exact workflow and candidate source commit
+- `version`: exact value in the repository `VERSION` file
+- `tag`: exact future tag, equal to `version`
+- `approved_manifest_base64`: bounded approved manifest bytes
+- `approved_manifest_sha256`: exact digest of those decoded bytes
 - `dry_run=true`
-
-Optional replacement review inputs:
-
-- `replace_existing_assets=true`
-- `replacement_reason`
 
 Review the uploaded workflow artifacts before publishing:
 
-- `ao-covenant-<version>`: generated `dist/*` release package artifacts for
-  maintainer inspection only
-- `ao-covenant-<version>-replacement-preflight-report`: existing asset,
-  conflict, and replacement-policy audit report
+- `ao-covenant-native-<target>`: native candidate, archive, checksums, and
+  execution evidence
+- `ao-covenant-signed-promotion-<source_sha>`: signed release files, exact
+  input binding, and immutable promotion plan
 
 ## Package Without Publishing
 
