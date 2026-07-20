@@ -148,12 +148,12 @@ def main():
     canonical_write(out / "version-readback.json", version_readback)
 
     provider_smoke = run(
-        [str(binary), "schema", "list", "--json"],
+        [str(binary), "schema", "catalog", "--json"],
         env=candidate_env,
     )
     smoke_payload = json.loads(provider_smoke.stdout)
     if not isinstance(smoke_payload, dict) or not smoke_payload.get("schema_version"):
-        raise RuntimeError("provider-free schema-list smoke returned malformed JSON")
+        raise RuntimeError("provider-free schema-catalog smoke returned malformed JSON")
     canonical_write(
         out / "provider-free-smoke.json",
         {

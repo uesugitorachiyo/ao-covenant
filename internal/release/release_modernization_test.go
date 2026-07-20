@@ -113,6 +113,12 @@ func TestReleaseWorkflowBuildsAndChecksNativeCandidates(t *testing.T) {
 	}
 }
 
+func TestReleaseCandidateUsesSupportedProviderFreeSchemaSmoke(t *testing.T) {
+	builder := readRepoFile(t, "scripts", "build-release-candidate.py")
+	requireWorkflowContains(t, builder, `[str(binary), "schema", "catalog", "--json"]`)
+	requireWorkflowOmits(t, builder, `[str(binary), "schema", "list", "--json"]`)
+}
+
 func TestReleaseWorkflowPublisherRequiresEverySuccessfulPrerequisite(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
 	publisherStart := strings.Index(workflow, "  publisher:")
