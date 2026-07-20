@@ -19,6 +19,12 @@ Do not silently overwrite release assets. Consumers must be able to understand
 whether they can keep using an existing download, need to verify again, or must
 replace a downloaded binary.
 
+The current `.github/workflows/release.yml` has no replacement or clobber
+path. It fails closed when either the requested tag or release exists.
+Replacement inputs and reports described below document the historical manual
+preflight tooling; they do not authorize the current workflow to overwrite a
+release. Withdraw or supersede a defective current release with a new version.
+
 ## Decision Flow
 
 Choose the smallest action that protects users and preserves release history:
@@ -27,8 +33,8 @@ Choose the smallest action that protects users and preserves release history:
    the issue, rerun the release dry run, and publish a clean release.
 2. If published assets are correct but release notes are incomplete, update the
    release notes and add a clear consumer notice.
-3. If one or more published assets are wrong but the version should remain
-   usable, replace existing assets with the guarded workflow path.
+3. If one or more published assets are wrong, withdraw or supersede the release
+   with a new version; do not overwrite it through the current workflow.
 4. If the release cannot be trusted, mark the release as withdrawn or
    prerelease, publish a consumer notice, and prepare a corrected version.
 5. If tampering, signing-key exposure, credential exposure, or provenance
@@ -37,14 +43,14 @@ Choose the smallest action that protects users and preserves release history:
 
 ## Replace Existing Assets
 
-AO Covenant release assets are immutable by default. Replacement requires a
-manual workflow dispatch with both:
+AO Covenant release assets are immutable in the current workflow. The
+following inputs belonged to the historical replacement preflight process:
 
 - `replace_existing_assets=true`
 - `replacement_reason`
 
-The workflow fails closed when matching release assets already exist unless
-that explicit override is supplied. Replacement runs publish
+They are not accepted by the current release workflow. Historical replacement
+runs published
 `release-replacement-policy.json` with schema
 `covenant.release-replacement-policy.v1` so consumers can see which assets were
 replaced and why.
@@ -57,9 +63,10 @@ Before replacing assets:
 
 Use the [release replacement preflight script](../scripts/release-replacement-preflight.sh)
 to simulate the conflict set without publishing when reviewing a replacement
-plan. Write the existing asset names to a temporary file, point
+incident. It is an offline evidence tool, not a release authorization path.
+Write the existing asset names to a temporary file, point
 `COVENANT_RELEASE_EXISTING_ASSETS_FILE` at it, and run the same replacement
-gate used by `.github/workflows/release.yml`. The
+historical gate. The
 [release replacement preflight fixtures](../internal/cli/testdata/release-replacement-preflight-fixtures)
 show stable example inputs, generated policy output, and fail-closed
 diagnostics. Set `COVENANT_RELEASE_REPLACEMENT_REPORT_JSON` to write

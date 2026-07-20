@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -76,6 +77,7 @@ type Options struct {
 	Commit           string
 	Date             string
 	Targets          []Target
+	Prebuilt         map[string]string
 	Build            BuildFunc
 	SignKeyPath      string
 	SBOMPaths        []string
@@ -556,6 +558,9 @@ func Package(ctx context.Context, opts Options) (Result, error) {
 	ldflags := buildLDFlags(version, commit, date)
 	artifacts := make([]Artifact, 0, len(targets))
 	occupiedNames := map[string]string{}
+	if len(opts.Prebuilt) > 0 && len(opts.Prebuilt) != len(targets) {
+		return Result{}, fmt.Errorf("prebuilt candidate count = %d, want %d targets", len(opts.Prebuilt), len(targets))
+	}
 	for _, target := range targets {
 		name := artifactName(version, target)
 		if existing := occupiedNames[name]; existing != "" {
@@ -564,13 +569,23 @@ func Package(ctx context.Context, opts Options) (Result, error) {
 		occupiedNames[name] = "binary artifact"
 		outputPath := filepath.Join(outDir, name)
 		buildOutputPath := filepath.Join(buildOutDir, name)
-		if err := build(ctx, BuildRequest{
-			SourceDir:  sourceDir,
-			OutputPath: buildOutputPath,
-			Target:     target,
-			LDFlags:    ldflags,
-		}); err != nil {
-			return Result{}, err
+		if len(opts.Prebuilt) > 0 {
+			prebuiltPath, ok := opts.Prebuilt[targetKey(target)]
+			if !ok {
+				return Result{}, fmt.Errorf("prebuilt candidate for target %s is required", targetKey(target))
+			}
+			if err := copyPrebuiltCandidate(prebuiltPath, buildOutputPath); err != nil {
+				return Result{}, fmt.Errorf("copy prebuilt candidate for %s: %w", targetKey(target), err)
+			}
+		} else {
+			if err := build(ctx, BuildRequest{
+				SourceDir:  sourceDir,
+				OutputPath: buildOutputPath,
+				Target:     target,
+				LDFlags:    ldflags,
+			}); err != nil {
+				return Result{}, err
+			}
 		}
 		digest, size, err := fileDigest(outputPath)
 		if err != nil {
@@ -633,6 +648,40 @@ func Package(ctx context.Context, opts Options) (Result, error) {
 		Manifest:        manifest,
 		PublicKeySHA256: publicKeySHA256,
 	}, nil
+}
+
+func copyPrebuiltCandidate(sourcePath string, outputPath string) error {
+	info, err := os.Lstat(sourcePath)
+	if err != nil {
+		return err
+	}
+	if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("candidate must be a regular file")
+	}
+	source, err := os.Open(sourcePath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+	output, err := os.OpenFile(outputPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o755)
+	if err != nil {
+		return err
+	}
+	copied := false
+	defer func() {
+		output.Close()
+		if !copied {
+			os.Remove(outputPath)
+		}
+	}()
+	if _, err := io.Copy(output, source); err != nil {
+		return err
+	}
+	if err := output.Close(); err != nil {
+		return err
+	}
+	copied = true
+	return nil
 }
 
 func Verify(opts VerifyOptions) (VerifyReport, error) {

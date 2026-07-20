@@ -616,11 +616,10 @@ func TestReleaseAttestationCoverageMapIsLinkedAndComplete(t *testing.T) {
 		{name: "failure section", doc: coverage, want: "## Failure Handling"},
 		{name: "non-goals section", doc: coverage, want: "## Non-Goals"},
 		{name: "attestation action", doc: coverage, want: "actions/attest-build-provenance@v4"},
-		{name: "subject path", doc: coverage, want: "subject-path: \"dist/*\""},
+		{name: "subject path", doc: coverage, want: "subject-path: \"bundle/release/*\""},
 		{name: "permission", doc: coverage, want: "attestations: write"},
 		{name: "manifest command", doc: coverage, want: "gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant"},
 		{name: "binary command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant"},
-		{name: "replacement policy command", doc: coverage, want: "gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant"},
 		{name: "shell smoke", doc: coverage, want: "scripts/release-consumer-smoke.sh"},
 		{name: "powershell smoke", doc: coverage, want: "scripts/release-consumer-smoke.ps1"},
 		{name: "manifest asset", doc: coverage, want: "manifest.json"},
@@ -630,11 +629,10 @@ func TestReleaseAttestationCoverageMapIsLinkedAndComplete(t *testing.T) {
 		{name: "package report", doc: coverage, want: "release-package.json"},
 		{name: "verify report", doc: coverage, want: "release-verify.json"},
 		{name: "release report", doc: coverage, want: "release-report.json"},
-		{name: "replacement policy", doc: coverage, want: "release-replacement-policy.json"},
+		{name: "license assets", doc: coverage, want: "`LICENSE` and `NOTICE`"},
 		{name: "platform binaries", doc: coverage, want: "platform binaries"},
 		{name: "direct coverage phrase", doc: coverage, want: "direct GitHub attestation"},
 		{name: "indirect coverage phrase", doc: coverage, want: "covered by manifest signature and checksum verification"},
-		{name: "replacement direct coverage", doc: coverage, want: "direct GitHub attestation from `dist/*` when replacement metadata is generated"},
 		{name: "sensitive warning", doc: coverage, want: "private keys, credentials, production evidence bundles, unreleased bundles, or local machine paths"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
@@ -666,14 +664,10 @@ func TestReleaseAttestationConsumerMatrixIsDocumented(t *testing.T) {
 		{name: "manifest minimum", doc: coverage, want: "`manifest.json` plus the exact platform binary"},
 		{name: "verification manifest minimum", doc: verification, want: "`manifest.json` plus the exact platform binary"},
 		{name: "linux amd64 row", doc: coverage, want: "| Ubuntu/Linux amd64 | `linux/amd64` | `ao-covenant_v0.1.0_linux_amd64` |"},
-		{name: "linux arm64 row", doc: coverage, want: "| Ubuntu/Linux arm64 | `linux/arm64` | `ao-covenant_v0.1.0_linux_arm64` |"},
 		{name: "macos amd64 row", doc: coverage, want: "| macOS Intel | `darwin/amd64` | `ao-covenant_v0.1.0_darwin_amd64` |"},
-		{name: "macos arm64 row", doc: coverage, want: "| macOS Apple Silicon | `darwin/arm64` | `ao-covenant_v0.1.0_darwin_arm64` |"},
 		{name: "windows amd64 row", doc: coverage, want: "| Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.0_windows_amd64.exe` |"},
 		{name: "linux amd64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant"},
-		{name: "linux arm64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_linux_arm64 --repo uesugitorachiyo/ao-covenant"},
 		{name: "macos amd64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_darwin_amd64 --repo uesugitorachiyo/ao-covenant"},
-		{name: "macos arm64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_darwin_arm64 --repo uesugitorachiyo/ao-covenant"},
 		{name: "windows amd64 command", doc: coverage, want: "gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant"},
 		{name: "verification windows command", doc: verification, want: "gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant"},
 		{name: "version substitution", doc: verification, want: "replace `v0.1.0` with the release version you downloaded"},
@@ -1305,7 +1299,6 @@ func TestReleaseReplacementPreflightScriptIsLinkedAndComplete(t *testing.T) {
 	rollback := readText("docs", "release-rollback.md")
 	readiness := readText("docs", "public-readiness.md")
 	contributing := readText("CONTRIBUTING.md")
-	workflow := readText(".github", "workflows", "release.yml")
 	script := readText("scripts", "release-replacement-preflight.sh")
 
 	for _, check := range []struct {
@@ -1318,8 +1311,6 @@ func TestReleaseReplacementPreflightScriptIsLinkedAndComplete(t *testing.T) {
 		{name: "rollback link", doc: rollback, want: "[release replacement preflight script](../scripts/release-replacement-preflight.sh)"},
 		{name: "readiness link", doc: readiness, want: "[release replacement preflight script](../scripts/release-replacement-preflight.sh)"},
 		{name: "contributing link", doc: contributing, want: "[release replacement preflight script](scripts/release-replacement-preflight.sh)"},
-		{name: "workflow call", doc: workflow, want: "./scripts/release-replacement-preflight.sh"},
-		{name: "workflow dist env", doc: workflow, want: "DIST_DIR: dist"},
 		{name: "shebang", doc: script, want: "#!/usr/bin/env bash"},
 		{name: "strict shell", doc: script, want: "set -euo pipefail"},
 		{name: "dist env", doc: script, want: "DIST_DIR"},
@@ -1411,7 +1402,6 @@ func TestReleaseReplacementPreflightReportIsLinkedAndComplete(t *testing.T) {
 	rollback := readText("docs", "release-rollback.md")
 	readiness := readText("docs", "public-readiness.md")
 	stability := readText("docs", "public-api-stability.md")
-	workflow := readText(".github", "workflows", "release.yml")
 	script := readText("scripts", "release-replacement-preflight.sh")
 	schemaFile := readText("schemas", "covenant.release-replacement-preflight-report.v1.schema.json")
 
@@ -1425,9 +1415,6 @@ func TestReleaseReplacementPreflightReportIsLinkedAndComplete(t *testing.T) {
 		{name: "rollback report", doc: rollback, want: "`release-replacement-preflight-report.json`"},
 		{name: "readiness report", doc: readiness, want: "`release-replacement-preflight-report.json`"},
 		{name: "stability schema", doc: stability, want: "`covenant.release-replacement-preflight-report.v1`"},
-		{name: "workflow report env", doc: workflow, want: "COVENANT_RELEASE_REPLACEMENT_REPORT_JSON: ${{ runner.temp }}/release-replacement-preflight-report.json"},
-		{name: "workflow upload", doc: workflow, want: "name: Upload replacement preflight report"},
-		{name: "workflow artifact", doc: workflow, want: "ao-covenant-${{ steps.meta.outputs.version }}-replacement-preflight-report"},
 		{name: "script report env", doc: script, want: "COVENANT_RELEASE_REPLACEMENT_REPORT_JSON"},
 		{name: "script schema", doc: script, want: "covenant.release-replacement-preflight-report.v1"},
 		{name: "schema id", doc: schemaFile, want: `"$id": "covenant.release-replacement-preflight-report.v1"`},

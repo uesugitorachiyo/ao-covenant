@@ -1,273 +1,556 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version tag, for example v0.1.0"
+      source_sha:
+        description: "Exact AO Covenant source and workflow commit to qualify"
         required: true
+        type: string
+      version:
+        description: "Exact repository VERSION value"
+        required: true
+        type: string
+      tag:
+        description: "Exact future release tag; must equal version"
+        required: true
+        type: string
+      approved_manifest_base64:
+        description: "Base64-encoded bounded ao.covenant.release-approved-manifest.v1 bytes"
+        required: true
+        type: string
+      approved_manifest_sha256:
+        description: "Exact sha256:<hex> digest of the decoded approved manifest bytes"
+        required: true
+        type: string
       dry_run:
-        description: "Package, verify, preflight, and upload workflow artifacts without publishing"
-        required: false
+        description: "Build, sign, verify, and upload private Actions artifacts only"
+        required: true
         default: true
         type: boolean
-      replace_existing_assets:
-        description: "Explicitly replace assets on an existing GitHub release"
+      live_confirmation:
+        description: "Live only: publish:<tag>:<source_sha>:<approved_manifest_sha256>"
         required: false
-        default: false
-        type: boolean
-      replacement_reason:
-        description: "Reason recorded when replace_existing_assets is true"
-        required: false
-        default: "operator requested release asset replacement"
+        default: ""
+        type: string
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
+
+concurrency:
+  group: ao-covenant-release-${{ inputs.source_sha }}-${{ inputs.tag }}
+  cancel-in-progress: false
 
 jobs:
-  release:
-    name: Signed release
+  validate-inputs:
+    name: Bind exact release inputs
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.meta.outputs.version }}
-      dry_run: ${{ steps.meta.outputs.dry_run }}
+      source_sha: ${{ steps.bound.outputs.source_sha }}
+      version: ${{ steps.bound.outputs.version }}
+      tag: ${{ steps.bound.outputs.tag }}
+      build_date: ${{ steps.bound.outputs.build_date }}
+      approved_manifest_sha256: ${{ steps.bound.outputs.approved_manifest_sha256 }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout exact workflow source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref }}
-          fetch-depth: 0
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: go.mod
           cache: true
 
-      - name: Resolve release metadata
-        id: meta
+      - name: Test exact source
+        run: go test ./... -count=1
+
+      - name: Vet exact source
+        run: go vet ./...
+
+      - name: Reconstruct bounded approved manifest without evaluation
+        shell: python
+        env:
+          APPROVED_MANIFEST_BASE64: ${{ inputs.approved_manifest_base64 }}
+        run: |
+          import base64
+          import binascii
+          import os
+          import pathlib
+          import sys
+
+          encoded = os.environ["APPROVED_MANIFEST_BASE64"]
+          if len(encoded) > 50000:
+              raise SystemExit("encoded approved manifest exceeds 50000 characters")
+          try:
+              decoded = base64.b64decode(encoded, validate=True)
+          except binascii.Error as error:
+              raise SystemExit(f"approved manifest is not strict base64: {error}")
+          if len(decoded) > 32768:
+              raise SystemExit("decoded approved manifest exceeds 32768 bytes")
+          pathlib.Path("approved-manifest.json").write_bytes(decoded)
+
+      - name: Verify exact source, version, manifest, and authority
+        id: bound
+        shell: bash
+        env:
+          EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}
+          EXPECTED_VERSION: ${{ inputs.version }}
+          EXPECTED_TAG: ${{ inputs.tag }}
+          EXPECTED_MANIFEST_SHA256: ${{ inputs.approved_manifest_sha256 }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          LIVE_CONFIRMATION: ${{ inputs.live_confirmation }}
+        run: |
+          set -euo pipefail
+          actual_source=$(git rev-parse HEAD)
+          [[ "$actual_source" == "$GITHUB_SHA" ]] || {
+            echo "source_sha must equal the exact workflow source GITHUB_SHA" >&2
+            exit 1
+          }
+          python3 scripts/verify-release-modernization.py inputs \
+            --manifest approved-manifest.json \
+            --expected-digest "$EXPECTED_MANIFEST_SHA256" \
+            --expected-source "$EXPECTED_SOURCE_SHA" \
+            --expected-version "$EXPECTED_VERSION" \
+            --expected-tag "$EXPECTED_TAG" \
+            --repository-version-file VERSION \
+            --dry-run "$DRY_RUN" \
+            --live-confirmation "$LIVE_CONFIRMATION" \
+            --out input-binding.json
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          binding = json.load(open("input-binding.json", encoding="utf-8"))
+          for key in ("source_sha", "version", "tag", "build_date", "approved_manifest_sha256"):
+              print(f"{key}={binding[key]}")
+          PY
+
+      - name: Upload private release binding
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ao-covenant-release-binding-${{ inputs.source_sha }}
+          path: |
+            approved-manifest.json
+            input-binding.json
+          if-no-files-found: error
+          retention-days: 14
+
+  native-candidates:
+    name: Native candidate (${{ matrix.target }})
+    needs: validate-inputs
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-amd64
+            runner: ubuntu-latest
+          - target: darwin-amd64
+            runner: macos-15-intel
+          - target: windows-amd64
+            runner: windows-latest
+
+    steps:
+      - name: Checkout exact qualified source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.validate-inputs.outputs.source_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download exact release binding
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ao-covenant-release-binding-${{ needs.validate-inputs.outputs.source_sha }}
+          path: bound
+
+      - name: Build and execute native candidate
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            version="${GITHUB_REF_NAME}"
-          else
-            version="${{ inputs.version }}"
-            git rev-parse "$version^{commit}" >/dev/null
-          fi
-          dry_run="false"
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
-            dry_run="true"
-          fi
-          case "$version" in
-            v*) ;;
-            *) echo "version must start with v: $version" >&2; exit 1 ;;
-          esac
-          {
-            echo "version=$version"
-            echo "commit=$(git rev-parse HEAD)"
-            echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "dry_run=$dry_run"
-          } >> "$GITHUB_OUTPUT"
+          python scripts/build-release-candidate.py \
+            --approved-manifest bound/approved-manifest.json \
+            --binding bound/input-binding.json \
+            --target "${{ matrix.target }}" \
+            --out candidate
 
-      - name: Write release signing key
+      - name: Upload private native candidate evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ao-covenant-native-${{ matrix.target }}
+          path: candidate/
+          if-no-files-found: error
+          retention-days: 14
+
+  assemble-plan:
+    name: Assemble signed immutable promotion plan
+    needs: [validate-inputs, native-candidates]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout exact qualified source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.validate-inputs.outputs.source_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download exact release binding
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ao-covenant-release-binding-${{ needs.validate-inputs.outputs.source_sha }}
+          path: bound
+
+      - name: Download Linux candidate
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ao-covenant-native-linux-amd64
+          path: candidates/linux-amd64
+
+      - name: Download macOS candidate
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ao-covenant-native-darwin-amd64
+          path: candidates/darwin-amd64
+
+      - name: Download Windows candidate
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ao-covenant-native-windows-amd64
+          path: candidates/windows-amd64
+
+      - name: Write existing release signing key
         shell: bash
         env:
           COVENANT_RELEASE_SIGNING_KEY: ${{ secrets.COVENANT_RELEASE_SIGNING_KEY }}
         run: |
           set -euo pipefail
-          if [[ -z "$COVENANT_RELEASE_SIGNING_KEY" ]]; then
+          [[ -n "$COVENANT_RELEASE_SIGNING_KEY" ]] || {
             echo "COVENANT_RELEASE_SIGNING_KEY secret is required" >&2
             exit 1
-          fi
+          }
           private_key="$RUNNER_TEMP/covenant-release-private-key.json"
           public_key="$RUNNER_TEMP/covenant-release-public-key.json"
           printf '%s' "$COVENANT_RELEASE_SIGNING_KEY" > "$private_key"
           chmod 600 "$private_key"
-          jq '{schema_version:"covenant.bundle-public-key.v1", algorithm:.algorithm, public_key:.public_key}' "$private_key" > "$public_key"
+          jq '{schema_version:"covenant.bundle-public-key.v1", algorithm:.algorithm, public_key:.public_key}' \
+            "$private_key" > "$public_key"
           {
             echo "COVENANT_RELEASE_PRIVATE_KEY=$private_key"
             echo "COVENANT_RELEASE_PUBLIC_KEY=$public_key"
           } >> "$GITHUB_ENV"
 
-      - name: Test
-        run: go test -count=1 ./...
-
-      - name: Vet
-        run: go vet ./...
-
-      - name: Create automation provenance
+      - name: Package exact native candidates with existing signature contract
         shell: bash
+        env:
+          SOURCE_SHA: ${{ needs.validate-inputs.outputs.source_sha }}
+          VERSION: ${{ needs.validate-inputs.outputs.version }}
+          BUILD_DATE: ${{ needs.validate-inputs.outputs.build_date }}
         run: |
           set -euo pipefail
-          mkdir -p .covenant/release-inputs
-          jq -n \
-            --arg version "${{ steps.meta.outputs.version }}" \
-            --arg commit "${{ steps.meta.outputs.commit }}" \
-            --arg run_id "${GITHUB_RUN_ID}" \
-            --arg run_attempt "${GITHUB_RUN_ATTEMPT}" \
-            --arg workflow "${GITHUB_WORKFLOW}" \
-            --arg repository "${GITHUB_REPOSITORY}" \
-            --arg ref "${GITHUB_REF}" \
-            --arg sha "${GITHUB_SHA}" \
-            '{
-              schema_version: "ao-covenant.github-release-provenance.v1",
-              version: $version,
-              commit: $commit,
-              github: {
-                repository: $repository,
-                workflow: $workflow,
-                run_id: $run_id,
-                run_attempt: $run_attempt,
-                ref: $ref,
-                sha: $sha
-              }
-            }' > .covenant/release-inputs/github-release-provenance.json
-
-      - name: Package signed release
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p dist
+          mkdir release
           go run ./cmd/covenant release package \
             --source . \
-            --out dist \
-            --version "${{ steps.meta.outputs.version }}" \
-            --commit "${{ steps.meta.outputs.commit }}" \
-            --date "${{ steps.meta.outputs.date }}" \
+            --out release \
+            --version "$VERSION" \
+            --commit "$SOURCE_SHA" \
+            --date "$BUILD_DATE" \
             --sign-key "$COVENANT_RELEASE_PRIVATE_KEY" \
-            --provenance .covenant/release-inputs/github-release-provenance.json \
             --target linux/amd64 \
-            --target linux/arm64 \
+            --prebuilt "linux/amd64=candidates/linux-amd64/ao-covenant_${VERSION}_linux_amd64" \
             --target darwin/amd64 \
-            --target darwin/arm64 \
+            --prebuilt "darwin/amd64=candidates/darwin-amd64/ao-covenant_${VERSION}_darwin_amd64" \
             --target windows/amd64 \
-            --json > dist/release-package.json
-          cp "$COVENANT_RELEASE_PUBLIC_KEY" dist/covenant-release-public-key.json
-          cp LICENSE NOTICE dist/
+            --prebuilt "windows/amd64=candidates/windows-amd64/ao-covenant_${VERSION}_windows_amd64.exe" \
+            --json > release/release-package.json
+          cp "$COVENANT_RELEASE_PUBLIC_KEY" release/covenant-release-public-key.json
+          cp LICENSE NOTICE release/
 
-      - name: Verify signed release
+      - name: Cryptographically verify signed release
         shell: bash
         run: |
           set -euo pipefail
           go run ./cmd/covenant release verify \
-            --dir dist \
+            --dir release \
             --public-key "$COVENANT_RELEASE_PUBLIC_KEY" \
-            --json > dist/release-verify.json
+            --json > release/release-verify.json
           go run ./cmd/covenant release report \
-            --dir dist \
+            --dir release \
             --public-key "$COVENANT_RELEASE_PUBLIC_KEY" \
-            --json > dist/release-report.json
+            --json > release/release-report.json
 
-      - name: Preflight release asset replacement
-        id: replacement_preflight
+      - name: Verify candidates and write immutable promotion plan
         shell: bash
-        env:
-          DIST_DIR: dist
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.meta.outputs.version }}
-          REPLACE_EXISTING_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.replace_existing_assets || false }}
-          REPLACEMENT_REASON: ${{ github.event_name == 'workflow_dispatch' && inputs.replacement_reason || '' }}
-          COVENANT_RELEASE_REPLACEMENT_REPORT_JSON: ${{ runner.temp }}/release-replacement-preflight-report.json
-        run: ./scripts/release-replacement-preflight.sh
-
-      - name: Upload replacement preflight report
-        if: always() && steps.replacement_preflight.conclusion != 'skipped'
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: ao-covenant-${{ steps.meta.outputs.version }}-replacement-preflight-report
-          path: ${{ runner.temp }}/release-replacement-preflight-report.json
-          if-no-files-found: error
-
-      - name: Generate GitHub artifact attestations
-        if: steps.meta.outputs.dry_run != 'true'
-        uses: actions/attest-build-provenance@v4
-        with:
-          subject-path: "dist/*"
-
-      - name: Audit dry-run workflow artifact
-        if: steps.meta.outputs.dry_run == 'true'
-        shell: bash
-        env:
-          DIST_DIR: dist
-          VERSION: ${{ steps.meta.outputs.version }}
-          DRY_RUN: ${{ steps.meta.outputs.dry_run }}
-          COVENANT_RELEASE_DRY_RUN_ARTIFACT_AUDIT_JSON: dist/release-dry-run-artifact-audit.json
-        run: |
-          ./scripts/release-dry-run-artifact-audit.sh
-
-      - name: Upload workflow artifact
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: ao-covenant-${{ steps.meta.outputs.version }}
-          path: dist/*
-          if-no-files-found: error
-
-      - name: Publish GitHub release
-        if: steps.meta.outputs.dry_run != 'true'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.meta.outputs.version }}
-          REPLACE_EXISTING_ASSETS: ${{ github.event_name == 'workflow_dispatch' && inputs.replace_existing_assets || false }}
         run: |
           set -euo pipefail
-          notes="$RUNNER_TEMP/release-notes.md"
-          cat > "$notes" <<EOF
-          AO Covenant ${VERSION}
+          python3 scripts/verify-release-modernization.py candidates \
+            --candidates-dir candidates \
+            --approved-manifest bound/approved-manifest.json \
+            --binding bound/input-binding.json \
+            --release-dir release \
+            --plan-out promotion-plan.json
 
-          This release was built by GitHub Actions, signed by AO Covenant's release key, verified by AO Covenant, and covered by GitHub artifact attestations.
-          EOF
-          if gh release view "$VERSION" >/dev/null 2>&1; then
-            if [[ "$REPLACE_EXISTING_ASSETS" == "true" ]]; then
-              gh release upload "$VERSION" dist/* --clobber
-            else
-              gh release upload "$VERSION" dist/*
-            fi
-          else
-            gh release create "$VERSION" dist/* \
-              --verify-tag \
-              --title "AO Covenant $VERSION" \
-              --notes-file "$notes"
-          fi
+      - name: Record dry-run non-publication
+        if: inputs.dry_run == true
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '
+            .publication_status == "not_attempted" and
+            .tag_creation_attempted == false and
+            .release_creation_attempted == false and
+            .public_upload_attempted == false
+          ' promotion-plan.json >/dev/null
+          {
+            echo "publication_status=not_attempted"
+            echo "tag_creation_attempted=false"
+            echo "release_creation_attempted=false"
+            echo "public_upload_attempted=false"
+          } >> "$GITHUB_STEP_SUMMARY"
 
-  post-release-smoke:
-    name: Post-release smoke verification
-    needs: release
-    if: needs.release.outputs.dry_run != 'true'
+      - name: Upload private signed promotion bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ao-covenant-signed-promotion-${{ needs.validate-inputs.outputs.source_sha }}
+          path: |
+            release/
+            candidates/
+            promotion-plan.json
+            bound/approved-manifest.json
+            bound/input-binding.json
+          if-no-files-found: error
+          retention-days: 14
+
+  publisher:
+    name: Protected live publisher
+    needs: [validate-inputs, native-candidates, assemble-plan]
+    if: >-
+      ${{
+        needs.validate-inputs.result == 'success' &&
+        needs.native-candidates.result == 'success' &&
+        needs.assemble-plan.result == 'success' &&
+        inputs.dry_run == false
+      }}
     runs-on: ubuntu-latest
+    environment: ao-covenant-release
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout exact publisher verifier source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ needs.release.outputs.version }}
-          fetch-depth: 0
+          ref: ${{ needs.validate-inputs.outputs.source_sha }}
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: go.mod
           cache: true
 
-      - name: Download and verify published release
+      - name: Download exact signed promotion bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ao-covenant-signed-promotion-${{ needs.validate-inputs.outputs.source_sha }}
+          path: bundle
+
+      - name: Re-verify complete promotion bundle
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ needs.validate-inputs.outputs.source_sha }}
+          VERSION: ${{ needs.validate-inputs.outputs.version }}
+          TAG: ${{ needs.validate-inputs.outputs.tag }}
+          MANIFEST_DIGEST: ${{ needs.validate-inputs.outputs.approved_manifest_sha256 }}
+          LIVE_CONFIRMATION: ${{ inputs.live_confirmation }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]] || {
+            echo "publisher verifier source mismatch" >&2
+            exit 1
+          }
+          go run ./cmd/covenant release verify \
+            --dir bundle/release \
+            --public-key bundle/release/covenant-release-public-key.json \
+            --json > publisher-cryptographic-verification.json
+          go run ./cmd/covenant release report \
+            --dir bundle/release \
+            --public-key bundle/release/covenant-release-public-key.json \
+            --json > publisher-cryptographic-report.json
+          python3 scripts/verify-release-modernization.py promotion \
+            --candidates-dir bundle/candidates \
+            --approved-manifest bundle/bound/approved-manifest.json \
+            --binding bundle/bound/input-binding.json \
+            --release-dir bundle/release \
+            --plan bundle/promotion-plan.json \
+            --expected-source "$SOURCE_SHA" \
+            --expected-version "$VERSION" \
+            --expected-tag "$TAG" \
+            --expected-manifest-digest "$MANIFEST_DIGEST" \
+            --repository-version-file VERSION \
+            --live-confirmation "$LIVE_CONFIRMATION" \
+            --out publisher-verification.json
+
+      - name: Fail closed on any existing tag or release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.release.outputs.version }}
+          TAG: ${{ needs.validate-inputs.outputs.tag }}
         run: |
           set -euo pipefail
-          mkdir -p smoke
-          gh release download "$VERSION" --repo "$GITHUB_REPOSITORY" --dir smoke
-          chmod +x smoke/ao-covenant_* 2>/dev/null || true
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" >/dev/null 2>ref-error; then
+            echo "release tag already exists: $TAG" >&2
+            exit 1
+          elif ! grep -q "HTTP 404" ref-error; then
+            cat ref-error >&2
+            exit 1
+          fi
+          if gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" >/dev/null 2>release-error; then
+            echo "release already exists: $TAG" >&2
+            exit 1
+          elif ! grep -q "HTTP 404" release-error; then
+            cat release-error >&2
+            exit 1
+          fi
+
+      - name: Generate GitHub provenance for exact release assets
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: "bundle/release/*"
+
+      - name: Atomically create exact source tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ needs.validate-inputs.outputs.source_sha }}
+          TAG: ${{ needs.validate-inputs.outputs.tag }}
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg ref "refs/tags/${TAG}" \
+            --arg sha "$SOURCE_SHA" \
+            '{ref:$ref, sha:$sha}' |
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" --input -
+
+      - name: Publish new immutable GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ needs.validate-inputs.outputs.source_sha }}
+          TAG: ${{ needs.validate-inputs.outputs.tag }}
+        run: |
+          set -euo pipefail
+          notes="$RUNNER_TEMP/release-notes.md"
+          printf 'AO Covenant %s\n\nSigned and verified native release from source `%s`.\n' \
+            "$TAG" "$SOURCE_SHA" > "$notes"
+          gh release create "$TAG" bundle/release/* \
+            --verify-tag \
+            --target "$SOURCE_SHA" \
+            --title "AO Covenant $TAG" \
+            --notes-file "$notes"
+
+  post-publication-verification:
+    name: Independent published release verification
+    needs: [validate-inputs, assemble-plan, publisher]
+    if: >-
+      ${{
+        needs.validate-inputs.result == 'success' &&
+        needs.assemble-plan.result == 'success' &&
+        needs.publisher.result == 'success'
+      }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      attestations: read
+
+    steps:
+      - name: Checkout exact verifier source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.validate-inputs.outputs.source_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Download immutable promotion plan
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ao-covenant-signed-promotion-${{ needs.validate-inputs.outputs.source_sha }}
+          path: bundle
+
+      - name: Download and inspect published release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ needs.validate-inputs.outputs.source_sha }}
+          VERSION: ${{ needs.validate-inputs.outputs.version }}
+          TAG: ${{ needs.validate-inputs.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir downloaded
+          gh release download "$TAG" --dir downloaded
+          gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" \
+            --jq '{ref:.ref,object:.object}' > tag-ref.json
+          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" \
+            --jq '{tag_name:.tag_name,draft:.draft,prerelease:.prerelease,assets:([.assets[].name] | sort | map({name:.}))}' \
+            > release.json
+          python3 scripts/verify-release-modernization.py published \
+            --plan bundle/promotion-plan.json \
+            --source-sha "$SOURCE_SHA" \
+            --tag "$TAG" \
+            --tag-ref-json tag-ref.json \
+            --release-json release.json \
+            --downloaded-dir downloaded \
+            --out published-verification.json
           go run ./cmd/covenant release verify \
-            --dir smoke \
-            --public-key smoke/covenant-release-public-key.json \
-            --json > smoke/release-smoke-verify.json
-          gh attestation verify smoke/manifest.json --repo "$GITHUB_REPOSITORY"
+            --dir downloaded \
+            --public-key downloaded/covenant-release-public-key.json \
+            --json > published-cryptographic-verification.json
+          gh attestation verify "downloaded/manifest.json" \
+            --repo "$GITHUB_REPOSITORY" --format json > attestation-manifest.json
+          gh attestation verify "downloaded/ao-covenant_${VERSION}_linux_amd64" \
+            --repo "$GITHUB_REPOSITORY" --format json > attestation-linux-amd64.json
+          gh attestation verify "downloaded/ao-covenant_${VERSION}_darwin_amd64" \
+            --repo "$GITHUB_REPOSITORY" --format json > attestation-darwin-amd64.json
+          gh attestation verify "downloaded/ao-covenant_${VERSION}_windows_amd64.exe" \
+            --repo "$GITHUB_REPOSITORY" --format json > attestation-windows-amd64.json
+          for result in attestation-*.json; do
+            jq -e 'type == "array" and length > 0' "$result" >/dev/null
+          done
+
+      - name: Upload private independent verification
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ao-covenant-published-verification-${{ needs.validate-inputs.outputs.source_sha }}
+          path: |
+            published-verification.json
+            published-cryptographic-verification.json
+            attestation-manifest.json
+            attestation-linux-amd64.json
+            attestation-darwin-amd64.json
+            attestation-windows-amd64.json
+          if-no-files-found: error
+          retention-days: 14

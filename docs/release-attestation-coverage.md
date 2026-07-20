@@ -15,14 +15,15 @@ It does not authorize publishing private keys, credentials, production evidence 
 ## Required GitHub Attestations
 
 The release workflow grants `attestations: write` and uses
-`actions/attest-build-provenance@v4` with `subject-path: "dist/*"`. Every file
-present under `dist/` at that step is expected to receive a direct GitHub
-attestation before publication.
+`actions/attest-build-provenance@v4` with
+`subject-path: "bundle/release/*"` inside the protected live publisher. Every
+file in the verified release inventory receives a direct GitHub attestation
+before publication. Dry runs do not create attestations.
 
 The workflow then runs post-release smoke verification and checks:
 
 ```sh
-gh attestation verify smoke/manifest.json
+gh attestation verify downloaded/manifest.json --repo uesugitorachiyo/ao-covenant
 ```
 
 Consumers should verify at least `manifest.json` and the exact platform binary
@@ -37,9 +38,7 @@ Consumer trust decisions must include `manifest.json` plus the exact platform bi
 | Platform | Target | Binary artifact | Attestation command |
 | --- | --- | --- | --- |
 | Ubuntu/Linux amd64 | `linux/amd64` | `ao-covenant_v0.1.0_linux_amd64` | `gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant` |
-| Ubuntu/Linux arm64 | `linux/arm64` | `ao-covenant_v0.1.0_linux_arm64` | `gh attestation verify ao-covenant_v0.1.0_linux_arm64 --repo uesugitorachiyo/ao-covenant` |
 | macOS Intel | `darwin/amd64` | `ao-covenant_v0.1.0_darwin_amd64` | `gh attestation verify ao-covenant_v0.1.0_darwin_amd64 --repo uesugitorachiyo/ao-covenant` |
-| macOS Apple Silicon | `darwin/arm64` | `ao-covenant_v0.1.0_darwin_arm64` | `gh attestation verify ao-covenant_v0.1.0_darwin_arm64 --repo uesugitorachiyo/ao-covenant` |
 | Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.0_windows_amd64.exe` | `gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant` |
 
 Stable [release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)
@@ -50,16 +49,15 @@ missing binary attestation failure, and tampered manifest attestation failure.
 
 | Asset | GitHub attestation expectation | AO Covenant verification expectation |
 | --- | --- | --- |
-| `manifest.json` | direct GitHub attestation from `dist/*`; consumer command: `gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant` | covered by manifest signature and checksum verification through `covenant release verify` |
-| platform binaries | direct GitHub attestation from `dist/*`; example command: `gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant` | covered by manifest signature and checksum verification before installation |
-| `SHA256SUMS` | direct GitHub attestation from `dist/*` | used by consumer checksum verification and cross-checked with manifest entries |
-| `release-signature.json` | direct GitHub attestation from `dist/*` | verifies the signed manifest with `covenant-release-public-key.json` |
-| `covenant-release-public-key.json` | direct GitHub attestation from `dist/*` | public verification material only; it must not contain the private signing key |
-| `release-package.json` | direct GitHub attestation from `dist/*` | release packaging evidence; consumers may archive it with the release report |
-| `release-verify.json` | direct GitHub attestation from `dist/*` | machine-readable verification output using the public release-verify schema |
-| `release-report.json` | direct GitHub attestation from `dist/*` | machine-readable release report using the public release-report schema |
-| SBOM, provenance, and packaged attestation artifacts | direct GitHub attestation when present in `dist/*` | covered by manifest signature and checksum verification when included in the release manifest |
-| `release-replacement-policy.json` | direct GitHub attestation from `dist/*` when replacement metadata is generated | schema-validated by the workflow with `covenant.release-replacement-policy.v1` and reviewed as replacement metadata |
+| `manifest.json` | direct GitHub attestation from `bundle/release/*`; consumer command: `gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant` | covered by manifest signature and checksum verification through `covenant release verify` |
+| platform binaries | direct GitHub attestation from `bundle/release/*`; example command: `gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant` | covered by manifest signature and checksum verification before installation |
+| `SHA256SUMS` | direct GitHub attestation from `bundle/release/*` | used by consumer checksum verification and cross-checked with manifest entries |
+| `release-signature.json` | direct GitHub attestation from `bundle/release/*` | verifies the signed manifest with `covenant-release-public-key.json` |
+| `covenant-release-public-key.json` | direct GitHub attestation from `bundle/release/*` | public verification material only; it must not contain the private signing key |
+| `release-package.json` | direct GitHub attestation from `bundle/release/*` | release packaging evidence; consumers may archive it with the release report |
+| `release-verify.json` | direct GitHub attestation from `bundle/release/*` | machine-readable release verification output |
+| `release-report.json` | direct GitHub attestation from `bundle/release/*` | machine-readable release report |
+| `LICENSE` and `NOTICE` | direct GitHub attestation from `bundle/release/*` | required exact package files in the approved manifest |
 
 ## Consumer Verification
 
@@ -84,13 +82,10 @@ Manual minimum checks:
 covenant release verify --dir . --public-key covenant-release-public-key.json
 gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant
 gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant
-gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant
 ```
 
 Use the platform binary name that matches your operating system and CPU. Treat
-the manifest and installed binary as the minimum attestation set. Run the
-replacement policy attestation command only when
-`release-replacement-policy.json` is present.
+the manifest and installed binary as the minimum attestation set.
 
 ## Maintainer Checks
 
@@ -102,11 +97,10 @@ The expected workflow anchors are:
 
 - `attestations: write`
 - `actions/attest-build-provenance@v4`
-- `Preflight release asset replacement`
-- `subject-path: "dist/*"`
-- `gh attestation verify smoke/manifest.json`
+- `environment: ao-covenant-release`
+- `subject-path: "bundle/release/*"`
+- `gh attestation verify downloaded/manifest.json`
 - `covenant-release-public-key.json`
-- `release-replacement-policy.json`
 
 Public docs and release notes must not claim stronger attestation coverage than
 the workflow actually provides.
