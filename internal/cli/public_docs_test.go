@@ -56,7 +56,7 @@ func TestPublicThreatModelDocumentationIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	security := readText("SECURITY.md")
 	threatModel := readText("docs", "threat-model.md")
 
@@ -95,7 +95,7 @@ func TestReleaseThreatModelMatrixIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	threatModel := readText("docs", "threat-model.md")
 	readiness := readText("docs", "public-readiness.md")
 	releaseOps := readText("docs", "release.md")
@@ -190,7 +190,7 @@ func TestReleaseVerificationWalkthroughIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	releaseDoc := readText("docs", "release.md")
 	installDoc := readText("docs", "install.md")
 	walkthrough := readText("docs", "release-verification.md")
@@ -235,7 +235,7 @@ func TestPublicReadinessIndexIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	index := readText("docs", "public-readiness.md")
 
 	for _, check := range []struct {
@@ -290,7 +290,7 @@ func TestBranchProtectionRunbookIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	contributing := readText("CONTRIBUTING.md")
 	readiness := readText("docs", "public-readiness.md")
 	runbook := readText("docs", "branch-protection.md")
@@ -588,7 +588,7 @@ func TestReleaseAttestationCoverageMapIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	contributing := readText("CONTRIBUTING.md")
 	releaseDoc := readText("docs", "release.md")
 	readiness := readText("docs", "public-readiness.md")
@@ -728,7 +728,7 @@ func TestContributorGuideIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	contributing := readText("CONTRIBUTING.md")
 
@@ -773,7 +773,7 @@ func TestConductAndGovernanceDocsAreLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	contributing := readText("CONTRIBUTING.md")
 	conduct := readText("CODE_OF_CONDUCT.md")
@@ -818,7 +818,7 @@ func TestPublicAPIStabilityPolicyIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	contributing := readText("CONTRIBUTING.md")
 	governance := readText("GOVERNANCE.md")
@@ -868,7 +868,7 @@ func TestPublicSchemaChangelogIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	stability := readText("docs", "public-api-stability.md")
 	contributing := readText("CONTRIBUTING.md")
@@ -932,7 +932,7 @@ func TestReleaseReadinessWorkflowIsDiscoverable(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	workflow := readText(".github", "workflows", "release-readiness.yml")
 
@@ -1037,7 +1037,7 @@ func TestDependencyReviewDocumentationIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	contributing := readText("CONTRIBUTING.md")
 	pullRequest := readText(".github", "pull_request_template.md")
@@ -1094,7 +1094,7 @@ func TestSecurityAdvisoryRoutingDocumentationIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	security := readText("SECURITY.md")
 	readiness := readText("docs", "public-readiness.md")
 	contributing := readText("CONTRIBUTING.md")
@@ -1170,7 +1170,7 @@ func TestReleaseDryRunDocumentationIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	releaseOps := readText("docs", "release.md")
 	readiness := readText("docs", "public-readiness.md")
 	contributing := readText("CONTRIBUTING.md")
@@ -1235,7 +1235,7 @@ func TestReleaseRollbackRunbookIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	releaseOps := readText("docs", "release.md")
 	dryRun := readText("docs", "release-dry-run.md")
 	verification := readText("docs", "release-verification.md")
@@ -1294,7 +1294,7 @@ func TestReleaseReplacementPreflightScriptIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	releaseOps := readText("docs", "release.md")
 	rollback := readText("docs", "release-rollback.md")
 	readiness := readText("docs", "public-readiness.md")
@@ -1357,7 +1357,7 @@ func TestReleaseReplacementPreflightFixturesAreLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	stability := readText("docs", "public-api-stability.md")
 	runbook := readText("docs", "release-rollback.md")
@@ -1397,7 +1397,7 @@ func TestReleaseReplacementPreflightReportIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	releaseOps := readText("docs", "release.md")
 	rollback := readText("docs", "release-rollback.md")
 	readiness := readText("docs", "public-readiness.md")
@@ -1440,7 +1440,7 @@ func TestReleaseNoteTemplateIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	releaseOps := readText("docs", "release.md")
 	rollback := readText("docs", "release-rollback.md")
 	securityChecklist := readText("docs", "security-advisory-maintainer-checklist.md")
@@ -1498,7 +1498,7 @@ func TestPublicReleaseKnownGoodBaselineIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	verification := readText("docs", "release-verification.md")
 	readiness := readText("docs", "public-readiness.md")
 	template := readText("docs", "release-note-template.md")
@@ -1563,7 +1563,7 @@ func TestReleaseConsumerSmokeScriptIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	verification := readText("docs", "release-verification.md")
 	readiness := readText("docs", "public-readiness.md")
 	baseline := readText("docs", "public-release-known-good-baseline.md")
@@ -1635,7 +1635,7 @@ func TestReleaseConsumerSmokePowerShellScriptIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	verification := readText("docs", "release-verification.md")
 	readiness := readText("docs", "public-readiness.md")
 	baseline := readText("docs", "public-release-known-good-baseline.md")
@@ -1726,7 +1726,7 @@ func TestReleaseReadinessPowerShellScriptIsLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	changelog := readText("docs", "public-schema-changelog.md")
 	script := readText("scripts", "release-readiness.ps1")
@@ -1803,7 +1803,7 @@ func TestReleaseNoteFixturesAreLinkedAndComplete(t *testing.T) {
 		return string(bytes)
 	}
 
-	readme := readText("README.md")
+	readme := readText("REFERENCE.md")
 	readiness := readText("docs", "public-readiness.md")
 	template := readText("docs", "release-note-template.md")
 	baseline := readText("docs", "public-release-known-good-baseline.md")

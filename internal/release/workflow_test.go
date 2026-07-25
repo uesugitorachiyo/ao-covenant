@@ -110,7 +110,7 @@ func TestReleaseReadinessWorkflowRunsSmokeGateWithoutPublishing(t *testing.T) {
 
 func TestProductionReadinessOpsWorkflowVerifiesBranchProtectionDrift(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "production-readiness-ops.yml")
-	readme := readRepoFile(t, "README.md")
+	readme := readRepoFile(t, "REFERENCE.md")
 	runbook := readRepoFile(t, "docs", "branch-protection.md")
 
 	for _, want := range []string{
