@@ -185,7 +185,7 @@ func TestMutationClassAuthorityValidateAcceptsLowRiskCodeDryRunTicket(t *testing
 }
 
 func TestGatewayIntentAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
-	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "REFERENCE.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -430,7 +430,7 @@ func TestGatewaySchedulerAuthorityDenialBundleInvalidFixturesFail(t *testing.T) 
 }
 
 func TestSchedulerRecoveryAuthorityDenialFixtureStaysReadOnly(t *testing.T) {
-	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "REFERENCE.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -653,7 +653,7 @@ func TestMutationClassAuthorityValidateFailsClosed(t *testing.T) {
 }
 
 func TestREADMEOutputSidecarGuaranteesStayAlignedWithHelperCoverage(t *testing.T) {
-	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "REFERENCE.md"))
 	if err != nil {
 		t.Fatalf("read README: %v", err)
 	}
@@ -712,7 +712,7 @@ func TestREADMEOutputSidecarGuaranteesStayAlignedWithHelperCoverage(t *testing.T
 }
 
 func TestREADMEOutputGuaranteesLinkDeveloperContract(t *testing.T) {
-	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "REFERENCE.md"))
 	if err != nil {
 		t.Fatalf("read README: %v", err)
 	}
@@ -729,7 +729,7 @@ func TestREADMEOutputGuaranteesLinkDeveloperContract(t *testing.T) {
 }
 
 func TestREADMEOutputGuaranteesDoNotDriftFromDeveloperContract(t *testing.T) {
-	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "REFERENCE.md"))
 	if err != nil {
 		t.Fatalf("read README: %v", err)
 	}
@@ -1714,7 +1714,7 @@ func TestOutputPairTerminologyDocumentsInternalAndUserFacingBoundary(t *testing.
 		}
 	}
 
-	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	readmeBytes, err := os.ReadFile(filepath.Join("..", "..", "REFERENCE.md"))
 	if err != nil {
 		t.Fatalf("read README: %v", err)
 	}
