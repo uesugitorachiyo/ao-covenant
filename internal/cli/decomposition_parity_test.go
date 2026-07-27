@@ -75,14 +75,29 @@ func TestPublicGovernanceAndReleaseFixtureBytesRemainStableAcrossDecomposition(t
 
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
-			bytes, err := os.ReadFile(filepath.Join("..", "..", tt.path))
+			contents, err := os.ReadFile(filepath.Join("..", "..", tt.path))
 			if err != nil {
 				t.Fatal(err)
 			}
-			sum := sha256.Sum256(bytes)
+			sum := sha256.Sum256(canonicalFixtureBytes(contents))
 			if got := hex.EncodeToString(sum[:]); got != tt.sha256 {
 				t.Fatalf("%s sha256 = %s, want %s", tt.path, got, tt.sha256)
 			}
 		})
 	}
+}
+
+func TestCanonicalFixtureBytesNormalizesWindowsCheckoutLineEndings(t *testing.T) {
+	lf := []byte("{\n  \"status\": \"stable\"\n}\n")
+	crlf := []byte("{\r\n  \"status\": \"stable\"\r\n}\r\n")
+
+	lfDigest := sha256.Sum256(canonicalFixtureBytes(lf))
+	crlfDigest := sha256.Sum256(canonicalFixtureBytes(crlf))
+	if lfDigest != crlfDigest {
+		t.Fatalf("fixture digest differs across checkout line endings: lf=%x crlf=%x", lfDigest, crlfDigest)
+	}
+}
+
+func canonicalFixtureBytes(contents []byte) []byte {
+	return bytes.ReplaceAll(contents, []byte("\r\n"), []byte("\n"))
 }
