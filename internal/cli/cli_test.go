@@ -1617,11 +1617,7 @@ func TestRollbackOutputFileForWriteOverrideUsesTestGuard(t *testing.T) {
 }
 
 func TestOutputPairHelperNamesStayFocused(t *testing.T) {
-	sourceBytes, err := os.ReadFile("cli.go")
-	if err != nil {
-		t.Fatalf("read cli source: %v", err)
-	}
-	source := string(sourceBytes)
+	source := readCLIPackageSource(t)
 	for _, forbidden := range []string{
 		"writeOutputFileWithSidecarRollback",
 		"outputFileWithSidecarError",
@@ -1636,22 +1632,24 @@ func TestOutputPairHelperNamesStayFocused(t *testing.T) {
 }
 
 func TestCLIFileOutputCommandsUseSharedWriters(t *testing.T) {
-	sourceBytes, parsed, fileSet := parseCLISource(t)
-	functions := cliFunctionSources(t, sourceBytes, parsed, fileSet)
+	sources := parseCLISources(t)
+	functions := cliFunctionSources(t, sources)
 	allowedDirectWriteFileFunctions := map[string]bool{
 		"writeOutputFileBytes": true,
 		"rollbackOutputFile":   true,
 	}
-	for _, fn := range parsed.Decls {
-		funcDecl, ok := fn.(*ast.FuncDecl)
-		if !ok || funcDecl.Body == nil {
-			continue
-		}
-		if !functionCallsOSWriteFile(funcDecl) {
-			continue
-		}
-		if !allowedDirectWriteFileFunctions[funcDecl.Name.Name] {
-			t.Fatalf("function %s calls os.WriteFile directly; route CLI file outputs through shared output writers", funcDecl.Name.Name)
+	for _, source := range sources {
+		for _, fn := range source.parsed.Decls {
+			funcDecl, ok := fn.(*ast.FuncDecl)
+			if !ok || funcDecl.Body == nil {
+				continue
+			}
+			if !functionCallsOSWriteFile(funcDecl) {
+				continue
+			}
+			if !allowedDirectWriteFileFunctions[funcDecl.Name.Name] {
+				t.Fatalf("function %s calls os.WriteFile directly; route CLI file outputs through shared output writers", funcDecl.Name.Name)
+			}
 		}
 	}
 
@@ -1699,11 +1697,7 @@ func cliFileOutputCommandWriters(t *testing.T) []cliFileOutputCommandWriter {
 }
 
 func TestOutputPairTerminologyDocumentsInternalAndUserFacingBoundary(t *testing.T) {
-	sourceBytes, err := os.ReadFile("cli.go")
-	if err != nil {
-		t.Fatalf("read cli source: %v", err)
-	}
-	source := string(sourceBytes)
+	source := readCLIPackageSource(t)
 	for _, want := range []string{
 		"Internal code calls this an output pair",
 		"User-facing diagnostics and README text call the second artifact a digest sidecar",
@@ -1730,33 +1724,92 @@ func TestOutputPairTerminologyDocumentsInternalAndUserFacingBoundary(t *testing.
 	}
 }
 
-func parseCLISource(t *testing.T) ([]byte, *ast.File, *token.FileSet) {
-	t.Helper()
-	sourceBytes, err := os.ReadFile("cli.go")
-	if err != nil {
-		t.Fatalf("read cli source: %v", err)
-	}
-	fileSet := token.NewFileSet()
-	parsed, err := parser.ParseFile(fileSet, "cli.go", sourceBytes, 0)
-	if err != nil {
-		t.Fatalf("parse cli source: %v", err)
-	}
-	return sourceBytes, parsed, fileSet
+type parsedCLISource struct {
+	bytes   []byte
+	parsed  *ast.File
+	fileSet *token.FileSet
 }
 
-func cliFunctionSources(t *testing.T, sourceBytes []byte, parsed *ast.File, fileSet *token.FileSet) map[string]string {
+func parseCLISources(t *testing.T) []parsedCLISource {
 	t.Helper()
-	functions := make(map[string]string)
-	for _, fn := range parsed.Decls {
-		funcDecl, ok := fn.(*ast.FuncDecl)
-		if !ok {
+	paths, err := filepath.Glob("cli*.go")
+	if err != nil {
+		t.Fatalf("list cli sources: %v", err)
+	}
+	var sources []parsedCLISource
+	for _, path := range paths {
+		if strings.HasSuffix(path, "_test.go") {
 			continue
 		}
-		start := fileSet.Position(funcDecl.Pos()).Offset
-		end := fileSet.Position(funcDecl.End()).Offset
-		functions[funcDecl.Name.Name] = string(sourceBytes[start:end])
+		sourceBytes, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read cli source %s: %v", path, err)
+		}
+		fileSet := token.NewFileSet()
+		parsed, err := parser.ParseFile(fileSet, path, sourceBytes, 0)
+		if err != nil {
+			t.Fatalf("parse cli source %s: %v", path, err)
+		}
+		sources = append(sources, parsedCLISource{bytes: sourceBytes, parsed: parsed, fileSet: fileSet})
+	}
+	if len(sources) == 0 {
+		t.Fatal("no cli source files found")
+	}
+	return sources
+}
+
+func readCLIPackageSource(t *testing.T) string {
+	t.Helper()
+	var source strings.Builder
+	for _, parsed := range parseCLISources(t) {
+		source.Write(parsed.bytes)
+		source.WriteByte('\n')
+	}
+	return source.String()
+}
+
+func cliFunctionSources(t *testing.T, sources []parsedCLISource) map[string]string {
+	t.Helper()
+	functions := make(map[string]string)
+	for _, source := range sources {
+		for _, fn := range source.parsed.Decls {
+			funcDecl, ok := fn.(*ast.FuncDecl)
+			if !ok {
+				continue
+			}
+			start := source.fileSet.Position(funcDecl.Pos()).Offset
+			end := source.fileSet.Position(funcDecl.End()).Offset
+			functions[funcDecl.Name.Name] = string(source.bytes[start:end])
+		}
 	}
 	return functions
+}
+
+func cliFunctionBody(t *testing.T, source string, name string) string {
+	t.Helper()
+	start := strings.Index(source, "func "+name+"(")
+	if start < 0 {
+		t.Fatalf("function %s not found", name)
+	}
+	openOffset := strings.Index(source[start:], "{")
+	if openOffset < 0 {
+		t.Fatalf("function %s body not found", name)
+	}
+	open := start + openOffset
+	depth := 0
+	for i := open; i < len(source); i++ {
+		switch source[i] {
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return source[open : i+1]
+			}
+		}
+	}
+	t.Fatalf("function %s body did not close", name)
+	return ""
 }
 
 func functionCallsOSWriteFile(funcDecl *ast.FuncDecl) bool {
@@ -1879,11 +1932,7 @@ func TestWriteOutputFileBytesErrorTaxonomy(t *testing.T) {
 }
 
 func TestWriteOutputFileBytesInspectErrorWordingStaysDocumented(t *testing.T) {
-	sourceBytes, err := os.ReadFile("cli.go")
-	if err != nil {
-		t.Fatalf("read cli source: %v", err)
-	}
-	source := string(sourceBytes)
+	source := readCLIPackageSource(t)
 	for _, want := range []string{
 		"--out parent path cannot be inspected",
 		"--out path cannot be inspected",
@@ -2334,11 +2383,7 @@ func TestVersionCommandPrintsJSON(t *testing.T) {
 }
 
 func TestSchemaBackedJSONOutputsUseValidatedWriter(t *testing.T) {
-	sourceBytes, err := os.ReadFile("cli.go")
-	if err != nil {
-		t.Fatalf("read cli.go: %v", err)
-	}
-	source := string(sourceBytes)
+	functions := cliFunctionSources(t, parseCLISources(t))
 	tests := []struct {
 		name     string
 		function string
@@ -2366,39 +2411,15 @@ func TestSchemaBackedJSONOutputsUseValidatedWriter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			body := cliFunctionBody(t, source, tt.function)
+			body, ok := functions[tt.function]
+			if !ok {
+				t.Fatalf("function %s not found", tt.function)
+			}
 			if count := strings.Count(body, tt.call); count < tt.minCount {
 				t.Fatalf("%s is not written through validated schema writer; found %d calls to %q, want at least %d", tt.function, count, tt.call, tt.minCount)
 			}
 		})
 	}
-}
-
-func cliFunctionBody(t *testing.T, source string, name string) string {
-	t.Helper()
-	start := strings.Index(source, "func "+name+"(")
-	if start < 0 {
-		t.Fatalf("function %s not found", name)
-	}
-	openOffset := strings.Index(source[start:], "{")
-	if openOffset < 0 {
-		t.Fatalf("function %s body not found", name)
-	}
-	open := start + openOffset
-	depth := 0
-	for i := open; i < len(source); i++ {
-		switch source[i] {
-		case '{':
-			depth++
-		case '}':
-			depth--
-			if depth == 0 {
-				return source[open : i+1]
-			}
-		}
-	}
-	t.Fatalf("function %s body did not close", name)
-	return ""
 }
 
 func requireFailedOutputPathCommand(t *testing.T, code int, stdout *bytes.Buffer, stderr *bytes.Buffer, wantDiagnostic string) {
