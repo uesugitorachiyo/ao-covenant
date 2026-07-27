@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -13,6 +11,7 @@ import (
 
 	"github.com/uesugitorachiyo/ao-covenant/internal/approval"
 	"github.com/uesugitorachiyo/ao-covenant/internal/contract"
+	"github.com/uesugitorachiyo/ao-covenant/internal/policy"
 	"github.com/uesugitorachiyo/ao-covenant/internal/schema"
 )
 
@@ -238,7 +237,7 @@ func runApprovalMutationClassValidate(args []string, stdout io.Writer, stderr io
 		fmt.Fprintf(stderr, "decode mutation-class authority ticket: %v\n", err)
 		return 1
 	}
-	if err := validateMutationClassAuthorityTicket(request, ticket, time.Now().UTC()); err != nil {
+	if err := policy.ValidateMutationClassAuthorityTicket(request, ticket, time.Now().UTC()); err != nil {
 		fmt.Fprintf(stderr, "validate mutation-class authority ticket: %v\n", err)
 		return 1
 	}
@@ -294,32 +293,32 @@ func runApprovalLowRiskCodeLiveValidate(args []string, stdout io.Writer, stderr 
 		fmt.Fprintf(stderr, "validate low_risk_code live policy schema: %v\n", err)
 		return 1
 	}
-	var policy map[string]any
-	if err := json.Unmarshal(policyBytes, &policy); err != nil {
+	var policyDocument map[string]any
+	if err := json.Unmarshal(policyBytes, &policyDocument); err != nil {
 		fmt.Fprintf(stderr, "decode low_risk_code live policy: %v\n", err)
 		return 1
 	}
-	if err := validateLowRiskCodeLivePolicy(policy, time.Now().UTC()); err != nil {
+	if err := policy.ValidateLowRiskCodeLivePolicy(policyDocument, time.Now().UTC(), schema.LowRiskCodeLivePolicySchemaID); err != nil {
 		fmt.Fprintf(stderr, "validate low_risk_code live policy: %v\n", err)
 		return 1
 	}
-	candidateScope, _ := policy["candidate_scope"].(map[string]any)
+	candidateScope, _ := policyDocument["candidate_scope"].(map[string]any)
 	repo, _ := candidateScope["repo"].(map[string]any)
 	fileAllowlist, _ := stringSliceField(candidateScope["file_allowlist"])
 	commandAllowlist, _ := stringSliceField(candidateScope["command_allowlist"])
-	boundaries, _ := policy["authority_boundaries"].(map[string]any)
+	boundaries, _ := policyDocument["authority_boundaries"].(map[string]any)
 	result := lowRiskCodeLivePolicyValidateResult{
 		SchemaVersion:     schema.ApprovalValidateResultSchemaID,
 		Valid:             true,
-		PolicyID:          stringField(policy, "policy_id"),
-		MutationClass:     stringField(policy, "mutation_class"),
+		PolicyID:          stringField(policyDocument, "policy_id"),
+		MutationClass:     stringField(policyDocument, "mutation_class"),
 		CandidateRepo:     stringField(repo, "id"),
 		BaseBranch:        stringField(candidateScope, "base_branch"),
 		ProposedBranch:    stringField(candidateScope, "proposed_branch"),
 		FileAllowlist:     fileAllowlist,
 		CommandAllowlist:  commandAllowlist,
-		SafeToRequest:     boolField(policy, "safe_to_request"),
-		SafeToExecute:     boolField(policy, "safe_to_execute"),
+		SafeToRequest:     boolField(policyDocument, "safe_to_request"),
+		SafeToExecute:     boolField(policyDocument, "safe_to_execute"),
 		LiveMutationGrant: boolField(boundaries, "live_mutation_grant"),
 	}
 	if *jsonOutput {
@@ -466,471 +465,20 @@ func validateLiveDocsApprovalTicket(request map[string]any, ticket map[string]an
 	return nil
 }
 
-func validateMutationClassAuthorityTicket(request map[string]any, ticket map[string]any, now time.Time) error {
-	if stringField(request, "schema_version") != "ao.foundry.mutation-class-authority-request.v0.1" {
-		return fmt.Errorf("request schema_version must be ao.foundry.mutation-class-authority-request.v0.1")
-	}
-	if stringField(request, "status") != "pending_covenant_authority" {
-		return fmt.Errorf("request status must be pending_covenant_authority")
-	}
-	requestClass := stringField(request, "mutation_class")
-	if !validMutationClass(requestClass) {
-		return fmt.Errorf("request mutation_class is not supported")
-	}
-	if boolField(request, "safe_to_request") != true || boolField(request, "safe_to_execute") != false {
-		return fmt.Errorf("request must be safe_to_request=true and safe_to_execute=false")
-	}
-	if stringField(ticket, "request_id") != stringField(request, "request_id") {
-		return fmt.Errorf("ticket request_id does not match request")
-	}
-	if stringField(ticket, "approval_state") != "approved" {
-		return fmt.Errorf("approval_state must be approved")
-	}
-	if stringField(ticket, "approver_identity") == "" {
-		return fmt.Errorf("approver_identity is required")
-	}
-	if boolField(ticket, "consumed") {
-		return fmt.Errorf("authority ticket has already been consumed")
-	}
-	expiresAt, err := time.Parse(time.RFC3339, stringField(ticket, "expires_at"))
-	if err != nil {
-		return fmt.Errorf("authority ticket expires_at must be RFC3339: %w", err)
-	}
-	if !expiresAt.After(now) {
-		return fmt.Errorf("authority ticket expired")
-	}
-	if stringField(ticket, "mutation_class") != requestClass {
-		return fmt.Errorf("ticket mutation_class does not match request")
-	}
-	ticketScope, ok := ticket["approved_scope"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("approved_scope is required")
-	}
-	if stringField(ticketScope, "mutation_class") != requestClass {
-		return fmt.Errorf("ticket mutation_class does not match request")
-	}
-	if !jsonEquivalent(ticketScope["allowed_paths"], request["allowed_paths"]) {
-		return fmt.Errorf("ticket path scope is broader than request")
-	}
-	if !jsonEquivalent(ticketScope["max_changed_files"], request["max_changed_files"]) {
-		return fmt.Errorf("ticket diff limit does not exactly match request")
-	}
-	for _, field := range []string{"repo", "branch_policy", "forbidden_paths", "required_gates", "authority_boundary"} {
-		if !jsonEquivalent(ticketScope[field], request[field]) {
-			return fmt.Errorf("ticket scope does not exactly match request")
-		}
-	}
-	if boolField(request, "rollback_required") != true || boolField(ticketScope, "rollback_required") != true {
-		return fmt.Errorf("rollback is required for mutation-class authority tickets")
-	}
-	for _, field := range []string{"rollback_scope", "rollback_evidence"} {
-		if !jsonEquivalent(ticketScope[field], request[field]) {
-			return fmt.Errorf("ticket rollback scope does not exactly match request")
-		}
-	}
-	if requestClass == "multi_repo_low_risk" {
-		if err := validateMultiRepoLowRiskAuthorityScope(request, ticketScope, now); err != nil {
-			return err
-		}
-	}
-	digest, ok := ticket["scope_digest"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("scope_digest is required")
-	}
-	if stringField(digest, "algorithm") != "sha256" {
-		return fmt.Errorf("scope_digest algorithm must be sha256")
-	}
-	if !stringArrayContains(digest["covers"], "approved_scope") {
-		return fmt.Errorf("scope_digest must cover approved_scope")
-	}
-	expected, err := digestApprovedScope(ticketScope)
-	if err != nil {
-		return err
-	}
-	if stringField(digest, "value") != expected {
-		return fmt.Errorf("scope_digest does not match approved_scope")
-	}
-	boundaries, ok := ticket["authority_boundaries"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("authority_boundaries are required")
-	}
-	for _, field := range []string{"exact_scope", "class_bound", "digest_bound", "single_use"} {
-		if !boolField(boundaries, field) {
-			return fmt.Errorf("authority boundary %s must be true", field)
-		}
-	}
-	for _, field := range []string{"live_mutation_grant", "provider_calls_allowed", "release_or_publish_allowed"} {
-		if boolField(boundaries, field) {
-			return fmt.Errorf("authority boundary %s must be false", field)
-		}
-	}
-	return nil
-}
-
-func validateLowRiskCodeLivePolicy(policy map[string]any, now time.Time) error {
-	if stringField(policy, "schema_version") != schema.LowRiskCodeLivePolicySchemaID {
-		return fmt.Errorf("schema_version must be %s", schema.LowRiskCodeLivePolicySchemaID)
-	}
-	if stringField(policy, "approval_state") != "approved" {
-		return fmt.Errorf("approval_state must be approved")
-	}
-	if stringField(policy, "approver_identity") == "" {
-		return fmt.Errorf("approver_identity is required")
-	}
-	if boolField(policy, "consumed") {
-		return fmt.Errorf("low_risk_code live policy has already been consumed")
-	}
-	if stringField(policy, "mutation_class") != "low_risk_code" {
-		return fmt.Errorf("mutation_class must be low_risk_code")
-	}
-	if boolField(policy, "safe_to_request") != true || boolField(policy, "safe_to_execute") != false {
-		return fmt.Errorf("policy must be safe_to_request=true and safe_to_execute=false")
-	}
-	issuedAt, issuedErr := time.Parse(time.RFC3339, stringField(policy, "issued_at"))
-	expiresAt, expiresErr := time.Parse(time.RFC3339, stringField(policy, "expires_at"))
-	if issuedErr != nil || expiresErr != nil {
-		return fmt.Errorf("policy issued_at and expires_at must be RFC3339")
-	}
-	if issuedAt.After(now) || !expiresAt.After(now) {
-		return fmt.Errorf("low_risk_code live policy is stale or not yet valid")
-	}
-	candidateScope, ok := policy["candidate_scope"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("candidate_scope is required")
-	}
-	if err := validateLowRiskCodeLiveCandidateScope(candidateScope); err != nil {
-		return err
-	}
-	digest, ok := policy["scope_digest"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("scope_digest is required")
-	}
-	if stringField(digest, "algorithm") != "sha256" {
-		return fmt.Errorf("scope_digest algorithm must be sha256")
-	}
-	if !stringArrayContains(digest["covers"], "candidate_scope") {
-		return fmt.Errorf("scope_digest must cover candidate_scope")
-	}
-	expected, err := digestApprovedScope(candidateScope)
-	if err != nil {
-		return err
-	}
-	if stringField(digest, "value") != expected {
-		return fmt.Errorf("scope_digest does not match candidate_scope")
-	}
-	boundaries, ok := policy["authority_boundaries"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("authority_boundaries are required")
-	}
-	for _, field := range []string{"exact_scope", "class_bound", "digest_bound", "single_use", "single_repo", "single_branch"} {
-		if !boolField(boundaries, field) {
-			return fmt.Errorf("authority boundary %s must be true", field)
-		}
-	}
-	for _, field := range []string{"live_mutation_grant", "multi_repo_mutation_allowed", "complex_repo_mutation_allowed", "fully_unsupervised_complex_mutation_allowed", "provider_calls_allowed", "release_or_publish_allowed"} {
-		if boolField(boundaries, field) {
-			return fmt.Errorf("authority boundary %s must be false", field)
-		}
-	}
-	return nil
-}
-
-func validateLowRiskCodeLiveCandidateScope(scope map[string]any) error {
-	chain, ok := scope["dry_run_chain"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("dry_run_chain is required")
-	}
-	if stringField(chain, "path") != "tmp/low-risk-code-live-rehearsal-20260630/chain/summary.json" {
-		return fmt.Errorf("dry_run_chain path must be tmp/low-risk-code-live-rehearsal-20260630/chain/summary.json")
-	}
-	if stringField(chain, "sha256") != "046dcdc9a17fcfd60877c8e61d1a15c722f7c34cacdeeb139651f153c6e1196e" {
-		return fmt.Errorf("dry_run_chain sha256 must match current held rehearsal chain")
-	}
-	repo, ok := scope["repo"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("repo is required")
-	}
-	if stringField(repo, "id") != "ao-atlas" {
-		return fmt.Errorf("repo id must be ao-atlas")
-	}
-	if stringField(repo, "remote") != "uesugitorachiyo/ao-atlas" {
-		return fmt.Errorf("repo remote must be uesugitorachiyo/ao-atlas")
-	}
-	if stringField(scope, "base_branch") != "main" {
-		return fmt.Errorf("base_branch must be main")
-	}
-	if stringField(scope, "proposed_branch") != "codex/low-risk-code-rehearsal-one" {
-		return fmt.Errorf("proposed_branch must be codex/low-risk-code-rehearsal-one")
-	}
-	if stringField(scope, "intent") != "behavior-preserving cleanup in internal uniqueStrings helper" {
-		return fmt.Errorf("intent must match selected held candidate")
-	}
-	if err := requireExactStringSlice(scope["file_allowlist"], []string{"internal/atlas/validate.go"}, "file_allowlist"); err != nil {
-		return err
-	}
-	if err := requireExactStringSlice(scope["command_allowlist"], []string{"git diff --check", "go test ./..."}, "command_allowlist"); err != nil {
-		return err
-	}
-	rollbackPlan, ok := scope["rollback_plan"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("rollback_plan is required")
-	}
-	if !boolField(rollbackPlan, "required") {
-		return fmt.Errorf("rollback_plan required must be true")
-	}
-	if stringField(rollbackPlan, "strategy") == "" {
-		return fmt.Errorf("rollback_plan strategy is required")
-	}
-	if err := requireExactStringSlice(rollbackPlan["scope"], []string{"internal/atlas/validate.go"}, "rollback_plan scope"); err != nil {
-		return err
-	}
-	return nil
-}
-
-func validateMultiRepoLowRiskAuthorityScope(request map[string]any, ticketScope map[string]any, now time.Time) error {
-	for _, field := range []string{"multi_repo_plan", "per_repo_rollback", "ci_by_repo", "repo_state_evidence", "kill_switch"} {
-		if !jsonEquivalent(ticketScope[field], request[field]) {
-			return fmt.Errorf("ticket scope does not exactly match multi_repo_low_risk request")
-		}
-	}
-	plan, ok := ticketScope["multi_repo_plan"].(map[string]any)
-	if !ok {
-		return fmt.Errorf("multi_repo_low_risk ordered merge plan is required")
-	}
-	if stringField(plan, "status") != "ready" {
-		return fmt.Errorf("multi_repo_low_risk ordered merge plan is not ready")
-	}
-	plannedRepos, err := validateOrderedMultiRepoPlan(plan)
-	if err != nil {
-		return err
-	}
-	if err := validatePerRepoRollback(plannedRepos, ticketScope["per_repo_rollback"]); err != nil {
-		return err
-	}
-	if err := validatePerRepoCI(plannedRepos, ticketScope["ci_by_repo"]); err != nil {
-		return err
-	}
-	if err := validateFreshRepoState(plannedRepos, ticketScope["repo_state_evidence"], now); err != nil {
-		return err
-	}
-	killSwitch, ok := ticketScope["kill_switch"].(map[string]any)
-	if !ok || !boolField(killSwitch, "required") || stringField(killSwitch, "status") != "armed" {
-		return fmt.Errorf("operator kill-switch must be armed for multi_repo_low_risk")
-	}
-	return nil
-}
-
-func validateOrderedMultiRepoPlan(plan map[string]any) ([]string, error) {
-	order, ok := stringSliceField(plan["order"])
-	if !ok || len(order) == 0 {
-		return nil, fmt.Errorf("ordered dependency is missing or not earlier")
-	}
-	entries, ok := mapSliceField(plan["ordered_merge_plan"])
-	if !ok || len(entries) != len(order) {
-		return nil, fmt.Errorf("ordered dependency is missing or not earlier")
-	}
-	seen := map[string]bool{}
-	repos := make([]string, 0, len(entries))
-	for index, entry := range entries {
-		repo := stringField(entry, "repo")
-		if repo == "" || repo != order[index] || intField(entry, "order") != index+1 || stringField(entry, "planned_pr") == "" {
-			return nil, fmt.Errorf("ordered dependency is missing or not earlier")
-		}
-		dependencies, ok := stringSliceField(entry["depends_on"])
-		if !ok {
-			return nil, fmt.Errorf("ordered dependency is missing or not earlier")
-		}
-		mergeAfter, ok := stringSliceField(entry["merge_after"])
-		if !ok || !jsonEquivalent(entry["depends_on"], entry["merge_after"]) {
-			return nil, fmt.Errorf("ordered dependency is missing or not earlier")
-		}
-		for _, dependency := range dependencies {
-			if !seen[dependency] {
-				return nil, fmt.Errorf("ordered dependency is missing or not earlier")
-			}
-		}
-		for _, dependency := range mergeAfter {
-			if !seen[dependency] {
-				return nil, fmt.Errorf("ordered dependency is missing or not earlier")
-			}
-		}
-		seen[repo] = true
-		repos = append(repos, repo)
-	}
-	return repos, nil
-}
-
-func validatePerRepoRollback(repos []string, value any) error {
-	entries, ok := mapSliceField(value)
-	if !ok {
-		return fmt.Errorf("per-repo rollback is incomplete")
-	}
-	byRepo := map[string]map[string]any{}
-	for _, entry := range entries {
-		byRepo[stringField(entry, "repo")] = entry
-	}
-	for _, repo := range repos {
-		entry := byRepo[repo]
-		scope, _ := stringSliceField(entry["rollback_scope"])
-		if entry == nil || stringField(entry, "status") != "ready" || len(scope) == 0 {
-			return fmt.Errorf("per-repo rollback is incomplete")
-		}
-	}
-	return nil
-}
-
-func validatePerRepoCI(repos []string, value any) error {
-	entries, ok := mapSliceField(value)
-	if !ok {
-		return fmt.Errorf("per-repo CI is incomplete")
-	}
-	byRepo := map[string]map[string]any{}
-	for _, entry := range entries {
-		byRepo[stringField(entry, "repo")] = entry
-	}
-	for _, repo := range repos {
-		entry := byRepo[repo]
-		status := stringField(entry, "status")
-		if entry == nil || !boolField(entry, "required") || (status != "passed" && status != "success") {
-			return fmt.Errorf("per-repo CI is incomplete")
-		}
-	}
-	return nil
-}
-
-func validateFreshRepoState(repos []string, value any, now time.Time) error {
-	entries, ok := mapSliceField(value)
-	if !ok {
-		return fmt.Errorf("repo state evidence is stale")
-	}
-	byRepo := map[string]map[string]any{}
-	for _, entry := range entries {
-		byRepo[stringField(entry, "repo")] = entry
-	}
-	for _, repo := range repos {
-		entry := byRepo[repo]
-		if entry == nil || stringField(entry, "status") != "clean_synced" || stringField(entry, "branch") != "main" {
-			return fmt.Errorf("repo state evidence is stale")
-		}
-		observedAt, observedErr := time.Parse(time.RFC3339, stringField(entry, "observed_at_utc"))
-		expiresAt, expiresErr := time.Parse(time.RFC3339, stringField(entry, "expires_at_utc"))
-		if observedErr != nil || expiresErr != nil || observedAt.After(now) || !expiresAt.After(now) {
-			return fmt.Errorf("repo state evidence is stale")
-		}
-	}
-	return nil
-}
-
-func validMutationClass(value string) bool {
-	switch value {
-	case "docs_only_single_file",
-		"docs_only_multi_file",
-		"docs_config_only",
-		"test_only",
-		"low_risk_code",
-		"multi_repo_low_risk",
-		"complex_repo_mutation":
-		return true
-	default:
-		return false
-	}
-}
-
-func digestApprovedScope(scope map[string]any) (string, error) {
-	bytes, err := json.Marshal(scope)
-	if err != nil {
-		return "", fmt.Errorf("encode approved_scope for digest: %w", err)
-	}
-	sum := sha256.Sum256(bytes)
-	return hex.EncodeToString(sum[:]), nil
-}
-
-func stringArrayContains(value any, want string) bool {
-	values, ok := value.([]any)
-	if !ok {
-		return false
-	}
-	for _, raw := range values {
-		if raw == want {
-			return true
-		}
-	}
-	return false
-}
-
-func requireExactStringSlice(value any, want []string, label string) error {
-	got, ok := stringSliceField(value)
-	if !ok {
-		return fmt.Errorf("%s must be a string array", label)
-	}
-	if len(got) != len(want) {
-		return fmt.Errorf("%s must exactly match selected held candidate", label)
-	}
-	for index := range want {
-		if got[index] != want[index] {
-			return fmt.Errorf("%s must exactly match selected held candidate", label)
-		}
-	}
-	return nil
-}
-
 func stringField(document map[string]any, key string) string {
-	value, _ := document[key].(string)
-	return value
+	return policy.StringField(document, key)
 }
 
 func boolField(document map[string]any, key string) bool {
-	value, _ := document[key].(bool)
-	return value
-}
-
-func intField(document map[string]any, key string) int {
-	switch value := document[key].(type) {
-	case float64:
-		return int(value)
-	case int:
-		return value
-	default:
-		return 0
-	}
+	return policy.BoolField(document, key)
 }
 
 func stringSliceField(value any) ([]string, bool) {
-	items, ok := value.([]any)
-	if !ok {
-		return nil, false
-	}
-	values := make([]string, 0, len(items))
-	for _, item := range items {
-		text, ok := item.(string)
-		if !ok {
-			return nil, false
-		}
-		values = append(values, text)
-	}
-	return values, true
-}
-
-func mapSliceField(value any) ([]map[string]any, bool) {
-	items, ok := value.([]any)
-	if !ok {
-		return nil, false
-	}
-	values := make([]map[string]any, 0, len(items))
-	for _, item := range items {
-		document, ok := item.(map[string]any)
-		if !ok {
-			return nil, false
-		}
-		values = append(values, document)
-	}
-	return values, true
+	return policy.StringSliceField(value)
 }
 
 func jsonEquivalent(left any, right any) bool {
-	leftBytes, leftErr := json.Marshal(left)
-	rightBytes, rightErr := json.Marshal(right)
-	return leftErr == nil && rightErr == nil && string(leftBytes) == string(rightBytes)
+	return policy.JSONEquivalent(left, right)
 }
 
 func runApprovalAttach(args []string, stdout io.Writer, stderr io.Writer) int {
