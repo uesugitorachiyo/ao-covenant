@@ -52,6 +52,8 @@ and run integrity:
 - `covenant.policy-explain-result.v1`
 - `covenant.policy-index-result.v1`
 - `covenant.policy-spine-result.v1`
+- `covenant.autonomous-repair-governance-policy.v1`
+- `covenant.autonomous-repair-governance-request.v1`
 - `covenant.rsi-claim-publish-gate.v1`
 - `covenant.live-self-change-authority.v1`
 - `covenant.gateway-intent-authority-denial.v1`
@@ -62,6 +64,18 @@ and run integrity:
 - `covenant.approval-ticket.v1`
 - `covenant.verify-result.v1`
 - `covenant.closure-matrix.v1`
+
+`covenant.autonomous-repair-governance-policy.v1` and
+`covenant.autonomous-repair-governance-request.v1` are additive Covenant-owned
+policy and consumer-boundary identities for autonomous issue repair. They pin
+the eight strict AO Architecture contracts at commit
+`b8c64860003238ab45fe7c76d7e8950f80a4043b` without copying their schemas.
+Repository class, allowed actions, push target, PR mode, required checks, and
+sole-control auto-merge opt-in come only from exact Covenant repository policy
+records. Discovery has no write-evidence surface. Write requests carry the full
+canonical Architecture authority family and a distinct approved action digest.
+Unknown ownership defaults to external draft-only handling; protected paths,
+issue mutation, automated review, and branch-protection bypass remain denied.
 
 Schema automation exposes catalog, export, and validation results for external
 CI and tool integration:

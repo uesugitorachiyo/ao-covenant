@@ -1,0 +1,216 @@
+{
+  "schema_version": "covenant.autonomous-repair-governance-request.v1",
+  "request_id": "repair-run-20260728",
+  "mode": "write",
+  "repository": "fixture/sole-repair",
+  "ownership_class_assertion": "sole_control",
+  "issue_number": 101,
+  "action": "auto_merge",
+  "current_base_sha": "1111111111111111111111111111111111111111",
+  "changed_path_classes": [
+    "source"
+  ],
+  "approved_action_digest": "ee7e8523dc9003ecb097fd8a7976f0d87e9e890d6ecd4b9c2276dfcc7147a044",
+  "run_envelope": {
+    "schema": "ao.architecture.autonomous-issue-repair.run-envelope.v1",
+    "run_id": "repair-run-20260728",
+    "loop": {
+      "goal": "Repair one controlled fixture.",
+      "trigger": "Use an exact repository policy.",
+      "discovery": "Use bounded discovery.",
+      "action": "Perform one bounded action.",
+      "verification": "Require deterministic checks.",
+      "state": "Persist canonical evidence.",
+      "human_gates": "Apply repository governance."
+    },
+    "trigger": {
+      "mode": "explicit_issue",
+      "canonical_url": "https://github.com/fixture/sole-repair/issues/101",
+      "repository": "fixture/sole-repair",
+      "default_branch": "main",
+      "pinned_base_commit": "1111111111111111111111111111111111111111"
+    },
+    "discovery": {
+      "snapshot_limit": 50,
+      "candidate_limit": 10,
+      "selected_limit": 1
+    },
+    "budgets": {
+      "wall_clock_seconds": 28800,
+      "clone_count": 1,
+      "test_runs": 20,
+      "retry_count": 3,
+      "repair_count": 1,
+      "publication_count": 1
+    },
+    "governance": {
+      "ownership_class": "sole_control",
+      "allowed_actions": [
+        "open_ready_pr",
+        "auto_merge"
+      ],
+      "denied_actions": [
+        "push_upstream",
+        "open_ready_pr",
+        "mark_ready",
+        "approve_review",
+        "merge",
+        "mutate_issue",
+        "publish_release"
+      ],
+      "sole_control_auto_merge_opt_in": true
+    },
+    "routing": {
+      "default_branch": "main",
+      "pinned_base_commit": "1111111111111111111111111111111111111111",
+      "fork_owner": null,
+      "repair_branch": "codex/repair-issue",
+      "protected_path_classes": [
+        "dependency",
+        "workflow",
+        "credential",
+        "permission",
+        "policy",
+        "schema",
+        "migration",
+        "release",
+        "security_boundary",
+        "generated_artifact"
+      ],
+      "required_checks": [
+        "test",
+        "lint"
+      ]
+    },
+    "created_at": "2026-07-27T16:00:00Z",
+    "expires_at": "2026-07-28T00:00:00Z",
+    "canonical_digest": "41a1ca03574f020319672e0c8bb868caf87403f7ac25c9e1028d8e99f21d9b59",
+    "predecessor_digest": null,
+    "lineage": {
+      "kind": "origin",
+      "predecessor_run_id": null,
+      "predecessor_digest": null
+    },
+    "stop_conditions": [
+      "policy_ambiguity",
+      "security_sensitive",
+      "digest_mismatch",
+      "required_check_conflict"
+    ],
+    "terminal_statuses": [
+      "completed",
+      "blocked",
+      "expired"
+    ]
+  },
+  "candidate_decision": {
+    "schema": "ao.architecture.autonomous-issue-repair.candidate-decision.v1",
+    "run_id": "repair-run-20260728",
+    "repository": "fixture/sole-repair",
+    "base_sha": "1111111111111111111111111111111111111111",
+    "issue_number": 101,
+    "rank": 1,
+    "decision": "selected",
+    "eligibility": {
+      "open_bug": true,
+      "target_in_repository": true,
+      "no_existing_fix": true,
+      "current_head_unfixed": true,
+      "security_sensitive": false,
+      "public_reproduction_feasible": true,
+      "deterministic_local_reproduction": true,
+      "expected_behavior_grounded": true,
+      "bounded_policy_compatible": true
+    },
+    "reason_codes": [
+      "eligible_all_predicates_passed"
+    ],
+    "evidence_digests": [
+      "6666666666666666666666666666666666666666666666666666666666666666"
+    ],
+    "expected_behavior_source": "tests",
+    "decided_at": "2026-07-27T22:00:00Z",
+    "decision_digest": "32e58ab7aa9b503c92991b70cd63f53e8b342085d7e09777405261a3c107f1b5"
+  },
+  "governance_decision": {
+    "schema": "ao.architecture.autonomous-issue-repair.governance-decision.v1",
+    "run_id": "repair-run-20260728",
+    "repository": "fixture/sole-repair",
+    "base_sha": "1111111111111111111111111111111111111111",
+    "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "governance_class": "sole_control",
+    "classification_sources": [
+      "repository_policy"
+    ],
+    "push_target": "policy_authorized_branch",
+    "pull_request_mode": "draft_or_ready_by_policy",
+    "merge": {
+      "authorized": true,
+      "mode": "auto_merge",
+      "approval_kind": "none",
+      "approval_head_sha": null,
+      "auto_merge_opt_in": true,
+      "branch_protection_bypassed": false
+    },
+    "protected_path_touched": false,
+    "required_checks": [
+      {
+        "name": "test",
+        "conclusion": "success",
+        "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "name": "lint",
+        "conclusion": "success",
+        "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    ],
+    "action_digest_required": true,
+    "decided_at": "2026-07-27T23:10:00Z",
+    "decision_digest": "33daa93e50acfdccd8e976e482ca5585ed47c0ea1aabfbc3110a23dedb8240c3"
+  },
+  "reviewer_independence": {
+    "schema": "ao.architecture.autonomous-issue-repair.reviewer-independence.v1",
+    "run_id": "repair-run-20260728",
+    "subject_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "reviewer_id": "independent-reviewer",
+    "status": "independent",
+    "deterministic_tests_primary": true,
+    "satisfies_team_merge_gate": false,
+    "reviewed_at": "2026-07-27T23:15:00Z",
+    "review_digest": "9ff295917b4d875f9b9daaa7f7d343857e13be950db0552c9a9d243d094b1c87"
+  },
+  "github_action_digest": {
+    "schema": "ao.architecture.autonomous-issue-repair.github-action-digest.v1",
+    "run_id": "repair-run-20260728",
+    "repository": "fixture/sole-repair",
+    "issue_number": 101,
+    "base_sha": "1111111111111111111111111111111111111111",
+    "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "fork": null,
+    "branch": "codex/repair-issue",
+    "pr_title_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "pr_body_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "diff_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "required_checks": [
+      {
+        "name": "test",
+        "conclusion": "success",
+        "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "name": "lint",
+        "conclusion": "success",
+        "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    ],
+    "action": "auto_merge",
+    "approved_at": "2026-07-27T23:20:00Z",
+    "expires_at": "2026-07-28T00:00:00Z",
+    "run_envelope_digest": "41a1ca03574f020319672e0c8bb868caf87403f7ac25c9e1028d8e99f21d9b59",
+    "candidate_decision_digest": "32e58ab7aa9b503c92991b70cd63f53e8b342085d7e09777405261a3c107f1b5",
+    "governance_decision_digest": "33daa93e50acfdccd8e976e482ca5585ed47c0ea1aabfbc3110a23dedb8240c3",
+    "reviewer_independence_digest": "9ff295917b4d875f9b9daaa7f7d343857e13be950db0552c9a9d243d094b1c87",
+    "action_digest": "ee7e8523dc9003ecb097fd8a7976f0d87e9e890d6ecd4b9c2276dfcc7147a044"
+  }
+}

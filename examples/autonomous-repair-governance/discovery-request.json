@@ -1,0 +1,6 @@
+{
+  "schema_version": "covenant.autonomous-repair-governance-request.v1",
+  "request_id": "discovery-livekit",
+  "mode": "discovery",
+  "repository": "livekit/livekit"
+}

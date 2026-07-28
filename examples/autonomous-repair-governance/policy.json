@@ -1,0 +1,100 @@
+{
+  "schema_version": "covenant.autonomous-repair-governance-policy.v1",
+  "policy_id": "autonomous-repair-governance-v1",
+  "architecture_contract": {
+    "repository": "uesugitorachiyo/ao-architecture",
+    "commit": "b8c64860003238ab45fe7c76d7e8950f80a4043b",
+    "schema_ids": [
+      "ao.architecture.autonomous-issue-repair.run-envelope.v1",
+      "ao.architecture.autonomous-issue-repair.discovery-result.v1",
+      "ao.architecture.autonomous-issue-repair.candidate-decision.v1",
+      "ao.architecture.autonomous-issue-repair.event.v1",
+      "ao.architecture.autonomous-issue-repair.checkpoint.v1",
+      "ao.architecture.autonomous-issue-repair.governance-decision.v1",
+      "ao.architecture.autonomous-issue-repair.reviewer-independence.v1",
+      "ao.architecture.autonomous-issue-repair.github-action-digest.v1"
+    ]
+  },
+  "defaults": {
+    "discovery_mutation_authorized": false,
+    "issue_text_can_authorize": false,
+    "repository_text_can_authorize": false,
+    "unknown_repository_policy": {
+      "repository_class": "external",
+      "sole_auto_merge_opt_in": false,
+      "push_target": "operator_owned_fork",
+      "pull_request_mode": "upstream_draft_only",
+      "required_checks": ["test", "lint"],
+      "allowed_actions": [
+        "push_operator_fork",
+        "open_upstream_draft_pr"
+      ]
+    },
+    "branch_protection_bypass": false
+  },
+  "repository_policies": {
+    "fixture/sole-repair": {
+      "repository_class": "sole_control",
+      "sole_auto_merge_opt_in": true,
+      "push_target": "policy_authorized_branch",
+      "pull_request_mode": "draft_or_ready_by_policy",
+      "required_checks": ["test", "lint"],
+      "allowed_actions": [
+        "open_ready_pr",
+        "auto_merge"
+      ]
+    },
+    "fixture/team-repair": {
+      "repository_class": "team",
+      "sole_auto_merge_opt_in": false,
+      "push_target": "policy_authorized_branch",
+      "pull_request_mode": "draft_or_ready_by_policy",
+      "required_checks": ["test", "lint"],
+      "allowed_actions": [
+        "open_ready_pr",
+        "request_merge_queue"
+      ]
+    },
+    "fixture/external-repair": {
+      "repository_class": "external",
+      "sole_auto_merge_opt_in": false,
+      "push_target": "operator_owned_fork",
+      "pull_request_mode": "upstream_draft_only",
+      "required_checks": ["test", "lint"],
+      "allowed_actions": [
+        "push_operator_fork",
+        "open_upstream_draft_pr"
+      ]
+    },
+    "livekit/livekit": {
+      "repository_class": "external",
+      "sole_auto_merge_opt_in": false,
+      "push_target": "operator_owned_fork",
+      "pull_request_mode": "upstream_draft_only",
+      "required_checks": ["test", "lint"],
+      "allowed_actions": [
+        "push_operator_fork",
+        "open_upstream_draft_pr"
+      ]
+    }
+  },
+  "risky_path_classes": [
+    "dependency",
+    "workflow",
+    "credential",
+    "permission",
+    "policy",
+    "schema",
+    "migration",
+    "release",
+    "security_boundary",
+    "generated_artifact"
+  ],
+  "permanently_denied_actions": [
+    "open_ready_pr_external",
+    "request_merge_queue_external",
+    "auto_merge_external",
+    "approve_review",
+    "mutate_issue"
+  ]
+}
