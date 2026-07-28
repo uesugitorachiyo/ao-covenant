@@ -54,6 +54,7 @@ and run integrity:
 - `covenant.policy-spine-result.v1`
 - `covenant.autonomous-repair-governance-policy.v1`
 - `covenant.autonomous-repair-governance-request.v1`
+- `covenant.autonomous-repair-github-execution-policy.v1`
 - `covenant.rsi-claim-publish-gate.v1`
 - `covenant.live-self-change-authority.v1`
 - `covenant.gateway-intent-authority-denial.v1`
@@ -76,6 +77,18 @@ records. Discovery has no write-evidence surface. Write requests carry the full
 canonical Architecture authority family and a distinct approved action digest.
 Unknown ownership defaults to external draft-only handling; protected paths,
 issue mutation, automated review, and branch-protection bypass remain denied.
+
+`covenant.autonomous-repair-github-execution-policy.v1` is a separate additive
+identity so the published governance policy and request v1 contracts remain
+byte-compatible. It pins
+`stack/github-issue-workflow-contracts.json` at AO Architecture commit
+`8e6f247b800b60c520b4e967f7553974a20ec2f8`, including the source and
+canonical execution-semantics SHA-256 digests. The contract requires exact
+fork and branch readback, exact-head reuse, one create per GitHub object,
+draft-PR identity reuse, ambient configured credentials only, and no force
+update, upstream push, PR update, ready transition, review, or merge. Unknown
+governance remains external draft-only, and an issue-list URL grants no
+mutation authority.
 
 Schema automation exposes catalog, export, and validation results for external
 CI and tool integration:

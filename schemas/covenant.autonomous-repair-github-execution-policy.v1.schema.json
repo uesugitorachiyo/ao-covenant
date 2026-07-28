@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.autonomous-repair-github-execution-policy.v1",
+  "title": "AO Covenant Autonomous Repair GitHub Execution Policy v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_id",
+    "architecture_workflow_contract",
+    "push_operator_fork",
+    "open_upstream_draft_pr",
+    "write_budget",
+    "credentials",
+    "safety"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.autonomous-repair-github-execution-policy.v1"
+    },
+    "policy_id": {
+      "const": "autonomous-repair-github-execution-v1"
+    },
+    "architecture_workflow_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit",
+        "path",
+        "schema",
+        "source_sha256",
+        "semantics_sha256"
+      ],
+      "properties": {
+        "repository": { "const": "uesugitorachiyo/ao-architecture" },
+        "commit": { "const": "8e6f247b800b60c520b4e967f7553974a20ec2f8" },
+        "path": { "const": "stack/github-issue-workflow-contracts.json" },
+        "schema": { "const": "ao.architecture.github-issue-workflow-contracts.v0.1" },
+        "source_sha256": { "const": "60bd07fa4e02d38f0321aa138bb53ca3f89e44499621a7e0369065bca88889ae" },
+        "semantics_sha256": { "const": "2c6835289c508cd2954df545f93a1262c0616de87917bb1f749488376087b9b4" }
+      }
+    },
+    "push_operator_fork": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fork_lookup",
+        "fork_absent",
+        "fork_present",
+        "branch_absent",
+        "branch_present",
+        "force_update_allowed",
+        "upstream_push_allowed"
+      ],
+      "properties": {
+        "fork_lookup": { "const": "required_before_write" },
+        "fork_absent": { "const": "create_then_exact_readback" },
+        "fork_present": { "const": "reuse_only_exact_owner_parent_and_default_branch" },
+        "branch_absent": { "const": "create_at_exact_approved_head" },
+        "branch_present": { "const": "reuse_only_at_exact_approved_head" },
+        "force_update_allowed": { "const": false },
+        "upstream_push_allowed": { "const": false }
+      }
+    },
+    "open_upstream_draft_pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lookup",
+        "absent",
+        "present",
+        "update_allowed",
+        "ready_for_review_allowed",
+        "review_allowed",
+        "merge_allowed"
+      ],
+      "properties": {
+        "lookup": { "const": "exact_base_head_open_pull_requests" },
+        "absent": { "const": "create_once_then_exact_readback" },
+        "present": { "const": "reuse_only_exact_draft_identity" },
+        "update_allowed": { "const": false },
+        "ready_for_review_allowed": { "const": false },
+        "review_allowed": { "const": false },
+        "merge_allowed": { "const": false }
+      }
+    },
+    "write_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fork_creates", "branch_creates", "draft_pr_creates"],
+      "properties": {
+        "fork_creates": { "const": 1 },
+        "branch_creates": { "const": 1 },
+        "draft_pr_creates": { "const": 1 }
+      }
+    },
+    "credentials": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ambient_only", "serialized"],
+      "properties": {
+        "ambient_only": { "const": true },
+        "serialized": { "const": false }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_list_grants_mutation_authority",
+        "successor_may_widen_authority",
+        "unknown_governance_defaults_to_external_draft_only",
+        "external_merge_authorized"
+      ],
+      "properties": {
+        "issue_list_grants_mutation_authority": { "const": false },
+        "successor_may_widen_authority": { "const": false },
+        "unknown_governance_defaults_to_external_draft_only": { "const": true },
+        "external_merge_authorized": { "const": false }
+      }
+    }
+  }
+}
