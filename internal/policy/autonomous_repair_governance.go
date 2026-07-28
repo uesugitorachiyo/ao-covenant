@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	covenantschema "github.com/uesugitorachiyo/ao-covenant/internal/schema"
 )
 
 const (
@@ -99,6 +101,9 @@ func DecodeAutonomousRepairGovernancePolicy(data []byte) (AutonomousRepairGovern
 
 func DecodeAutonomousRepairGovernanceRequest(data []byte) (AutonomousRepairGovernanceRequest, error) {
 	var request AutonomousRepairGovernanceRequest
+	if err := covenantschema.ValidateBytes(covenantschema.AutonomousRepairGovernanceRequestSchemaID, data); err != nil {
+		return request, fmt.Errorf("validate autonomous repair governance request: %w", err)
+	}
 	if err := decodeStrictJSON(data, &request); err != nil {
 		return request, fmt.Errorf("decode autonomous repair governance request: %w", err)
 	}
@@ -132,6 +137,9 @@ func EvaluateAutonomousRepairGovernance(policy AutonomousRepairGovernancePolicy,
 	if reason := validateAutonomousRepairRequestShape(request); reason != "" {
 		return deny("invalid_request")
 	}
+	if err := covenantschema.ValidateValue(covenantschema.AutonomousRepairGovernanceRequestSchemaID, request); err != nil {
+		return deny("malformed_canonical_authority")
+	}
 	if request.OwnershipClassAssertion != nil &&
 		*request.OwnershipClassAssertion != repositoryClass {
 		return deny("ownership_assertion_mismatch")
@@ -139,7 +147,7 @@ func EvaluateAutonomousRepairGovernance(policy AutonomousRepairGovernancePolicy,
 	if request.Mode == "discovery" {
 		return allow("read_only_discovery", false)
 	}
-	if reason := validateArchitectureRepairAuthority(policy, repositoryPolicy, request, now); reason != "" {
+	if reason := validateArchitectureRepairAuthority(policy, repositoryPolicy, explicitlyConfigured, request, now); reason != "" {
 		return deny(reason)
 	}
 

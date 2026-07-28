@@ -123,6 +123,138 @@ func TestAutonomousRepairGovernanceSchemasRejectUnknownFields(t *testing.T) {
 	if _, err := DecodeAutonomousRepairGovernanceRequest(invalidRequest); err == nil {
 		t.Fatal("strict request decoder accepted nested unknown field")
 	}
+	if err := schema.ValidateBytes(schema.AutonomousRepairGovernanceRequestSchemaID, invalidRequest); err == nil {
+		t.Fatal("public request schema accepted nested unknown field")
+	}
+
+	delete(requestDocument["candidate_decision"].(map[string]any), "unexpected")
+	delete(requestDocument["candidate_decision"].(map[string]any), "rank")
+	missingNestedField, err := json.Marshal(requestDocument)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := schema.ValidateBytes(schema.AutonomousRepairGovernanceRequestSchemaID, missingNestedField); err == nil {
+		t.Fatal("public request schema accepted missing canonical candidate field")
+	}
+
+	requestDocument["candidate_decision"].(map[string]any)["rank"] = float64(1)
+	requestDocument["github_action_digest"].(map[string]any)["branch"] = "invalid branch"
+	malformedNestedField, err := json.Marshal(requestDocument)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := schema.ValidateBytes(schema.AutonomousRepairGovernanceRequestSchemaID, malformedNestedField); err == nil {
+		t.Fatal("public request schema accepted malformed canonical action field")
+	}
+}
+
+func TestAutonomousRepairRequestSchemaMatchesPinnedArchitectureDefinitions(t *testing.T) {
+	manifestBytes, err := os.ReadFile(filepath.Join("testdata", "architecture-b8c6486-schema-parity.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest struct {
+		ArchitectureCommit string `json:"architecture_commit"`
+		Schemas            map[string]struct {
+			Definition       string `json:"definition"`
+			SourceSHA256     string `json:"source_sha256"`
+			NormalizedSHA256 string `json:"normalized_sha256"`
+		} `json:"schemas"`
+	}
+	if err := json.Unmarshal(manifestBytes, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if manifest.ArchitectureCommit != "b8c64860003238ab45fe7c76d7e8950f80a4043b" ||
+		len(manifest.Schemas) != 5 {
+		t.Fatalf("invalid parity manifest: %+v", manifest)
+	}
+	sourceDigests := map[string]string{
+		"immutable-run-envelope-v1.schema.json": "ecc37fe191e3ef633789a256e53c668c9a73826281ed3f95461ef04549081923",
+		"candidate-decision-v1.schema.json":     "d67935e0ebaece4a08788a6892a15e9cb32d343b94ccefa5c0d70364899c793e",
+		"governance-decision-v1.schema.json":    "736cadb52ff651d88a80e954a17ed3d14975b63f4611a38f5c840a4ea9ef266b",
+		"reviewer-independence-v1.schema.json":  "aa956dc443d638415a9ba4309cc70895fbe569c1c1341e194f6b47829b45597a",
+		"github-action-digest-v1.schema.json":   "687004f3209308fb74a046a859e2431cbaa87c1bf461452c5174b776c1edf0bd",
+	}
+
+	requestSchemaBytes, err := os.ReadFile("../../schemas/covenant.autonomous-repair-governance-request.v1.schema.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var requestSchemaDocument map[string]any
+	if err := json.Unmarshal(requestSchemaBytes, &requestSchemaDocument); err != nil {
+		t.Fatal(err)
+	}
+	definitions, ok := requestSchemaDocument["$defs"].(map[string]any)
+	if !ok {
+		t.Fatal("request schema has no pinned Architecture definitions")
+	}
+	for sourceName, entry := range manifest.Schemas {
+		definition, ok := definitions[entry.Definition]
+		if !ok {
+			t.Fatalf("missing definition %q for %s", entry.Definition, sourceName)
+		}
+		if got := canonicalSchemaDefinitionDigest(t, definition); got != entry.NormalizedSHA256 {
+			t.Fatalf("%s normalized digest = %s, want %s", sourceName, got, entry.NormalizedSHA256)
+		}
+		if entry.SourceSHA256 != sourceDigests[sourceName] {
+			t.Fatalf("%s source digest = %s, want %s", sourceName, entry.SourceSHA256, sourceDigests[sourceName])
+		}
+	}
+}
+
+func TestPinnedArchitectureSchemaConstraintsRejectPublicAndRuntimeParityMutations(t *testing.T) {
+	governancePolicy := loadAutonomousRepairPolicy(t)
+	now := time.Date(2026, 7, 27, 23, 30, 0, 0, time.UTC)
+	tests := []struct {
+		name   string
+		mutate func(map[string]any)
+	}{
+		{"invalid repair branch pattern", func(document map[string]any) {
+			document["run_envelope"].(map[string]any)["routing"].(map[string]any)["repair_branch"] = "invalid branch"
+		}},
+		{"invalid stop condition enum", func(document map[string]any) {
+			document["run_envelope"].(map[string]any)["stop_conditions"] = []any{"invented_stop"}
+		}},
+		{"invalid terminal status enum", func(document map[string]any) {
+			document["run_envelope"].(map[string]any)["terminal_statuses"] = []any{"invented_terminal"}
+		}},
+		{"empty reviewer id", func(document map[string]any) {
+			document["reviewer_independence"].(map[string]any)["reviewer_id"] = ""
+		}},
+		{"overlong reviewer id", func(document map[string]any) {
+			document["reviewer_independence"].(map[string]any)["reviewer_id"] = strings.Repeat("x", 129)
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request := canonicalRepairRequest(t, "external", "open_upstream_draft_pr")
+			requestBytes, err := json.Marshal(request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var document map[string]any
+			if err := json.Unmarshal(requestBytes, &document); err != nil {
+				t.Fatal(err)
+			}
+			tt.mutate(document)
+			mutatedBytes, err := json.Marshal(document)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := schema.ValidateBytes(schema.AutonomousRepairGovernanceRequestSchemaID, mutatedBytes); err == nil {
+				t.Fatal("public request schema accepted pinned-schema mutation")
+			}
+			var mutated AutonomousRepairGovernanceRequest
+			if err := json.Unmarshal(mutatedBytes, &mutated); err != nil {
+				t.Fatal(err)
+			}
+			redigestCanonicalRequest(t, &mutated)
+			decision := EvaluateAutonomousRepairGovernance(governancePolicy, mutated, now)
+			if decision.Authorized {
+				t.Fatalf("runtime accepted pinned-schema mutation: %+v", decision)
+			}
+		})
+	}
 }
 
 func TestAutonomousRepairGovernancePublishedFixtures(t *testing.T) {
@@ -441,7 +573,6 @@ func TestAutonomousRepairGovernanceRejectsRedigestedContradictions(t *testing.T)
 			name: "failed exact-head check",
 			mutate: func(r *AutonomousRepairGovernanceRequest) {
 				r.GovernanceDecision.RequiredChecks[0].Conclusion = "failure"
-				r.GitHubActionDigest.RequiredChecks[0].Conclusion = "failure"
 			},
 			reason: "required_check_not_green",
 		},
@@ -492,6 +623,67 @@ func TestAutonomousRepairGovernanceRejectsRedigestedContradictions(t *testing.T)
 			decision := EvaluateAutonomousRepairGovernance(governancePolicy, request, now)
 			if decision.Authorized || decision.ReasonCode != tt.reason {
 				t.Fatalf("decision = %+v", decision)
+			}
+		})
+	}
+}
+
+func TestRequestMergeQueueAlwaysRequiresCanonicalMergeQueueAuthorization(t *testing.T) {
+	governancePolicy := loadAutonomousRepairPolicy(t)
+	governancePolicy.RepositoryPolicies = cloneRepositoryPolicies(governancePolicy.RepositoryPolicies)
+	sole := governancePolicy.RepositoryPolicies["fixture/sole-repair"]
+	sole.AllowedActions = append(append([]string(nil), sole.AllowedActions...), "request_merge_queue")
+	governancePolicy.RepositoryPolicies["fixture/sole-repair"] = sole
+
+	request := canonicalRepairRequest(t, "sole_control", "request_merge_queue")
+	request.GovernanceDecision.Merge = ArchitectureMergeDecision{
+		Authorized:   false,
+		Mode:         "never",
+		ApprovalKind: "none",
+	}
+	redigestCanonicalRequest(t, &request)
+	decision := EvaluateAutonomousRepairGovernance(
+		governancePolicy,
+		request,
+		time.Date(2026, 7, 27, 23, 30, 0, 0, time.UTC),
+	)
+	if decision.Authorized || decision.ReasonCode != "merge_queue_authorization_required" {
+		t.Fatalf("sole-control queue without queue authorization = %+v", decision)
+	}
+}
+
+func TestRepositoryClassificationProvenanceIsPolicyDerived(t *testing.T) {
+	tests := []struct {
+		file string
+		want string
+	}{
+		{"write-request-external.json", "repository_policy"},
+		{"write-request-unknown.json", "unknown_default"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.file, func(t *testing.T) {
+			data, err := os.ReadFile(filepath.Join(
+				"..",
+				"..",
+				"examples",
+				"autonomous-repair-governance",
+				tt.file,
+			))
+			if err != nil {
+				t.Fatal(err)
+			}
+			request, err := DecodeAutonomousRepairGovernanceRequest(data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !sameUniqueStrings(
+				request.GovernanceDecision.ClassificationSources,
+				[]string{tt.want},
+			) {
+				t.Fatalf("classification sources = %v, want [%s]",
+					request.GovernanceDecision.ClassificationSources,
+					tt.want,
+				)
 			}
 		})
 	}
@@ -553,10 +745,17 @@ func loadAutonomousRepairPolicy(t *testing.T) AutonomousRepairGovernancePolicy {
 
 func canonicalRepairRequest(t *testing.T, class string, actionName string) AutonomousRepairGovernanceRequest {
 	t.Helper()
-	repository := "fixture/" + class + "-repair"
-	if class == "unknown" {
+	repository := "fixture/external-repair"
+	classificationSource := "repository_policy"
+	switch class {
+	case "sole_control":
+		repository = "fixture/sole-repair"
+	case "team":
+		repository = "fixture/team-repair"
+	case "unknown":
 		repository = "fixture/unknown-repair"
 		class = "external"
+		classificationSource = "unknown_default"
 	}
 	baseSHA := stringsOf('1', 40)
 	headSHA := stringsOf('b', 40)
@@ -575,7 +774,7 @@ func canonicalRepairRequest(t *testing.T, class string, actionName string) Auton
 	merge := ArchitectureMergeDecision{Mode: "never", ApprovalKind: "none"}
 	reviewerID := "independent-reviewer"
 	reviewerGate := false
-	autoMergeOptIn := false
+	autoMergeOptIn := class == "sole_control"
 	if class == "external" {
 		envelopeForkOwner = &forkOwner
 		fork := forkOwner + "/" + strings.SplitN(repository, "/", 2)[1]
@@ -594,7 +793,6 @@ func canonicalRepairRequest(t *testing.T, class string, actionName string) Auton
 		merge.Authorized = true
 		merge.Mode = "auto_merge"
 		merge.AutoMergeOptIn = true
-		autoMergeOptIn = true
 	}
 
 	issueNumber := 101
@@ -687,7 +885,7 @@ func canonicalRepairRequest(t *testing.T, class string, actionName string) Auton
 			BaseSHA:               baseSHA,
 			HeadSHA:               headSHA,
 			GovernanceClass:       class,
-			ClassificationSources: []string{"repository_policy", "operator_envelope"},
+			ClassificationSources: []string{classificationSource},
 			PushTarget:            pushTarget,
 			PullRequestMode:       prMode,
 			Merge:                 merge,
@@ -792,6 +990,16 @@ func stringsOf(value byte, count int) string {
 
 func digestOf(value string) string {
 	sum := sha256.Sum256([]byte(value))
+	return hex.EncodeToString(sum[:])
+}
+
+func canonicalSchemaDefinitionDigest(t *testing.T, definition any) string {
+	t.Helper()
+	data, err := json.Marshal(definition)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:])
 }
 

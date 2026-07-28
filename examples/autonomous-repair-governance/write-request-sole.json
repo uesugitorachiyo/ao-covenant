@@ -10,7 +10,7 @@
   "changed_path_classes": [
     "source"
   ],
-  "approved_action_digest": "3cf2154643a06dc5eb1b6cc0c195e5e8296f6769663a3dbb5bce6c7242a8fd82",
+  "approved_action_digest": "ee7e8523dc9003ecb097fd8a7976f0d87e9e890d6ecd4b9c2276dfcc7147a044",
   "run_envelope": {
     "schema": "ao.architecture.autonomous-issue-repair.run-envelope.v1",
     "run_id": "repair-run-20260728",
@@ -140,8 +140,7 @@
     "head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "governance_class": "sole_control",
     "classification_sources": [
-      "repository_policy",
-      "operator_envelope"
+      "repository_policy"
     ],
     "push_target": "policy_authorized_branch",
     "pull_request_mode": "draft_or_ready_by_policy",
@@ -168,7 +167,7 @@
     ],
     "action_digest_required": true,
     "decided_at": "2026-07-27T23:10:00Z",
-    "decision_digest": "4af0a8d82832d0383850144b8bcc67c2a5c21852b903085d3debebd2f63afd56"
+    "decision_digest": "33daa93e50acfdccd8e976e482ca5585ed47c0ea1aabfbc3110a23dedb8240c3"
   },
   "reviewer_independence": {
     "schema": "ao.architecture.autonomous-issue-repair.reviewer-independence.v1",
@@ -210,8 +209,8 @@
     "expires_at": "2026-07-28T00:00:00Z",
     "run_envelope_digest": "41a1ca03574f020319672e0c8bb868caf87403f7ac25c9e1028d8e99f21d9b59",
     "candidate_decision_digest": "32e58ab7aa9b503c92991b70cd63f53e8b342085d7e09777405261a3c107f1b5",
-    "governance_decision_digest": "4af0a8d82832d0383850144b8bcc67c2a5c21852b903085d3debebd2f63afd56",
+    "governance_decision_digest": "33daa93e50acfdccd8e976e482ca5585ed47c0ea1aabfbc3110a23dedb8240c3",
     "reviewer_independence_digest": "9ff295917b4d875f9b9daaa7f7d343857e13be950db0552c9a9d243d094b1c87",
-    "action_digest": "3cf2154643a06dc5eb1b6cc0c195e5e8296f6769663a3dbb5bce6c7242a8fd82"
+    "action_digest": "ee7e8523dc9003ecb097fd8a7976f0d87e9e890d6ecd4b9c2276dfcc7147a044"
   }
 }

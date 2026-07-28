@@ -1,0 +1,32 @@
+{
+  "architecture_repository": "uesugitorachiyo/ao-architecture",
+  "architecture_commit": "b8c64860003238ab45fe7c76d7e8950f80a4043b",
+  "normalization": "Remove only top-level $schema, $id, and title; canonicalize as sorted compact ASCII JSON.",
+  "schemas": {
+    "immutable-run-envelope-v1.schema.json": {
+      "definition": "architecture_run_envelope",
+      "source_sha256": "ecc37fe191e3ef633789a256e53c668c9a73826281ed3f95461ef04549081923",
+      "normalized_sha256": "3b453f03acef735e55c9ab27b6b99ff7b2a1b85275d7ab46a0b533cfcf0a5b49"
+    },
+    "candidate-decision-v1.schema.json": {
+      "definition": "architecture_candidate_decision",
+      "source_sha256": "d67935e0ebaece4a08788a6892a15e9cb32d343b94ccefa5c0d70364899c793e",
+      "normalized_sha256": "7b6571bc22fa5946d22af1c7f10ce2e3408f82b0a092e2132a208d4d13278856"
+    },
+    "governance-decision-v1.schema.json": {
+      "definition": "architecture_governance_decision",
+      "source_sha256": "736cadb52ff651d88a80e954a17ed3d14975b63f4611a38f5c840a4ea9ef266b",
+      "normalized_sha256": "21aeb31d644836e75b70c9587ed8d786fcbc92ac89f6be29b9bcc64a4af4a832"
+    },
+    "reviewer-independence-v1.schema.json": {
+      "definition": "architecture_reviewer_independence",
+      "source_sha256": "aa956dc443d638415a9ba4309cc70895fbe569c1c1341e194f6b47829b45597a",
+      "normalized_sha256": "6ac1216a2a709f16d347ead01f3931506ae97e0a2724f69d99f2ad7a13da4481"
+    },
+    "github-action-digest-v1.schema.json": {
+      "definition": "architecture_github_action_digest",
+      "source_sha256": "687004f3209308fb74a046a859e2431cbaa87c1bf461452c5174b776c1edf0bd",
+      "normalized_sha256": "3e1a8164e2157a0b5c996f4b5877c3b50351d596ed7e432afefd0a5dcd692b90"
+    }
+  }
+}

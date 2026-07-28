@@ -199,6 +199,7 @@ type ArchitectureGitHubActionDigest struct {
 func validateArchitectureRepairAuthority(
 	policy AutonomousRepairGovernancePolicy,
 	repositoryPolicy AutonomousRepairRepositoryPolicy,
+	explicitlyConfigured bool,
 	request AutonomousRepairGovernanceRequest,
 	now time.Time,
 ) string {
@@ -307,6 +308,13 @@ func validateArchitectureRepairAuthority(
 		!everyStringIn(envelope.Governance.AllowedActions, repositoryPolicy.AllowedActions) ||
 		!slicesContains(repositoryPolicy.AllowedActions, action.Action) {
 		return "repository_policy_mismatch"
+	}
+	classificationSource := "unknown_default"
+	if explicitlyConfigured {
+		classificationSource = "repository_policy"
+	}
+	if !sameUniqueStrings(governance.ClassificationSources, []string{classificationSource}) {
+		return "classification_provenance_mismatch"
 	}
 	if repositoryPolicy.RepositoryClass == "external" &&
 		(!slicesContains(envelope.Governance.DeniedActions, "open_ready_pr") ||
@@ -449,7 +457,6 @@ func validArchitectureGovernanceShape(governance ArchitectureGovernanceDecision)
 			"operator_envelope",
 			"unknown_default",
 		}) ||
-		!slicesContains(governance.ClassificationSources, "repository_policy") ||
 		!slicesContains([]string{
 			"authorized_operator_repository",
 			"policy_authorized_branch",
@@ -687,6 +694,10 @@ func validateArchitectureActionClass(
 	action *ArchitectureGitHubActionDigest,
 ) string {
 	merge := governance.Merge
+	if action.Action == "request_merge_queue" &&
+		(!merge.Authorized || merge.Mode != "merge_queue") {
+		return "merge_queue_authorization_required"
+	}
 	if action.Action != "request_merge_queue" && action.Action != "auto_merge" &&
 		(merge.Authorized || merge.Mode != "never" ||
 			merge.ApprovalKind != "none" || merge.ApprovalHeadSHA != nil ||
