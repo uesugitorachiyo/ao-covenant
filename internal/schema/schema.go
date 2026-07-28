@@ -32,6 +32,7 @@ const (
 	LowRiskCodeLivePolicySchemaID                    = "covenant.low-risk-code-live-policy.v1"
 	AutonomousRepairGovernancePolicySchemaID         = "covenant.autonomous-repair-governance-policy.v1"
 	AutonomousRepairGovernanceRequestSchemaID        = "covenant.autonomous-repair-governance-request.v1"
+	AutonomousRepairGitHubExecutionPolicySchemaID    = "covenant.autonomous-repair-github-execution-policy.v1"
 	LiveSelfChangeAuthoritySchemaID                  = "covenant.live-self-change-authority.v1"
 	LiveMutationAuthoritySchemaID                    = "covenant.live-mutation-authority.v1"
 	GatewayIntentAuthorityDenialSchemaID             = "covenant.gateway-intent-authority-denial.v1"
@@ -121,6 +122,7 @@ var requiredSchemas = []RequiredSchema{
 	requiredSchema("covenant.low-risk-code-live-policy.v1.schema.json", LowRiskCodeLivePolicySchemaID),
 	requiredSchema("covenant.autonomous-repair-governance-policy.v1.schema.json", AutonomousRepairGovernancePolicySchemaID),
 	requiredSchema("covenant.autonomous-repair-governance-request.v1.schema.json", AutonomousRepairGovernanceRequestSchemaID),
+	requiredSchema("covenant.autonomous-repair-github-execution-policy.v1.schema.json", AutonomousRepairGitHubExecutionPolicySchemaID),
 	requiredSchema("covenant.live-self-change-authority.v1.schema.json", LiveSelfChangeAuthoritySchemaID),
 	requiredSchema("covenant.live-mutation-authority.v1.schema.json", LiveMutationAuthoritySchemaID),
 	requiredSchema("covenant.gateway-intent-authority-denial.v1.schema.json", GatewayIntentAuthorityDenialSchemaID),

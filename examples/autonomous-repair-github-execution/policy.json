@@ -1,0 +1,45 @@
+{
+  "schema_version": "covenant.autonomous-repair-github-execution-policy.v1",
+  "policy_id": "autonomous-repair-github-execution-v1",
+  "architecture_workflow_contract": {
+    "repository": "uesugitorachiyo/ao-architecture",
+    "commit": "8e6f247b800b60c520b4e967f7553974a20ec2f8",
+    "path": "stack/github-issue-workflow-contracts.json",
+    "schema": "ao.architecture.github-issue-workflow-contracts.v0.1",
+    "source_sha256": "60bd07fa4e02d38f0321aa138bb53ca3f89e44499621a7e0369065bca88889ae",
+    "semantics_sha256": "2c6835289c508cd2954df545f93a1262c0616de87917bb1f749488376087b9b4"
+  },
+  "push_operator_fork": {
+    "fork_lookup": "required_before_write",
+    "fork_absent": "create_then_exact_readback",
+    "fork_present": "reuse_only_exact_owner_parent_and_default_branch",
+    "branch_absent": "create_at_exact_approved_head",
+    "branch_present": "reuse_only_at_exact_approved_head",
+    "force_update_allowed": false,
+    "upstream_push_allowed": false
+  },
+  "open_upstream_draft_pr": {
+    "lookup": "exact_base_head_open_pull_requests",
+    "absent": "create_once_then_exact_readback",
+    "present": "reuse_only_exact_draft_identity",
+    "update_allowed": false,
+    "ready_for_review_allowed": false,
+    "review_allowed": false,
+    "merge_allowed": false
+  },
+  "write_budget": {
+    "fork_creates": 1,
+    "branch_creates": 1,
+    "draft_pr_creates": 1
+  },
+  "credentials": {
+    "ambient_only": true,
+    "serialized": false
+  },
+  "safety": {
+    "issue_list_grants_mutation_authority": false,
+    "successor_may_widen_authority": false,
+    "unknown_governance_defaults_to_external_draft_only": true,
+    "external_merge_authorized": false
+  }
+}

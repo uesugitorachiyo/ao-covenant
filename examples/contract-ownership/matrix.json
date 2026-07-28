@@ -139,9 +139,24 @@
       ],
       "policy_authority_required": true,
       "compatibility_gate_required": true
+    },
+    {
+      "contract_id": "covenant.autonomous-repair-github-execution-policy.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "autonomous repair GitHub execution governance",
+      "stability": "experimental",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao2"],
+      "consumer_test_refs": [
+        "internal/policy/autonomous_repair_github_execution_test.go:TestAutonomousRepairGitHubExecutionPolicyFixtureIsStrictAndRegistered",
+        "internal/policy/autonomous_repair_github_execution_test.go:TestAutonomousRepairGitHubExecutionPolicyRejectsEveryAuthorityWidening"
+      ],
+      "policy_authority_required": true,
+      "compatibility_gate_required": true
     }
   ],
-  "entry_count": 9,
+  "entry_count": 10,
   "no_promotion_requested": true,
   "provider_calls_allowed": false,
   "credential_use_allowed": false,
