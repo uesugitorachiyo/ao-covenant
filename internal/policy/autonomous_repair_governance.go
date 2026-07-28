@@ -2,12 +2,11 @@ package policy
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -16,13 +15,27 @@ const (
 	AutonomousRepairGovernanceRequestVersion = "covenant.autonomous-repair-governance-request.v1"
 )
 
+var autonomousRepairRiskyPathClasses = []string{
+	"dependency",
+	"workflow",
+	"credential",
+	"permission",
+	"policy",
+	"schema",
+	"migration",
+	"release",
+	"security_boundary",
+	"generated_artifact",
+}
+
 type AutonomousRepairGovernancePolicy struct {
-	SchemaVersion            string                         `json:"schema_version"`
-	PolicyID                 string                         `json:"policy_id"`
-	ArchitectureContract     AutonomousRepairContractSource `json:"architecture_contract"`
-	Defaults                 AutonomousRepairPolicyDefaults `json:"defaults"`
-	RiskyPathClasses         []string                       `json:"risky_path_classes"`
-	PermanentlyDeniedActions []string                       `json:"permanently_denied_actions"`
+	SchemaVersion            string                                      `json:"schema_version"`
+	PolicyID                 string                                      `json:"policy_id"`
+	ArchitectureContract     AutonomousRepairContractSource              `json:"architecture_contract"`
+	Defaults                 AutonomousRepairPolicyDefaults              `json:"defaults"`
+	RepositoryPolicies       map[string]AutonomousRepairRepositoryPolicy `json:"repository_policies"`
+	RiskyPathClasses         []string                                    `json:"risky_path_classes"`
+	PermanentlyDeniedActions []string                                    `json:"permanently_denied_actions"`
 }
 
 type AutonomousRepairContractSource struct {
@@ -32,68 +45,38 @@ type AutonomousRepairContractSource struct {
 }
 
 type AutonomousRepairPolicyDefaults struct {
-	DiscoveryMutationAuthorized bool   `json:"discovery_mutation_authorized"`
-	IssueTextCanAuthorize       bool   `json:"issue_text_can_authorize"`
-	RepositoryTextCanAuthorize  bool   `json:"repository_text_can_authorize"`
-	UnknownRepositoryClass      string `json:"unknown_repository_class"`
-	SoleControlAutoMerge        bool   `json:"sole_control_auto_merge"`
-	BranchProtectionBypass      bool   `json:"branch_protection_bypass"`
+	DiscoveryMutationAuthorized bool                             `json:"discovery_mutation_authorized"`
+	IssueTextCanAuthorize       bool                             `json:"issue_text_can_authorize"`
+	RepositoryTextCanAuthorize  bool                             `json:"repository_text_can_authorize"`
+	UnknownRepositoryPolicy     AutonomousRepairRepositoryPolicy `json:"unknown_repository_policy"`
+	BranchProtectionBypass      bool                             `json:"branch_protection_bypass"`
+}
+
+type AutonomousRepairRepositoryPolicy struct {
+	RepositoryClass    string   `json:"repository_class"`
+	SoleAutoMergeOptIn bool     `json:"sole_auto_merge_opt_in"`
+	PushTarget         string   `json:"push_target"`
+	PullRequestMode    string   `json:"pull_request_mode"`
+	RequiredChecks     []string `json:"required_checks"`
+	AllowedActions     []string `json:"allowed_actions"`
 }
 
 type AutonomousRepairGovernanceRequest struct {
-	SchemaVersion            string                           `json:"schema_version"`
-	RequestID                string                           `json:"request_id"`
-	Repository               string                           `json:"repository"`
-	IssueNumber              int                              `json:"issue_number"`
-	Action                   string                           `json:"action"`
-	Ownership                AutonomousRepairOwnership        `json:"ownership"`
-	IssueTextAuthorizes      bool                             `json:"issue_text_authorizes"`
-	RepositoryTextAuthorizes bool                             `json:"repository_text_authorizes"`
-	SecuritySensitive        bool                             `json:"security_sensitive"`
-	ChangedPathClasses       []string                         `json:"changed_path_classes"`
-	ExpectedChecks           []string                         `json:"expected_checks"`
-	ObservedChecks           []AutonomousRepairCheck          `json:"observed_checks"`
-	ExpectedHeadSHA          string                           `json:"expected_head_sha"`
-	ObservedHeadSHA          string                           `json:"observed_head_sha"`
-	ExpectedBaseSHA          string                           `json:"expected_base_sha"`
-	CurrentBaseSHA           string                           `json:"current_base_sha"`
-	BranchProtectionBypass   bool                             `json:"branch_protection_bypass"`
-	ActionDigest             AutonomousRepairActionDigest     `json:"action_digest"`
-	Reviewer                 AutonomousRepairReviewerApproval `json:"reviewer"`
-}
-
-type AutonomousRepairOwnership struct {
-	Source            string `json:"source"`
-	RepositoryClass   string `json:"repository_class"`
-	Repository        string `json:"repository"`
-	AutoMergeOptIn    bool   `json:"auto_merge_opt_in"`
-	OperatorOwnedFork bool   `json:"operator_owned_fork"`
-	UpstreamDraft     bool   `json:"upstream_draft"`
-}
-
-type AutonomousRepairCheck struct {
-	Name       string `json:"name"`
-	Conclusion string `json:"conclusion"`
-	HeadSHA    string `json:"head_sha"`
-}
-
-type AutonomousRepairActionDigest struct {
-	Expected    string `json:"expected"`
-	Observed    string `json:"observed"`
-	Repository  string `json:"repository"`
-	IssueNumber int    `json:"issue_number"`
-	Action      string `json:"action"`
-	BaseSHA     string `json:"base_sha"`
-	HeadSHA     string `json:"head_sha"`
-	ApprovedAt  string `json:"approved_at"`
-	ExpiresAt   string `json:"expires_at"`
-}
-
-type AutonomousRepairReviewerApproval struct {
-	Kind       string `json:"kind"`
-	Approved   bool   `json:"approved"`
-	HeadSHA    string `json:"head_sha"`
-	ObservedAt string `json:"observed_at"`
+	SchemaVersion           string                            `json:"schema_version"`
+	RequestID               string                            `json:"request_id"`
+	Mode                    string                            `json:"mode"`
+	Repository              string                            `json:"repository"`
+	OwnershipClassAssertion *string                           `json:"ownership_class_assertion,omitempty"`
+	IssueNumber             *int                              `json:"issue_number,omitempty"`
+	Action                  string                            `json:"action,omitempty"`
+	CurrentBaseSHA          string                            `json:"current_base_sha,omitempty"`
+	ChangedPathClasses      []string                          `json:"changed_path_classes,omitempty"`
+	ApprovedActionDigest    string                            `json:"approved_action_digest,omitempty"`
+	RunEnvelope             *ArchitectureRunEnvelope          `json:"run_envelope,omitempty"`
+	CandidateDecision       *ArchitectureCandidateDecision    `json:"candidate_decision,omitempty"`
+	GovernanceDecision      *ArchitectureGovernanceDecision   `json:"governance_decision,omitempty"`
+	ReviewerIndependence    *ArchitectureReviewerIndependence `json:"reviewer_independence,omitempty"`
+	GitHubActionDigest      *ArchitectureGitHubActionDigest   `json:"github_action_digest,omitempty"`
 }
 
 type AutonomousRepairGovernanceDecision struct {
@@ -108,9 +91,6 @@ func DecodeAutonomousRepairGovernancePolicy(data []byte) (AutonomousRepairGovern
 	if err := decodeStrictJSON(data, &policy); err != nil {
 		return policy, fmt.Errorf("decode autonomous repair governance policy: %w", err)
 	}
-	if policy.SchemaVersion != AutonomousRepairGovernancePolicyVersion {
-		return policy, fmt.Errorf("unsupported policy schema_version %q", policy.SchemaVersion)
-	}
 	if !validAutonomousRepairGovernancePolicy(policy) {
 		return policy, fmt.Errorf("policy widens or mismatches autonomous repair authority")
 	}
@@ -122,20 +102,15 @@ func DecodeAutonomousRepairGovernanceRequest(data []byte) (AutonomousRepairGover
 	if err := decodeStrictJSON(data, &request); err != nil {
 		return request, fmt.Errorf("decode autonomous repair governance request: %w", err)
 	}
-	if request.SchemaVersion != AutonomousRepairGovernanceRequestVersion {
-		return request, fmt.Errorf("unsupported request schema_version %q", request.SchemaVersion)
-	}
-	if !validAutonomousRepairGovernanceRequest(request) {
-		return request, fmt.Errorf("invalid autonomous repair governance request identity")
+	if reason := validateAutonomousRepairRequestShape(request); reason != "" {
+		return request, fmt.Errorf("%s", reason)
 	}
 	return request, nil
 }
 
 func EvaluateAutonomousRepairGovernance(policy AutonomousRepairGovernancePolicy, request AutonomousRepairGovernanceRequest, now time.Time) AutonomousRepairGovernanceDecision {
-	repositoryClass := request.Ownership.RepositoryClass
-	if repositoryClass == "unknown" {
-		repositoryClass = policy.Defaults.UnknownRepositoryClass
-	}
+	repositoryPolicy, explicitlyConfigured := autonomousRepairRepositoryPolicy(policy, request.Repository)
+	repositoryClass := repositoryPolicy.RepositoryClass
 	deny := func(reason string) AutonomousRepairGovernanceDecision {
 		return AutonomousRepairGovernanceDecision{
 			RepositoryClass: repositoryClass,
@@ -154,104 +129,107 @@ func EvaluateAutonomousRepairGovernance(policy AutonomousRepairGovernancePolicy,
 	if !validAutonomousRepairGovernancePolicy(policy) {
 		return deny("invalid_policy")
 	}
-	if !validAutonomousRepairGovernanceRequest(request) {
+	if reason := validateAutonomousRepairRequestShape(request); reason != "" {
 		return deny("invalid_request")
 	}
-	if request.IssueTextAuthorizes || request.RepositoryTextAuthorizes {
-		return deny("untrusted_text_authority")
+	if request.OwnershipClassAssertion != nil &&
+		*request.OwnershipClassAssertion != repositoryClass {
+		return deny("ownership_assertion_mismatch")
 	}
-	if request.Ownership.Source != "explicit_policy" ||
-		request.Ownership.Repository != request.Repository {
-		return deny("invalid_authority_source")
-	}
-	if request.Action == "discover" {
+	if request.Mode == "discovery" {
 		return allow("read_only_discovery", false)
 	}
-	if request.SecuritySensitive {
-		return deny("security_sensitive")
+	if reason := validateArchitectureRepairAuthority(policy, repositoryPolicy, request, now); reason != "" {
+		return deny(reason)
 	}
-	if slices.Contains(policy.PermanentlyDeniedActions, request.Action) {
+
+	action := request.Action
+	if !slices.Contains(repositoryPolicy.AllowedActions, action) {
+		return deny("action_not_allowed_by_repository_policy")
+	}
+	if slices.Contains(policy.PermanentlyDeniedActions, action) {
 		return deny("permanently_denied_action")
-	}
-	for _, pathClass := range request.ChangedPathClasses {
-		if slices.Contains(policy.RiskyPathClasses, pathClass) {
-			return deny("protected_path")
-		}
-	}
-	if request.BranchProtectionBypass {
-		return deny("branch_protection_bypass")
-	}
-	if request.ExpectedHeadSHA == "" || request.ObservedHeadSHA != request.ExpectedHeadSHA ||
-		request.ActionDigest.HeadSHA != request.ExpectedHeadSHA {
-		return deny("stale_head")
-	}
-	if request.ExpectedBaseSHA == "" || request.CurrentBaseSHA != request.ExpectedBaseSHA ||
-		request.ActionDigest.BaseSHA != request.ExpectedBaseSHA {
-		return deny("stale_base")
-	}
-	if reason := validateAutonomousRepairActionDigest(request, now); reason != "" {
-		return deny(reason)
-	}
-	if reason := validateAutonomousRepairChecks(request); reason != "" {
-		return deny(reason)
 	}
 
 	switch repositoryClass {
 	case "external":
-		if request.Action == "open_draft_pr" &&
-			request.Ownership.OperatorOwnedFork &&
-			request.Ownership.UpstreamDraft {
-			return allow("external_draft_only", true)
+		if action != "push_operator_fork" && action != "open_upstream_draft_pr" {
+			return deny("external_draft_only")
 		}
-		return deny("external_draft_only")
+		return allow("external_draft_only", true)
 	case "sole_control":
-		if request.Action == "open_draft_pr" || request.Action == "mark_ready" {
-			return allow("sole_control_bounded_action", true)
-		}
-		if request.Action == "auto_merge" {
-			if policy.Defaults.SoleControlAutoMerge || !request.Ownership.AutoMergeOptIn {
+		if action == "auto_merge" {
+			if !explicitlyConfigured || !repositoryPolicy.SoleAutoMergeOptIn {
 				return deny("sole_control_auto_merge_not_opted_in")
 			}
 			return allow("sole_control_auto_merge", true)
 		}
-		return deny("action_not_authorized")
+		return allow("sole_control_bounded_action", true)
 	case "team":
-		if request.Action == "open_draft_pr" {
-			return allow("team_draft", true)
+		if action == "auto_merge" {
+			return deny("team_auto_merge_denied")
 		}
-		if request.Action == "mark_ready" ||
-			request.Action == "request_merge_queue" ||
-			request.Action == "auto_merge" {
-			if reason := validateIndependentReviewer(request, now); reason != "" {
-				return deny(reason)
-			}
-			return allow("team_human_approval", true)
+		if action == "request_merge_queue" {
+			return allow("team_merge_queue", true)
 		}
-		return deny("action_not_authorized")
+		return allow("team_bounded_action", true)
 	default:
 		return deny("invalid_repository_class")
 	}
 }
 
-func validAutonomousRepairGovernanceRequest(request AutonomousRepairGovernanceRequest) bool {
+func validateAutonomousRepairRequestShape(request AutonomousRepairGovernanceRequest) string {
 	if request.SchemaVersion != AutonomousRepairGovernanceRequestVersion ||
 		request.RequestID == "" ||
-		request.Repository == "" ||
-		request.IssueNumber < 1 {
-		return false
+		request.Repository == "" {
+		return "invalid autonomous repair governance request identity"
+	}
+	if request.Mode == "discovery" {
+		if request.OwnershipClassAssertion != nil ||
+			request.IssueNumber != nil ||
+			request.Action != "" ||
+			request.CurrentBaseSHA != "" ||
+			len(request.ChangedPathClasses) != 0 ||
+			request.ApprovedActionDigest != "" ||
+			request.RunEnvelope != nil ||
+			request.CandidateDecision != nil ||
+			request.GovernanceDecision != nil ||
+			request.ReviewerIndependence != nil ||
+			request.GitHubActionDigest != nil {
+			return "discovery request contains write authority evidence"
+		}
+		return ""
+	}
+	if request.Mode != "write" ||
+		request.IssueNumber == nil ||
+		*request.IssueNumber < 1 ||
+		request.CurrentBaseSHA == "" ||
+		request.ApprovedActionDigest == "" ||
+		request.RunEnvelope == nil ||
+		request.CandidateDecision == nil ||
+		request.GovernanceDecision == nil ||
+		request.ReviewerIndependence == nil ||
+		request.GitHubActionDigest == nil {
+		return "write request is missing canonical authority evidence"
 	}
 	if !slices.Contains([]string{
-		"discover",
-		"open_draft_pr",
-		"mark_ready",
+		"push_operator_fork",
+		"open_upstream_draft_pr",
+		"open_ready_pr",
 		"request_merge_queue",
 		"auto_merge",
-		"issue_mutation",
-		"submit_review",
 	}, request.Action) {
-		return false
+		return "write request action is not an Architecture v1 action"
 	}
-	return slices.Contains([]string{"sole_control", "team", "external", "unknown"}, request.Ownership.RepositoryClass)
+	return ""
+}
+
+func autonomousRepairRepositoryPolicy(policy AutonomousRepairGovernancePolicy, repository string) (AutonomousRepairRepositoryPolicy, bool) {
+	repositoryPolicy, ok := policy.RepositoryPolicies[repository]
+	if ok {
+		return repositoryPolicy, true
+	}
+	return policy.Defaults.UnknownRepositoryPolicy, false
 }
 
 func validAutonomousRepairGovernancePolicy(policy AutonomousRepairGovernancePolicy) bool {
@@ -265,143 +243,113 @@ func validAutonomousRepairGovernancePolicy(policy AutonomousRepairGovernancePoli
 		"ao.architecture.autonomous-issue-repair.reviewer-independence.v1",
 		"ao.architecture.autonomous-issue-repair.github-action-digest.v1",
 	}
-	requiredRiskClasses := []string{
-		"dependency",
-		"workflow",
-		"credential",
-		"permission",
-		"policy",
-		"schema",
-		"migration",
-		"release",
-		"security_boundary",
-		"generated_artifact",
-	}
-	return policy.SchemaVersion == AutonomousRepairGovernancePolicyVersion &&
-		policy.PolicyID == "autonomous-repair-governance-v1" &&
-		policy.ArchitectureContract.Repository == "uesugitorachiyo/ao-architecture" &&
-		policy.ArchitectureContract.Commit == "b8c64860003238ab45fe7c76d7e8950f80a4043b" &&
-		sameUniqueStrings(policy.ArchitectureContract.SchemaIDs, requiredSchemas) &&
-		!policy.Defaults.DiscoveryMutationAuthorized &&
-		!policy.Defaults.IssueTextCanAuthorize &&
-		!policy.Defaults.RepositoryTextCanAuthorize &&
-		policy.Defaults.UnknownRepositoryClass == "external" &&
-		!policy.Defaults.SoleControlAutoMerge &&
-		!policy.Defaults.BranchProtectionBypass &&
-		sameUniqueStrings(policy.RiskyPathClasses, requiredRiskClasses) &&
-		sameUniqueStrings(policy.PermanentlyDeniedActions, []string{"issue_mutation", "submit_review"})
-}
-
-func sameUniqueStrings(got []string, want []string) bool {
-	if len(got) != len(want) {
+	if policy.SchemaVersion != AutonomousRepairGovernancePolicyVersion ||
+		policy.PolicyID != "autonomous-repair-governance-v1" ||
+		policy.ArchitectureContract.Repository != "uesugitorachiyo/ao-architecture" ||
+		policy.ArchitectureContract.Commit != "b8c64860003238ab45fe7c76d7e8950f80a4043b" ||
+		!sameUniqueStrings(policy.ArchitectureContract.SchemaIDs, requiredSchemas) ||
+		policy.Defaults.DiscoveryMutationAuthorized ||
+		policy.Defaults.IssueTextCanAuthorize ||
+		policy.Defaults.RepositoryTextCanAuthorize ||
+		policy.Defaults.BranchProtectionBypass ||
+		!sameUniqueStrings(policy.RiskyPathClasses, autonomousRepairRiskyPathClasses) ||
+		!sameUniqueStrings(policy.PermanentlyDeniedActions, []string{
+			"open_ready_pr_external",
+			"request_merge_queue_external",
+			"auto_merge_external",
+			"approve_review",
+			"mutate_issue",
+		}) ||
+		!validAutonomousRepairRepositoryPolicy(policy.Defaults.UnknownRepositoryPolicy, false) ||
+		policy.Defaults.UnknownRepositoryPolicy.RepositoryClass != "external" {
 		return false
 	}
-	gotSet := make(map[string]struct{}, len(got))
-	for _, value := range got {
-		if _, exists := gotSet[value]; exists {
+	if len(policy.RepositoryPolicies) == 0 {
+		return false
+	}
+	for repository, repositoryPolicy := range policy.RepositoryPolicies {
+		if !validRepositoryName(repository) ||
+			!validAutonomousRepairRepositoryPolicy(repositoryPolicy, true) {
 			return false
 		}
-		gotSet[value] = struct{}{}
-	}
-	for _, value := range want {
-		if _, exists := gotSet[value]; !exists {
+		if strings.HasPrefix(repository, "uesugitorachiyo/ao") &&
+			repositoryPolicy.SoleAutoMergeOptIn {
 			return false
 		}
 	}
 	return true
 }
 
-func validateAutonomousRepairActionDigest(request AutonomousRepairGovernanceRequest, now time.Time) string {
-	digest := request.ActionDigest
-	if digest.Repository != request.Repository ||
-		digest.IssueNumber != request.IssueNumber ||
-		digest.Action != request.Action {
-		return "action_digest_authority_mismatch"
+func validAutonomousRepairRepositoryPolicy(policy AutonomousRepairRepositoryPolicy, allowSole bool) bool {
+	if !slices.Contains([]string{"sole_control", "team", "external"}, policy.RepositoryClass) ||
+		!slices.Contains([]string{"policy_authorized_branch", "operator_owned_fork"}, policy.PushTarget) ||
+		!slices.Contains([]string{"draft_or_ready_by_policy", "upstream_draft_only"}, policy.PullRequestMode) ||
+		len(policy.RequiredChecks) == 0 ||
+		!uniqueNonemptyStrings(policy.RequiredChecks) ||
+		len(policy.AllowedActions) == 0 ||
+		!uniqueNonemptyStrings(policy.AllowedActions) {
+		return false
 	}
-	expectedDigest, err := autonomousRepairActionDigestValue(digest)
-	if err != nil || digest.Expected != digest.Observed || digest.Observed != expectedDigest {
-		return "action_digest_mismatch"
+	for _, action := range policy.AllowedActions {
+		if !slices.Contains([]string{
+			"push_operator_fork",
+			"open_upstream_draft_pr",
+			"open_ready_pr",
+			"request_merge_queue",
+			"auto_merge",
+		}, action) {
+			return false
+		}
 	}
-	approvedAt, approvedErr := time.Parse(time.RFC3339, digest.ApprovedAt)
-	expiresAt, expiresErr := time.Parse(time.RFC3339, digest.ExpiresAt)
-	if approvedErr != nil || expiresErr != nil || approvedAt.After(now) || !now.Before(expiresAt) || !approvedAt.Before(expiresAt) {
-		return "stale_action_digest"
+	switch policy.RepositoryClass {
+	case "external":
+		return !policy.SoleAutoMergeOptIn &&
+			policy.PushTarget == "operator_owned_fork" &&
+			policy.PullRequestMode == "upstream_draft_only" &&
+			everyStringIn(policy.AllowedActions, []string{"push_operator_fork", "open_upstream_draft_pr"})
+	case "team":
+		return !policy.SoleAutoMergeOptIn &&
+			!slices.Contains(policy.AllowedActions, "auto_merge")
+	case "sole_control":
+		return allowSole
+	default:
+		return false
 	}
-	return ""
 }
 
-func autonomousRepairActionDigestValue(digest AutonomousRepairActionDigest) (string, error) {
-	canonical := struct {
-		Repository  string `json:"repository"`
-		IssueNumber int    `json:"issue_number"`
-		Action      string `json:"action"`
-		BaseSHA     string `json:"base_sha"`
-		HeadSHA     string `json:"head_sha"`
-		ApprovedAt  string `json:"approved_at"`
-		ExpiresAt   string `json:"expires_at"`
-	}{
-		Repository:  digest.Repository,
-		IssueNumber: digest.IssueNumber,
-		Action:      digest.Action,
-		BaseSHA:     digest.BaseSHA,
-		HeadSHA:     digest.HeadSHA,
-		ApprovedAt:  digest.ApprovedAt,
-		ExpiresAt:   digest.ExpiresAt,
-	}
-	data, err := json.Marshal(canonical)
-	if err != nil {
-		return "", err
-	}
-	sum := sha256.Sum256(data)
-	return hex.EncodeToString(sum[:]), nil
+func validRepositoryName(repository string) bool {
+	parts := strings.Split(repository, "/")
+	return len(parts) == 2 && parts[0] != "" && parts[1] != ""
 }
 
-func validateAutonomousRepairChecks(request AutonomousRepairGovernanceRequest) string {
-	if len(request.ExpectedChecks) == 0 || len(request.ObservedChecks) == 0 {
-		return "missing_required_checks"
-	}
-	observed := make(map[string]AutonomousRepairCheck, len(request.ObservedChecks))
-	for _, check := range request.ObservedChecks {
-		if check.Name == "" {
-			return "missing_required_checks"
-		}
-		if _, exists := observed[check.Name]; exists {
-			return "duplicate_required_check"
-		}
-		observed[check.Name] = check
-	}
-	for _, name := range request.ExpectedChecks {
-		check, ok := observed[name]
-		if !ok {
-			return "missing_required_checks"
-		}
-		if check.Conclusion != "success" {
-			return "failed_required_check"
-		}
-		if check.HeadSHA != request.ExpectedHeadSHA {
-			return "stale_head"
-		}
-	}
-	if len(observed) != len(request.ExpectedChecks) {
-		return "required_check_mismatch"
-	}
-	return ""
+func sameUniqueStrings(got []string, want []string) bool {
+	return len(got) == len(want) &&
+		uniqueNonemptyStrings(got) &&
+		everyStringIn(got, want) &&
+		everyStringIn(want, got)
 }
 
-func validateIndependentReviewer(request AutonomousRepairGovernanceRequest, now time.Time) string {
-	reviewer := request.Reviewer
-	if !reviewer.Approved || (reviewer.Kind != "human" && reviewer.Kind != "codeowner") {
-		return "independent_human_approval_required"
+func uniqueNonemptyStrings(values []string) bool {
+	seen := make(map[string]struct{}, len(values))
+	for _, value := range values {
+		if value == "" {
+			return false
+		}
+		if _, exists := seen[value]; exists {
+			return false
+		}
+		seen[value] = struct{}{}
 	}
-	if reviewer.HeadSHA != request.ExpectedHeadSHA {
-		return "stale_reviewer_head"
+	return true
+}
+
+func everyStringIn(values []string, allowed []string) bool {
+	for _, value := range values {
+		if !slices.Contains(allowed, value) {
+			return false
+		}
 	}
-	observedAt, err := time.Parse(time.RFC3339, reviewer.ObservedAt)
-	approvedAt, approvalErr := time.Parse(time.RFC3339, request.ActionDigest.ApprovedAt)
-	if err != nil || approvalErr != nil || observedAt.After(now) || observedAt.After(approvedAt) {
-		return "stale_reviewer_approval"
-	}
-	return ""
+	return true
 }
 
 func decodeStrictJSON(data []byte, target any) error {

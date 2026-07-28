@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.autonomous-repair-governance-request.v1",
+  "title": "AO Covenant Autonomous Repair Governance Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "request_id", "mode", "repository"],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.autonomous-repair-governance-request.v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{7,127}$"
+    },
+    "mode": {
+      "enum": ["discovery", "write"]
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "ownership_class_assertion": {
+      "enum": ["sole_control", "team", "external"]
+    },
+    "issue_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "action": {
+      "enum": [
+        "push_operator_fork",
+        "open_upstream_draft_pr",
+        "open_ready_pr",
+        "request_merge_queue",
+        "auto_merge"
+      ]
+    },
+    "current_base_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "changed_path_classes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      }
+    },
+    "approved_action_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "run_envelope": {
+      "type": "object"
+    },
+    "candidate_decision": {
+      "type": "object"
+    },
+    "governance_decision": {
+      "type": "object"
+    },
+    "reviewer_independence": {
+      "type": "object"
+    },
+    "github_action_digest": {
+      "type": "object"
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "mode": { "const": "discovery" }
+      },
+      "not": {
+        "anyOf": [
+          { "required": ["ownership_class_assertion"] },
+          { "required": ["issue_number"] },
+          { "required": ["action"] },
+          { "required": ["current_base_sha"] },
+          { "required": ["changed_path_classes"] },
+          { "required": ["approved_action_digest"] },
+          { "required": ["run_envelope"] },
+          { "required": ["candidate_decision"] },
+          { "required": ["governance_decision"] },
+          { "required": ["reviewer_independence"] },
+          { "required": ["github_action_digest"] }
+        ]
+      }
+    },
+    {
+      "required": [
+        "issue_number",
+        "action",
+        "current_base_sha",
+        "changed_path_classes",
+        "approved_action_digest",
+        "run_envelope",
+        "candidate_decision",
+        "governance_decision",
+        "reviewer_independence",
+        "github_action_digest"
+      ],
+      "properties": {
+        "mode": { "const": "write" },
+        "issue_number": true,
+        "action": true,
+        "current_base_sha": true,
+        "changed_path_classes": true,
+        "approved_action_digest": true,
+        "run_envelope": true,
+        "candidate_decision": true,
+        "governance_decision": true,
+        "reviewer_independence": true,
+        "github_action_digest": true
+      }
+    }
+  ]
+}

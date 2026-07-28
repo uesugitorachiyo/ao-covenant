@@ -9,6 +9,7 @@
     "policy_id",
     "architecture_contract",
     "defaults",
+    "repository_policies",
     "risky_path_classes",
     "permanently_denied_actions"
   ],
@@ -49,17 +50,37 @@
         "discovery_mutation_authorized",
         "issue_text_can_authorize",
         "repository_text_can_authorize",
-        "unknown_repository_class",
-        "sole_control_auto_merge",
+        "unknown_repository_policy",
         "branch_protection_bypass"
       ],
       "properties": {
         "discovery_mutation_authorized": { "const": false },
         "issue_text_can_authorize": { "const": false },
         "repository_text_can_authorize": { "const": false },
-        "unknown_repository_class": { "const": "external" },
-        "sole_control_auto_merge": { "const": false },
+        "unknown_repository_policy": {
+          "allOf": [
+            { "$ref": "#/$defs/repository_policy" },
+            {
+              "properties": {
+                "repository_class": { "const": "external" },
+                "sole_auto_merge_opt_in": { "const": false },
+                "push_target": { "const": "operator_owned_fork" },
+                "pull_request_mode": { "const": "upstream_draft_only" }
+              }
+            }
+          ]
+        },
         "branch_protection_bypass": { "const": false }
+      }
+    },
+    "repository_policies": {
+      "type": "object",
+      "minProperties": 4,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$": {
+          "$ref": "#/$defs/repository_policy"
+        }
       }
     },
     "risky_path_classes": {
@@ -84,11 +105,69 @@
     },
     "permanently_denied_actions": {
       "type": "array",
-      "minItems": 2,
+      "minItems": 5,
+      "maxItems": 5,
       "uniqueItems": true,
-      "contains": { "const": "issue_mutation" },
       "items": {
-        "enum": ["issue_mutation", "submit_review"]
+        "enum": [
+          "open_ready_pr_external",
+          "request_merge_queue_external",
+          "auto_merge_external",
+          "approve_review",
+          "mutate_issue"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "repository_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository_class",
+        "sole_auto_merge_opt_in",
+        "push_target",
+        "pull_request_mode",
+        "required_checks",
+        "allowed_actions"
+      ],
+      "properties": {
+        "repository_class": {
+          "enum": ["sole_control", "team", "external"]
+        },
+        "sole_auto_merge_opt_in": {
+          "type": "boolean"
+        },
+        "push_target": {
+          "enum": ["policy_authorized_branch", "operator_owned_fork"]
+        },
+        "pull_request_mode": {
+          "enum": ["draft_or_ready_by_policy", "upstream_draft_only"]
+        },
+        "required_checks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "allowed_actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "push_operator_fork",
+              "open_upstream_draft_pr",
+              "open_ready_pr",
+              "request_merge_queue",
+              "auto_merge"
+            ]
+          }
+        }
       }
     }
   }
