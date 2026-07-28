@@ -1,0 +1,44 @@
+{
+  "schema_version": "covenant.autonomous-repair-governance-request.v1",
+  "request_id": "unknown-field",
+  "repository": "uesugitorachiyo/ao2",
+  "issue_number": 42,
+  "action": "discover",
+  "ownership": {
+    "source": "explicit_policy",
+    "repository_class": "unknown",
+    "repository": "uesugitorachiyo/ao2",
+    "auto_merge_opt_in": false,
+    "operator_owned_fork": false,
+    "upstream_draft": false
+  },
+  "issue_text_authorizes": false,
+  "repository_text_authorizes": false,
+  "security_sensitive": false,
+  "changed_path_classes": [],
+  "expected_checks": [],
+  "observed_checks": [],
+  "expected_head_sha": "",
+  "observed_head_sha": "",
+  "expected_base_sha": "",
+  "current_base_sha": "",
+  "branch_protection_bypass": false,
+  "action_digest": {
+    "expected": "",
+    "observed": "",
+    "repository": "",
+    "issue_number": 0,
+    "action": "",
+    "base_sha": "",
+    "head_sha": "",
+    "approved_at": "",
+    "expires_at": ""
+  },
+  "reviewer": {
+    "kind": "none",
+    "approved": false,
+    "head_sha": "",
+    "observed_at": ""
+  },
+  "unexpected_authority": true
+}

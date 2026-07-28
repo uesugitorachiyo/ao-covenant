@@ -1,0 +1,42 @@
+{
+  "schema_version": "covenant.autonomous-repair-governance-policy.v1",
+  "policy_id": "autonomous-repair-governance-v1",
+  "architecture_contract": {
+    "repository": "uesugitorachiyo/ao-architecture",
+    "commit": "b8c64860003238ab45fe7c76d7e8950f80a4043b",
+    "schema_ids": [
+      "ao.architecture.autonomous-issue-repair.run-envelope.v1",
+      "ao.architecture.autonomous-issue-repair.discovery-result.v1",
+      "ao.architecture.autonomous-issue-repair.candidate-decision.v1",
+      "ao.architecture.autonomous-issue-repair.event.v1",
+      "ao.architecture.autonomous-issue-repair.checkpoint.v1",
+      "ao.architecture.autonomous-issue-repair.governance-decision.v1",
+      "ao.architecture.autonomous-issue-repair.reviewer-independence.v1",
+      "ao.architecture.autonomous-issue-repair.github-action-digest.v1"
+    ]
+  },
+  "defaults": {
+    "discovery_mutation_authorized": false,
+    "issue_text_can_authorize": false,
+    "repository_text_can_authorize": false,
+    "unknown_repository_class": "external",
+    "sole_control_auto_merge": false,
+    "branch_protection_bypass": false
+  },
+  "risky_path_classes": [
+    "dependency",
+    "workflow",
+    "credential",
+    "permission",
+    "policy",
+    "schema",
+    "migration",
+    "release",
+    "security_boundary",
+    "generated_artifact"
+  ],
+  "permanently_denied_actions": [
+    "issue_mutation",
+    "submit_review"
+  ]
+}

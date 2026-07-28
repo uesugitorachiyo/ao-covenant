@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenant.autonomous-repair-governance-policy.v1",
+  "title": "AO Covenant Autonomous Repair Governance Policy v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_id",
+    "architecture_contract",
+    "defaults",
+    "risky_path_classes",
+    "permanently_denied_actions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "covenant.autonomous-repair-governance-policy.v1"
+    },
+    "policy_id": {
+      "const": "autonomous-repair-governance-v1"
+    },
+    "architecture_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "schema_ids"],
+      "properties": {
+        "repository": {
+          "const": "uesugitorachiyo/ao-architecture"
+        },
+        "commit": {
+          "const": "b8c64860003238ab45fe7c76d7e8950f80a4043b"
+        },
+        "schema_ids": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^ao\\.architecture\\.autonomous-issue-repair\\.[a-z0-9-]+\\.v1$"
+          }
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "discovery_mutation_authorized",
+        "issue_text_can_authorize",
+        "repository_text_can_authorize",
+        "unknown_repository_class",
+        "sole_control_auto_merge",
+        "branch_protection_bypass"
+      ],
+      "properties": {
+        "discovery_mutation_authorized": { "const": false },
+        "issue_text_can_authorize": { "const": false },
+        "repository_text_can_authorize": { "const": false },
+        "unknown_repository_class": { "const": "external" },
+        "sole_control_auto_merge": { "const": false },
+        "branch_protection_bypass": { "const": false }
+      }
+    },
+    "risky_path_classes": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "dependency",
+          "workflow",
+          "credential",
+          "permission",
+          "policy",
+          "schema",
+          "migration",
+          "release",
+          "security_boundary",
+          "generated_artifact"
+        ]
+      }
+    },
+    "permanently_denied_actions": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "contains": { "const": "issue_mutation" },
+      "items": {
+        "enum": ["issue_mutation", "submit_review"]
+      }
+    }
+  }
+}

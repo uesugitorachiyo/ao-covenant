@@ -109,9 +109,24 @@
       ],
       "policy_authority_required": false,
       "compatibility_gate_required": true
+    },
+    {
+      "contract_id": "covenant.autonomous-repair-governance-policy.v1",
+      "owner_repo": "ao-covenant",
+      "owner_component": "autonomous issue repair governance policy",
+      "stability": "experimental",
+      "lifecycle": "active",
+      "producer_repos": ["ao-covenant"],
+      "consumer_repos": ["ao2", "ao-command", "ao-mission", "ao-forge"],
+      "consumer_test_refs": [
+        "internal/policy/autonomous_repair_governance_test.go:TestAutonomousRepairGovernancePolicyFixtureIsStrictAndRegistered",
+        "internal/policy/autonomous_repair_governance_test.go:TestAutonomousRepairGovernanceScenarios"
+      ],
+      "policy_authority_required": true,
+      "compatibility_gate_required": true
     }
   ],
-  "entry_count": 7,
+  "entry_count": 8,
   "no_promotion_requested": true,
   "provider_calls_allowed": false,
   "credential_use_allowed": false,
