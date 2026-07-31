@@ -17,3 +17,5 @@ covenant-private-key.json
 covenant-release-private-key.json
 *private-key*.json
 docs/superpowers/
+CLAUDE.local.md
+.claude/settings.local.json
