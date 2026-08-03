@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: uesugitorachiyo/ao-architecture
-          ref: 2c541790f65127e09eb524ff47db31b8f99fc272
+          ref: d4ae96e66555f5b45f66f03aa05596b45506ea21
           path: .ao-supply-chain-policy
 
       - name: Build native artifact
