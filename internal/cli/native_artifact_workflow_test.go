@@ -62,6 +62,9 @@ func TestNativeArtifactWorkflowContract(t *testing.T) {
 		!hasExactLine(workflow[verifier:], `--workspace-root "$supply_chain_dir" \`) {
 		t.Fatal("builder must use the repository root and verifier must use the bundle root")
 	}
+	if !hasExactLine(workflow[policyCheckout:metadataReader], "ref: 4c501b4f1e55cb9b926709e19d496edf41984fb1") {
+		t.Fatal("supply-chain policy checkout must use the exact approved Architecture ref")
+	}
 	if !hasExactLine(workflow[metadataReader:builder], `"$artifact_dir/$binary" > "$artifact_dir/go-modules.json"`) {
 		t.Fatal("canonical metadata reader must consume the native binary")
 	}
