@@ -29,7 +29,7 @@ func TestNativeArtifactWorkflowContract(t *testing.T) {
 		"./cmd/covenant",
 		"version --json",
 		"contents: read",
-		"4c501b4f1e55cb9b926709e19d496edf41984fb1",
+		"ref: 4c501b4f1e55cb9b926709e19d496edf41984fb1",
 	} {
 		if !strings.Contains(workflow, want) {
 			t.Fatalf("native artifact workflow missing %q", want)
@@ -61,5 +61,8 @@ func TestNativeArtifactWorkflowContract(t *testing.T) {
 	if !hasExactLine(workflow[builder:verifier], `--workspace-root . \`) ||
 		!hasExactLine(workflow[verifier:], `--workspace-root "$supply_chain_dir" \`) {
 		t.Fatal("builder must use the repository root and verifier must use the bundle root")
+	}
+	if !hasExactLine(workflow[metadataReader:builder], `"$artifact_dir/$binary" > "$artifact_dir/go-modules.json"`) {
+		t.Fatal("canonical metadata reader must consume the native binary")
 	}
 }
