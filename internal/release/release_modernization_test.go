@@ -301,6 +301,14 @@ func TestExecutableModeRestorerUsesBoundedPlanInventory(t *testing.T) {
 	}
 }
 
+func TestPublishedVerifierProjectsExactTagObjectContract(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+	requireWorkflowContainsNormalized(t, workflow,
+		`--jq '{ref:.ref,object:{type:.object.type,sha:.object.sha}}' > tag-ref.json`,
+	)
+	requireWorkflowOmits(t, workflow, `--jq '{ref:.ref,object:.object}'`)
+}
+
 func TestReleaseWorkflowVerifiesAttestationsForManifestAndEveryNativeBinary(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
 	for _, want := range []string{
