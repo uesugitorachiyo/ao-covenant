@@ -193,6 +193,7 @@ func TestPublisherRestoresModesBeforeHostVerification(t *testing.T) {
 	}
 	publisher := workflow[publisherStart:publisherEnd]
 
+	requireWorkflowContains(t, publisher, "runs-on: ubuntu-latest")
 	requireWorkflowContains(t, publisher, "scripts/restore-release-executable-modes.py")
 	requireWorkflowOrder(t, publisher,
 		"name: Download exact signed promotion bundle",
@@ -204,6 +205,9 @@ func TestPublisherRestoresModesBeforeHostVerification(t *testing.T) {
 }
 
 func TestExecutableModeRestorerUsesBoundedPlanInventory(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("publisher executable modes are POSIX metadata on ubuntu-latest")
+	}
 	dir := t.TempDir()
 	releaseDir := filepath.Join(dir, "release")
 	if err := os.Mkdir(releaseDir, 0o755); err != nil {
