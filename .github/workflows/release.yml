@@ -374,6 +374,14 @@ jobs:
           name: ao-covenant-signed-promotion-${{ needs.validate-inputs.outputs.source_sha }}
           path: bundle
 
+      - name: Restore validated release executable modes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/restore-release-executable-modes.py \
+            --plan bundle/promotion-plan.json \
+            --release-dir bundle/release
+
       - name: Re-verify complete promotion bundle
         shell: bash
         env:
