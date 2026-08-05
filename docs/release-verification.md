@@ -29,7 +29,7 @@ for the same checks with PowerShell-native checksum verification.
 Download a release into an empty directory:
 
 ```sh
-version=v0.1.0
+version=v0.1.1
 workdir="ao-covenant-$version"
 mkdir -p "$workdir"
 gh release download "$version" \
@@ -122,22 +122,20 @@ gh attestation verify manifest.json \
 Verify the platform binary before installation:
 
 ```sh
-gh attestation verify ao-covenant_v0.1.0_linux_amd64 \
+gh attestation verify ao-covenant_v0.1.1_linux_amd64 \
   --repo uesugitorachiyo/ao-covenant
 ```
 
 Use the matching binary name for your platform. Consumers should verify
-`manifest.json` plus the exact platform binary being installed. Always replace `v0.1.0` with the release version you downloaded.
+`manifest.json` plus the exact platform binary being installed. The current public release is v0.1.1 and does not publish Linux or macOS ARM64 archives.
 
 ## Platform Binary Attestation Matrix
 
 | Platform | Target | Binary artifact | Attestation command |
 | --- | --- | --- | --- |
-| Ubuntu/Linux amd64 | `linux/amd64` | `ao-covenant_v0.1.0_linux_amd64` | `gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant` |
-| Ubuntu/Linux arm64 | `linux/arm64` | `ao-covenant_v0.1.0_linux_arm64` | `gh attestation verify ao-covenant_v0.1.0_linux_arm64 --repo uesugitorachiyo/ao-covenant` |
-| macOS Intel | `darwin/amd64` | `ao-covenant_v0.1.0_darwin_amd64` | `gh attestation verify ao-covenant_v0.1.0_darwin_amd64 --repo uesugitorachiyo/ao-covenant` |
-| macOS Apple Silicon | `darwin/arm64` | `ao-covenant_v0.1.0_darwin_arm64` | `gh attestation verify ao-covenant_v0.1.0_darwin_arm64 --repo uesugitorachiyo/ao-covenant` |
-| Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.0_windows_amd64.exe` | `gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant` |
+| Ubuntu/Linux amd64 | `linux/amd64` | `ao-covenant_v0.1.1_linux_amd64` | `gh attestation verify ao-covenant_v0.1.1_linux_amd64 --repo uesugitorachiyo/ao-covenant` |
+| macOS Intel | `darwin/amd64` | `ao-covenant_v0.1.1_darwin_amd64` | `gh attestation verify ao-covenant_v0.1.1_darwin_amd64 --repo uesugitorachiyo/ao-covenant` |
+| Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.1_windows_amd64.exe` | `gh attestation verify ao-covenant_v0.1.1_windows_amd64.exe --repo uesugitorachiyo/ao-covenant` |
 
 Stable [release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)
 show the expected pass case and common failure cases for consumer automation.

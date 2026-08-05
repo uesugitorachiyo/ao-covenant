@@ -33,13 +33,13 @@ files too.
 
 ## Platform Binary Attestation Matrix
 
-Consumer trust decisions must include `manifest.json` plus the exact platform binary being installed. Replace `v0.1.0` with the release version you downloaded.
+Consumer trust decisions must include `manifest.json` plus the exact platform binary being installed. The current public release is `v0.1.1`.
 
 | Platform | Target | Binary artifact | Attestation command |
 | --- | --- | --- | --- |
-| Ubuntu/Linux amd64 | `linux/amd64` | `ao-covenant_v0.1.0_linux_amd64` | `gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant` |
-| macOS Intel | `darwin/amd64` | `ao-covenant_v0.1.0_darwin_amd64` | `gh attestation verify ao-covenant_v0.1.0_darwin_amd64 --repo uesugitorachiyo/ao-covenant` |
-| Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.0_windows_amd64.exe` | `gh attestation verify ao-covenant_v0.1.0_windows_amd64.exe --repo uesugitorachiyo/ao-covenant` |
+| Ubuntu/Linux amd64 | `linux/amd64` | `ao-covenant_v0.1.1_linux_amd64` | `gh attestation verify ao-covenant_v0.1.1_linux_amd64 --repo uesugitorachiyo/ao-covenant` |
+| macOS Intel | `darwin/amd64` | `ao-covenant_v0.1.1_darwin_amd64` | `gh attestation verify ao-covenant_v0.1.1_darwin_amd64 --repo uesugitorachiyo/ao-covenant` |
+| Windows amd64 | `windows/amd64` | `ao-covenant_v0.1.1_windows_amd64.exe` | `gh attestation verify ao-covenant_v0.1.1_windows_amd64.exe --repo uesugitorachiyo/ao-covenant` |
 
 Stable [release attestation fixtures](../internal/cli/testdata/release-attestation-fixtures)
 provide public examples for a passing manifest-plus-binary trust decision,
@@ -50,7 +50,7 @@ missing binary attestation failure, and tampered manifest attestation failure.
 | Asset | GitHub attestation expectation | AO Covenant verification expectation |
 | --- | --- | --- |
 | `manifest.json` | direct GitHub attestation from `bundle/release/*`; consumer command: `gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant` | covered by manifest signature and checksum verification through `covenant release verify` |
-| platform binaries | direct GitHub attestation from `bundle/release/*`; example command: `gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant` | covered by manifest signature and checksum verification before installation |
+| platform binaries | direct GitHub attestation from `bundle/release/*`; example command: `gh attestation verify ao-covenant_v0.1.1_linux_amd64 --repo uesugitorachiyo/ao-covenant` | covered by manifest signature and checksum verification before installation |
 | `SHA256SUMS` | direct GitHub attestation from `bundle/release/*` | used by consumer checksum verification and cross-checked with manifest entries |
 | `release-signature.json` | direct GitHub attestation from `bundle/release/*` | verifies the signed manifest with `covenant-release-public-key.json` |
 | `covenant-release-public-key.json` | direct GitHub attestation from `bundle/release/*` | public verification material only; it must not contain the private signing key |
@@ -81,7 +81,7 @@ Manual minimum checks:
 ```sh
 covenant release verify --dir . --public-key covenant-release-public-key.json
 gh attestation verify manifest.json --repo uesugitorachiyo/ao-covenant
-gh attestation verify ao-covenant_v0.1.0_linux_amd64 --repo uesugitorachiyo/ao-covenant
+gh attestation verify ao-covenant_v0.1.1_linux_amd64 --repo uesugitorachiyo/ao-covenant
 ```
 
 Use the platform binary name that matches your operating system and CPU. Treat
