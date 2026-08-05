@@ -83,7 +83,7 @@ gh secret set COVENANT_RELEASE_SIGNING_KEY \
 Download and verify an AO Covenant release:
 
 ```sh
-version=v0.1.0
+version=v0.1.1
 gh release download "$version" --repo uesugitorachiyo/ao-covenant --dir "ao-covenant-$version"
 cd "ao-covenant-$version"
 chmod +x ao-covenant_*
