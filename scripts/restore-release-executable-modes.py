@@ -79,6 +79,21 @@ def candidate_inventory(plan: dict[str, Any]) -> list[tuple[str, str]]:
     return inventory
 
 
+def restore_mode(path: Path, mode: int) -> None:
+    if os.name == "nt":
+        os.chmod(path, mode)
+        return
+
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags)
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise RestoreError(f"candidate {path.name} changed during mode restore")
+        os.fchmod(descriptor, mode)
+    finally:
+        os.close(descriptor)
+
+
 def restore(plan_path: Path, release_dir: Path) -> dict[str, Any]:
     try:
         directory_info = release_dir.lstat()
@@ -102,8 +117,8 @@ def restore(plan_path: Path, release_dir: Path) -> dict[str, Any]:
             continue
         new_mode = stat.S_IMODE(candidate_info.st_mode) | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         try:
-            os.chmod(candidate_path, new_mode, follow_symlinks=False)
-        except OSError as exc:
+            restore_mode(candidate_path, new_mode)
+        except (NotImplementedError, OSError) as exc:
             raise RestoreError(f"candidate {binary} mode restore failed: {exc}") from exc
         restored.append(binary)
 
