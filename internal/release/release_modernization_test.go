@@ -104,12 +104,33 @@ func TestReleaseWorkflowBuildsAndChecksNativeCandidates(t *testing.T) {
 		"LICENSE",
 		"NOTICE",
 		"candidate-summary.json",
+		"sbom.go-modules.json",
+		`--sbom candidates/linux-amd64/sbom.go-modules.json`,
 		"promotion-plan.json",
 		"release-signature.json",
 		"release-verify.json",
 		"release-report.json",
 	} {
 		requireWorkflowContains(t, workflow+builder+verifier, want)
+	}
+}
+
+func TestReleaseVersionAndNotesAreSourceOwned(t *testing.T) {
+	if got := strings.TrimSpace(readRepoFile(t, "VERSION")); got != "v0.1.1" {
+		t.Fatalf("VERSION = %q, want v0.1.1", got)
+	}
+	notes := readRepoFile(t, "docs", "release", "V0.1.1-RELEASE-NOTES.md")
+	for _, want := range []string{
+		"# AO Covenant v0.1.1 Release Notes",
+		"governed issue repair",
+		"sbom.go-modules.json",
+		"Linux x86_64",
+		"macOS x86_64",
+		"Windows x86_64",
+	} {
+		if !strings.Contains(notes, want) {
+			t.Fatalf("v0.1.1 release notes missing %q", want)
+		}
 	}
 }
 

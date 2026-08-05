@@ -275,6 +275,22 @@ class ReleaseModernizationTest(unittest.TestCase):
                         "approved_manifest_sha256": self.digest,
                     }
                 ),
+                "sbom.go-modules.json": canonical_json(
+                    {
+                        "schema_version": "ao.covenant.go-module-sbom.v1",
+                        "source_sha": SOURCE,
+                        "version": VERSION,
+                        "target": target["target"],
+                        "modules": [
+                            {
+                                "kind": "mod",
+                                "path": "github.com/uesugitorachiyo/ao-covenant",
+                                "version": "(devel)",
+                                "sum": "",
+                            }
+                        ],
+                    }
+                ),
             }
             for name, data in evidence.items():
                 (candidate / name).write_bytes(data)
@@ -293,6 +309,9 @@ class ReleaseModernizationTest(unittest.TestCase):
                 "binary_sha256": "sha256:" + sha256(binary_bytes),
                 "archive": target["archive"],
                 "archive_sha256": "sha256:" + sha256(archive.read_bytes()),
+                "sbom": "sbom.go-modules.json",
+                "sbom_sha256": "sha256:"
+                + sha256(evidence["sbom.go-modules.json"]),
                 "approved_manifest_sha256": self.digest,
                 "help_status": "passed",
                 "version_source_status": "passed",
@@ -365,7 +384,20 @@ class ReleaseModernizationTest(unittest.TestCase):
             "commit": SOURCE,
             "date": BUILD_DATE,
             "artifacts": artifacts,
+            "supplemental_artifacts": [],
         }
+        sbom_source = candidates / "linux-amd64" / "sbom.go-modules.json"
+        sbom_destination = release / "sbom.go-modules.json"
+        shutil.copyfile(sbom_source, sbom_destination)
+        release_manifest["supplemental_artifacts"].append(
+            {
+                "kind": "sbom",
+                "name": "sbom.go-modules.json",
+                "path": "sbom.go-modules.json",
+                "sha256": sha256(sbom_destination.read_bytes()),
+                "size_bytes": sbom_destination.stat().st_size,
+            }
+        )
         (release / "manifest.json").write_bytes(canonical_json(release_manifest))
         for name, data in (
             ("LICENSE", b"license\n"),
@@ -380,6 +412,9 @@ class ReleaseModernizationTest(unittest.TestCase):
         checksum_entries = []
         for artifact in artifacts:
             checksum_entries.append(f"{artifact['sha256']}  {artifact['name']}\n")
+        checksum_entries.append(
+            f"{sha256(sbom_destination.read_bytes())}  sbom.go-modules.json\n"
+        )
         (release / "SHA256SUMS").write_text("".join(checksum_entries))
         return release
 

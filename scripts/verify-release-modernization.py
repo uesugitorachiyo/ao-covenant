@@ -54,6 +54,8 @@ SUMMARY_KEYS = {
     "binary_sha256",
     "archive",
     "archive_sha256",
+    "sbom",
+    "sbom_sha256",
     "approved_manifest_sha256",
     "help_status",
     "version_source_status",
@@ -344,6 +346,7 @@ def validate_candidate(candidate_dir, target, manifest, binding):
         "goarch": target["goarch"],
         "binary": target["binary"],
         "archive": target["archive"],
+        "sbom": "sbom.go-modules.json",
         "approved_manifest_sha256": binding["approved_manifest_sha256"],
         "help_status": "passed",
         "version_source_status": "passed",
@@ -354,7 +357,7 @@ def validate_candidate(candidate_dir, target, manifest, binding):
     for key, expected in expected_values.items():
         if summary.get(key) != expected:
             fail(f"candidate {target['target']} {key} mismatch")
-    for key in ("binary_sha256", "archive_sha256"):
+    for key in ("binary_sha256", "archive_sha256", "sbom_sha256"):
         if not isinstance(summary[key], str) or not DIGEST_RE.fullmatch(summary[key]):
             fail(f"candidate {target['target']} {key} is invalid")
 
@@ -368,6 +371,7 @@ def validate_candidate(candidate_dir, target, manifest, binding):
         "provider-free-smoke.json",
         "provenance.json",
         "candidate-summary.json",
+        "sbom.go-modules.json",
     }
     observed_files = {
         path.name
@@ -385,6 +389,19 @@ def validate_candidate(candidate_dir, target, manifest, binding):
         fail(f"candidate {target['target']} binary digest mismatch")
     if digest_path(archive_path) != summary["archive_sha256"]:
         fail(f"candidate {target['target']} archive digest mismatch")
+    sbom_path = candidate_dir / summary["sbom"]
+    if digest_path(sbom_path) != summary["sbom_sha256"]:
+        fail(f"candidate {target['target']} SBOM digest mismatch")
+    sbom, _ = read_json(sbom_path, "candidate SBOM", 65536)
+    if (
+        sbom.get("schema_version") != "ao.covenant.go-module-sbom.v1"
+        or sbom.get("source_sha") != manifest["source_sha"]
+        or sbom.get("version") != manifest["version"]
+        or sbom.get("target") != target["target"]
+        or not isinstance(sbom.get("modules"), list)
+        or not sbom["modules"]
+    ):
+        fail(f"candidate {target['target']} SBOM identity mismatch")
     validate_binary_format(binary_path, target["goos"])
     validate_archive(archive_path, target, candidate_dir)
     if not read_bytes(candidate_dir / "help-readback.txt", "help readback", 65536).strip():
@@ -473,6 +490,19 @@ def validate_release_dir(release_dir, manifest, summaries):
             != summary["binary_sha256"]
         ):
             fail("signed release native candidate substitution")
+    supplemental = release_manifest.get("supplemental_artifacts")
+    if not isinstance(supplemental, list) or len(supplemental) != 1:
+        fail("signed release SBOM inventory mismatch")
+    sbom = supplemental[0]
+    linux_sbom = next(item for item in summaries if item["target"] == "linux-amd64")
+    if (
+        sbom.get("kind") != "sbom"
+        or sbom.get("name") != "sbom.go-modules.json"
+        or sbom.get("path") != "sbom.go-modules.json"
+        or sbom.get("sha256") != linux_sbom["sbom_sha256"].removeprefix("sha256:")
+        or digest_path(release_dir / "sbom.go-modules.json") != linux_sbom["sbom_sha256"]
+    ):
+        fail("signed release SBOM substitution")
     verify, _ = read_json(release_dir / "release-verify.json", "release verification")
     report, _ = read_json(release_dir / "release-report.json", "release report")
     if verify.get("verified") is not True:
@@ -495,6 +525,7 @@ def validate_release_dir(release_dir, manifest, summaries):
         "release-report.json",
         "LICENSE",
         "NOTICE",
+        "sbom.go-modules.json",
     }
     observed = {
         path.name
@@ -572,6 +603,8 @@ def build_promotion_plan(args):
                 "binary_sha256": summary["binary_sha256"],
                 "archive": summary["archive"],
                 "archive_sha256": summary["archive_sha256"],
+                "sbom": summary["sbom"],
+                "sbom_sha256": summary["sbom_sha256"],
             }
             for summary in summaries
         ],

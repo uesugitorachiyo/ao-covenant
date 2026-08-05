@@ -147,6 +147,32 @@ def main():
             raise RuntimeError(f"candidate version readback {key} mismatch")
     canonical_write(out / "version-readback.json", version_readback)
 
+    module_lines = run(["go", "version", "-m", str(binary)]).stdout.splitlines()
+    modules = []
+    for line in module_lines:
+        fields = line.strip().split("\t")
+        if len(fields) >= 3 and fields[0] in ("mod", "dep"):
+            modules.append(
+                {
+                    "kind": fields[0],
+                    "path": fields[1],
+                    "version": fields[2],
+                    "sum": fields[3] if len(fields) > 3 else "",
+                }
+            )
+    if not modules or modules[0]["kind"] != "mod":
+        raise RuntimeError("candidate module inventory is missing the main module")
+    canonical_write(
+        out / "sbom.go-modules.json",
+        {
+            "schema_version": "ao.covenant.go-module-sbom.v1",
+            "source_sha": manifest["source_sha"],
+            "version": manifest["version"],
+            "target": target["target"],
+            "modules": modules,
+        },
+    )
+
     provider_smoke = run(
         [str(binary), "schema", "catalog", "--json"],
         env=candidate_env,
@@ -210,6 +236,8 @@ def main():
         "binary_sha256": digest(binary),
         "archive": target["archive"],
         "archive_sha256": digest(archive),
+        "sbom": "sbom.go-modules.json",
+        "sbom_sha256": digest(out / "sbom.go-modules.json"),
         "approved_manifest_sha256": binding["approved_manifest_sha256"],
         "help_status": "passed",
         "version_source_status": "passed",
