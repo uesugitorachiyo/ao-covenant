@@ -522,7 +522,7 @@ jobs:
           mkdir downloaded
           gh release download "$TAG" --dir downloaded
           gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" \
-            --jq '{ref:.ref,object:.object}' > tag-ref.json
+            --jq '{ref:.ref,object:{type:.object.type,sha:.object.sha}}' > tag-ref.json
           gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" \
             --jq '{tag_name:.tag_name,draft:.draft,prerelease:.prerelease,assets:([.assets[].name] | sort | map({name:.}))}' \
             > release.json
