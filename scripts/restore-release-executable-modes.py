@@ -81,8 +81,7 @@ def candidate_inventory(plan: dict[str, Any]) -> list[tuple[str, str]]:
 
 def restore_mode(path: Path, mode: int) -> None:
     if os.name == "nt":
-        os.chmod(path, mode)
-        return
+        raise RestoreError("executable mode restoration requires a POSIX publisher")
 
     flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
     descriptor = os.open(path, flags)
