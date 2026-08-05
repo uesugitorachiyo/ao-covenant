@@ -277,6 +277,7 @@ jobs:
             --prebuilt "darwin/amd64=candidates/darwin-amd64/ao-covenant_${VERSION}_darwin_amd64" \
             --target windows/amd64 \
             --prebuilt "windows/amd64=candidates/windows-amd64/ao-covenant_${VERSION}_windows_amd64.exe" \
+            --sbom candidates/linux-amd64/sbom.go-modules.json \
             --json > release/release-package.json
           cp "$COVENANT_RELEASE_PUBLIC_KEY" release/covenant-release-public-key.json
           cp LICENSE NOTICE release/
