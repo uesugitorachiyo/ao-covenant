@@ -184,6 +184,119 @@ func TestReleaseWorkflowPublisherRequiresEverySuccessfulPrerequisite(t *testing.
 	)
 }
 
+func TestPublisherRestoresModesBeforeHostVerification(t *testing.T) {
+	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
+	publisherStart := strings.Index(workflow, "  publisher:")
+	publisherEnd := strings.Index(workflow, "  post-publication-verification:")
+	if publisherStart < 0 || publisherEnd <= publisherStart {
+		t.Fatal("cannot isolate publisher job")
+	}
+	publisher := workflow[publisherStart:publisherEnd]
+
+	requireWorkflowContains(t, publisher, "scripts/restore-release-executable-modes.py")
+	requireWorkflowOrder(t, publisher,
+		"name: Download exact signed promotion bundle",
+		"name: Restore validated release executable modes",
+		"scripts/restore-release-executable-modes.py",
+		"name: Re-verify complete promotion bundle",
+		"go run ./cmd/covenant release verify",
+	)
+}
+
+func TestExecutableModeRestorerUsesBoundedPlanInventory(t *testing.T) {
+	dir := t.TempDir()
+	releaseDir := filepath.Join(dir, "release")
+	if err := os.Mkdir(releaseDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"covenant-linux", "covenant-darwin", "covenant.exe"} {
+		if err := os.WriteFile(filepath.Join(releaseDir, name), []byte("candidate"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	plan := `{"candidates":[` +
+		`{"binary":"covenant-linux","goos":"linux"},` +
+		`{"binary":"covenant-darwin","goos":"darwin"},` +
+		`{"binary":"covenant.exe","goos":"windows"}` +
+		`]}`
+	planPath := filepath.Join(dir, "promotion-plan.json")
+	if err := os.WriteFile(planPath, []byte(plan), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	script := filepath.Join("..", "..", "scripts", "restore-release-executable-modes.py")
+	cmd := exec.Command("python3", script, "--plan", planPath, "--release-dir", releaseDir)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("restore executable modes: %v\n%s", err, output)
+	}
+	for _, name := range []string{"covenant-linux", "covenant-darwin"} {
+		info, err := os.Stat(filepath.Join(releaseDir, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if info.Mode().Perm()&0o111 != 0o111 {
+			t.Fatalf("%s mode = %o, want executable", name, info.Mode().Perm())
+		}
+	}
+	windows, err := os.Stat(filepath.Join(releaseDir, "covenant.exe"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if windows.Mode().Perm()&0o111 != 0 {
+		t.Fatalf("windows candidate mode = %o, want non-executable", windows.Mode().Perm())
+	}
+
+	unsafePlan := filepath.Join(dir, "unsafe-plan.json")
+	if err := os.WriteFile(unsafePlan, []byte(`{"candidates":[{"binary":"../outside","goos":"linux"}]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cmd = exec.Command("python3", script, "--plan", unsafePlan, "--release-dir", releaseDir)
+	if output, err := cmd.CombinedOutput(); err == nil {
+		t.Fatalf("unsafe candidate path accepted:\n%s", output)
+	}
+
+	badPlans := map[string]string{
+		"duplicate-key":    `{"candidates":[],"candidates":[]}`,
+		"duplicate-binary": `{"candidates":[{"binary":"covenant-linux","goos":"linux"},{"binary":"covenant-linux","goos":"darwin"}]}`,
+		"unsupported-goos": `{"candidates":[{"binary":"covenant-linux","goos":"plan9"}]}`,
+		"missing-binary":   `{"candidates":[{"binary":"missing","goos":"linux"}]}`,
+		"malformed":        `{"candidates":[`,
+	}
+	for name, contents := range badPlans {
+		t.Run(name, func(t *testing.T) {
+			path := filepath.Join(dir, name+".json")
+			if err := os.WriteFile(path, []byte(contents), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			cmd := exec.Command("python3", script, "--plan", path, "--release-dir", releaseDir)
+			if output, err := cmd.CombinedOutput(); err == nil {
+				t.Fatalf("invalid plan accepted:\n%s", output)
+			}
+		})
+	}
+
+	symlinkPlan := filepath.Join(dir, "symlink-plan.json")
+	if err := os.WriteFile(symlinkPlan, []byte(`{"candidates":[{"binary":"linked","goos":"linux"}]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(releaseDir, "covenant-linux"), filepath.Join(releaseDir, "linked")); err != nil {
+		t.Fatal(err)
+	}
+	cmd = exec.Command("python3", script, "--plan", symlinkPlan, "--release-dir", releaseDir)
+	if output, err := cmd.CombinedOutput(); err == nil {
+		t.Fatalf("symlink candidate accepted:\n%s", output)
+	}
+
+	oversizedPlan := filepath.Join(dir, "oversized-plan.json")
+	if err := os.WriteFile(oversizedPlan, []byte(strings.Repeat(" ", 64*1024+1)), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cmd = exec.Command("python3", script, "--plan", oversizedPlan, "--release-dir", releaseDir)
+	if output, err := cmd.CombinedOutput(); err == nil {
+		t.Fatalf("oversized plan accepted:\n%s", output)
+	}
+}
+
 func TestReleaseWorkflowVerifiesAttestationsForManifestAndEveryNativeBinary(t *testing.T) {
 	workflow := readRepoFile(t, ".github", "workflows", "release.yml")
 	for _, want := range []string{
