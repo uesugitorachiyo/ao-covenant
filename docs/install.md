@@ -6,7 +6,7 @@ AO Covenant release artifacts are produced by:
 go run ./cmd/covenant release package \
   --source . \
   --out dist \
-  --version v0.1.0 \
+  --version v0.1.1 \
   --commit "$(git rev-parse --short HEAD)" \
   --date "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ```
@@ -36,11 +36,11 @@ sha256sum -c SHA256SUMS
 Install:
 
 ```sh
-sudo install -m 0755 ao-covenant_v0.1.0_linux_amd64 /usr/local/bin/covenant
+sudo install -m 0755 ao-covenant_v0.1.1_linux_amd64 /usr/local/bin/covenant
 covenant version
 ```
 
-Use `ao-covenant_v0.1.0_linux_arm64` on ARM64 systems.
+AO Covenant v0.1.1 does not publish a Linux ARM64 archive.
 
 ## macOS
 
@@ -54,18 +54,19 @@ shasum -a 256 -c SHA256SUMS
 Install:
 
 ```sh
-sudo install -m 0755 ao-covenant_v0.1.0_darwin_arm64 /usr/local/bin/covenant
+sudo install -m 0755 ao-covenant_v0.1.1_darwin_amd64 /usr/local/bin/covenant
 covenant version
 ```
 
-Use `ao-covenant_v0.1.0_darwin_amd64` on Intel Macs.
+AO Covenant v0.1.1 publishes a macOS amd64 archive; an Apple Silicon host may
+run it only with the platform's supported translation environment.
 
 ## Windows
 
 Verify the downloaded artifact in PowerShell:
 
 ```powershell
-$artifact = "ao-covenant_v0.1.0_windows_amd64.exe"
+$artifact = "ao-covenant_v0.1.1_windows_amd64.exe"
 $expected = (Select-String $artifact .\SHA256SUMS).Line.Split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)[0].ToLower()
 $actual = (Get-FileHash ".\$artifact" -Algorithm SHA256).Hash.ToLower()
 if ($actual -ne $expected) { throw "checksum mismatch for $artifact" }
@@ -75,7 +76,7 @@ Install:
 
 ```powershell
 New-Item -ItemType Directory -Force "$env:USERPROFILE\bin" | Out-Null
-Copy-Item .\ao-covenant_v0.1.0_windows_amd64.exe "$env:USERPROFILE\bin\covenant.exe"
+Copy-Item .\ao-covenant_v0.1.1_windows_amd64.exe "$env:USERPROFILE\bin\covenant.exe"
 & "$env:USERPROFILE\bin\covenant.exe" version
 ```
 
