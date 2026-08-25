@@ -81,3 +81,23 @@ Copy-Item .\ao-covenant_v0.1.1_windows_amd64.exe "$env:USERPROFILE\bin\covenant.
 ```
 
 Add `%USERPROFILE%\bin` to the user `PATH` if it is not already present.
+
+## Uninstall and PATH rollback
+
+On Ubuntu or macOS, remove the binary with:
+
+```sh
+sudo rm /usr/local/bin/covenant
+```
+
+`/usr/local/bin` is normally already on `PATH`; remove it from your shell
+configuration only if you added it solely for Covenant.
+
+On Windows, remove the binary with:
+
+```powershell
+Remove-Item "$env:USERPROFILE\bin\covenant.exe"
+```
+
+Remove `%USERPROFILE%\bin` from the user `PATH` only if you added it solely
+for Covenant, then open a new PowerShell session.
