@@ -678,6 +678,34 @@ func TestReleaseAttestationConsumerMatrixIsDocumented(t *testing.T) {
 	}
 }
 
+func TestReadmeCurrentReleaseIsDiscoverable(t *testing.T) {
+	bytes, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	if err != nil {
+		t.Fatalf("read README.md: %v", err)
+	}
+	readme := string(bytes)
+
+	for _, want := range []string{
+		"## Current Release",
+		"[v0.1.1](https://github.com/uesugitorachiyo/ao-covenant/releases/tag/v0.1.1)",
+		"`2fd72a0426a747868826581612fa1dc9727b53b9`",
+		"[Linux amd64](https://github.com/uesugitorachiyo/ao-covenant/releases/download/v0.1.1/ao-covenant_v0.1.1_linux_amd64)",
+		"[macOS Intel](https://github.com/uesugitorachiyo/ao-covenant/releases/download/v0.1.1/ao-covenant_v0.1.1_darwin_amd64)",
+		"[Windows amd64](https://github.com/uesugitorachiyo/ao-covenant/releases/download/v0.1.1/ao-covenant_v0.1.1_windows_amd64.exe)",
+		"[SHA256SUMS](https://github.com/uesugitorachiyo/ao-covenant/releases/download/v0.1.1/SHA256SUMS)",
+		"grep '  <asset-name>$' SHA256SUMS > SHA256SUMS.selected",
+		"sha256sum -c SHA256SUMS.selected",
+		"shasum -a 256 -c SHA256SUMS.selected",
+		"Get-FileHash .\\<asset-name> -Algorithm SHA256",
+		"[install guide](docs/install.md)",
+		"Source builds report `dev` until release metadata is injected.",
+	} {
+		if !strings.Contains(readme, want) {
+			t.Fatalf("README.md missing %q", want)
+		}
+	}
+}
+
 func TestReleaseAttestationFixturesAreLinkedAndComplete(t *testing.T) {
 	repoRoot := filepath.Join("..", "..")
 	readText := func(path ...string) string {

@@ -51,6 +51,32 @@ The [full CLI and contract reference](REFERENCE.md) covers structured
 authoring, policy evaluation, approvals, bundles, signatures, verification,
 release packaging, and every example command.
 
+## Current Release
+
+[v0.1.1](https://github.com/uesugitorachiyo/ao-covenant/releases/tag/v0.1.1)
+is the current published release, built from
+`2fd72a0426a747868826581612fa1dc9727b53b9`.
+
+Download [SHA256SUMS](https://github.com/uesugitorachiyo/ao-covenant/releases/download/v0.1.1/SHA256SUMS)
+with one supported binary:
+
+- [Linux amd64](https://github.com/uesugitorachiyo/ao-covenant/releases/download/v0.1.1/ao-covenant_v0.1.1_linux_amd64)
+- [macOS Intel](https://github.com/uesugitorachiyo/ao-covenant/releases/download/v0.1.1/ao-covenant_v0.1.1_darwin_amd64)
+- [Windows amd64](https://github.com/uesugitorachiyo/ao-covenant/releases/download/v0.1.1/ao-covenant_v0.1.1_windows_amd64.exe)
+
+Verify only the binary you downloaded:
+
+```sh
+grep '  <asset-name>$' SHA256SUMS > SHA256SUMS.selected
+sha256sum -c SHA256SUMS.selected # Linux
+shasum -a 256 -c SHA256SUMS.selected # macOS
+```
+
+On Windows, run `Get-FileHash .\<asset-name> -Algorithm SHA256` and compare the
+result with the matching `SHA256SUMS` line. Then follow the
+[install guide](docs/install.md).
+Source builds report `dev` until release metadata is injected.
+
 ## Documentation
 
 - [Install](docs/install.md)
