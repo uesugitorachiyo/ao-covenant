@@ -217,6 +217,10 @@ func TestReleaseVerificationWalkthroughIsLinkedAndComplete(t *testing.T) {
 		{name: "replacement attestation command", doc: walkthrough, want: "gh attestation verify release-replacement-policy.json --repo uesugitorachiyo/ao-covenant"},
 		{name: "report command", doc: walkthrough, want: "covenant release report --dir . --public-key covenant-release-public-key.json"},
 		{name: "public key warning", doc: walkthrough, want: "does not contain the release private key"},
+		{name: "uninstall section", doc: installDoc, want: "## Uninstall and PATH rollback"},
+		{name: "unix uninstall", doc: installDoc, want: "sudo rm /usr/local/bin/covenant"},
+		{name: "windows uninstall", doc: installDoc, want: "Remove-Item \"$env:USERPROFILE\\bin\\covenant.exe\""},
+		{name: "windows PATH rollback", doc: installDoc, want: "%USERPROFILE%\\bin"},
 	} {
 		if !strings.Contains(check.doc, check.want) {
 			t.Fatalf("%s missing %q", check.name, check.want)
@@ -699,6 +703,7 @@ func TestReadmeCurrentReleaseIsDiscoverable(t *testing.T) {
 		"Get-FileHash .\\<asset-name> -Algorithm SHA256",
 		"[install guide](docs/install.md)",
 		"Source builds report `dev` until release metadata is injected.",
+		"Requires Go 1.26.4.",
 	} {
 		if !strings.Contains(readme, want) {
 			t.Fatalf("README.md missing %q", want)

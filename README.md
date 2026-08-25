@@ -32,6 +32,10 @@ for the cross-repository flow.
 - Offline bundle inspection, verification, and revocation support.
 - Release manifests, checksums, signatures, and provenance reports.
 
+## Build and run from source
+
+Requires Go 1.26.4.
+
 ## Quick Start
 
 ```bash
